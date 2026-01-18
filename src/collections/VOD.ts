@@ -9,14 +9,7 @@ export const VOD: CollectionConfig = {
 
   admin: {
     useAsTitle: 'title',
-    defaultColumns: [
-      'title',
-      'vodType',
-      'visibility',
-      'status',
-      'publishDate',
-      'updatedAt',
-    ],
+    defaultColumns: ['title', 'vodType', 'visibility', 'status', 'publishDate', 'updatedAt'],
     group: 'Video & TV',
   },
 
@@ -30,23 +23,15 @@ export const VOD: CollectionConfig = {
 
     create: ({ req }) =>
       Boolean(
-        req.user &&
-          (req.user.roles?.includes('editor') ||
-           req.user.roles?.includes('admin'))
+        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
       ),
 
     update: ({ req }) =>
       Boolean(
-        req.user &&
-          (req.user.roles?.includes('editor') ||
-           req.user.roles?.includes('admin'))
+        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
       ),
 
-    delete: ({ req }) =>
-      Boolean(
-        req.user &&
-          req.user.roles?.includes('admin')
-      ),
+    delete: ({ req }) => Boolean(req.user && req.user.roles?.includes('admin')),
   },
 
   fields: [
@@ -73,8 +58,7 @@ export const VOD: CollectionConfig = {
       type: 'relationship',
       relationTo: 'vod',
       admin: {
-        condition: (_, data) =>
-          ['episode', 'clip'].includes(data?.vodType),
+        condition: (_, data) => ['episode', 'clip'].includes(data?.vodType),
       },
     },
     { name: 'season', type: 'number' },
@@ -217,6 +201,106 @@ export const VOD: CollectionConfig = {
       name: 'publishDate',
       type: 'date',
       admin: { position: 'sidebar' },
+    },
+
+    {
+      name: 'ads',
+      type: 'group',
+      admin: {
+        description: 'Google Ad Manager (VAST) settings',
+      },
+      fields: [
+        {
+          name: 'adsEnabled',
+          type: 'checkbox',
+          defaultValue: true,
+        },
+
+        {
+          name: 'disableForPremium',
+          type: 'checkbox',
+          defaultValue: true,
+          admin: {
+            description: 'Disable ads for WaveNation+ users',
+          },
+        },
+
+        {
+          name: 'placements',
+          type: 'group',
+          fields: [
+            {
+              name: 'preRoll',
+              type: 'text',
+              admin: {
+                placeholder: 'GAM VAST URL – Pre-roll',
+              },
+            },
+            {
+              name: 'midRoll',
+              type: 'text',
+              admin: {
+                placeholder: 'GAM VAST URL – Mid-roll',
+              },
+            },
+            {
+              name: 'midRollOffset',
+              type: 'number',
+              admin: {
+                description: 'Seconds into video',
+              },
+            },
+            {
+              name: 'postRoll',
+              type: 'text',
+              admin: {
+                placeholder: 'GAM VAST URL – Post-roll',
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    {
+      name: 'relatedShows',
+      label: 'Related Shows / Videos',
+      type: 'relationship',
+      relationTo: 'vod',
+      hasMany: true,
+      admin: {
+        description: 'Manually curated related shows, episodes, or specials',
+      },
+    },
+
+    {
+      name: 'relatedTalent',
+      label: 'Related Talent',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      admin: {
+        description: 'Hosts, guests, creators, or on-screen talent',
+      },
+    },
+    {
+      name: 'talentRoles',
+      type: 'array',
+      admin: {
+        description: 'Optional role labels for talent',
+      },
+      fields: [
+        {
+          name: 'talent',
+          type: 'relationship',
+          relationTo: 'talent',
+        },
+        {
+          name: 'role',
+          type: 'select',
+          options: ['Host', 'Co-Host', 'Guest', 'Performer', 'Director', 'Producer'],
+        },
+      ],
     },
   ],
 }
