@@ -1,29 +1,50 @@
-# ---------- deps ----------
-FROM node:20.11.1-bookworm-slim AS deps
+# ----------------------------------------
+# Base Image
+# ----------------------------------------
+FROM node:20-slim AS base
 WORKDIR /app
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
-COPY package.json pnpm-lock.yaml* ./
+
+# ----------------------------------------
+# Install deps
+# ----------------------------------------
+FROM base AS deps
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-# ---------- build ----------
-FROM node:20.11.1-bookworm-slim AS builder
-WORKDIR /app
-RUN corepack enable
-COPY --from=deps /app/node_modules ./node_modules
+# ----------------------------------------
+# Builder stage
+# ----------------------------------------
+FROM base AS builder
 COPY . .
-ENV NODE_ENV=production
+COPY --from=deps /app/node_modules ./node_modules
+
+# Re-enable pnpm (important for multi-stage)
+RUN corepack enable
+
+# Build Next.js (standalone output)
 RUN pnpm build
 
-# ---------- run ----------
-FROM node:20.11.1-bookworm-slim AS runner
+# ----------------------------------------
+# Runner (production)
+# ----------------------------------------
+FROM base AS runner
 WORKDIR /app
+
 ENV NODE_ENV=production
 ENV PORT=10000
 
-# Next standalone output
+# Copy only what Next standalone needs
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+
+# Public is optional – create empty dir if unused
 COPY --from=builder /app/public ./public
+COPY package.json ./
 
 EXPOSE 10000
+
 CMD ["node", "server.js"]
