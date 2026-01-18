@@ -302,5 +302,33 @@ export const VOD: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'release',
+      type: 'group',
+      admin: {
+        description: 'Premiere and availability scheduling',
+      },
+      fields: [
+        {
+          name: 'premiereDate',
+          type: 'date',
+          admin: {
+            description: 'Public premiere date (countdown, marketing)',
+          },
+        },
+        {
+          name: 'availableDate',
+          type: 'date',
+          admin: {
+            description: 'When the video becomes playable',
+          },
+        },
+        {
+          name: 'timezone',
+          type: 'text',
+          defaultValue: 'America/New_York',
+        },
+      ],
+    },
   ],
 }
