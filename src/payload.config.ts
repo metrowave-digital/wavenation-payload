@@ -51,7 +51,7 @@ const dirname = path.dirname(filename)
    ENV
 ====================================================== */
 
-const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3001'
+const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL!
 
 /* ======================================================
    PAYLOAD CONFIG

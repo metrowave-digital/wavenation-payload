@@ -994,6 +994,56 @@ export interface Podcast {
     wavenation?: boolean | null;
   };
   status?: ('draft' | 'active' | 'archived') | null;
+  /**
+   * Primary audio source
+   */
+  audio?: {
+    audioSource?: ('upload' | 'external') | null;
+    audioFile?: (number | null) | Media;
+    audioUrl?: string | null;
+    /**
+     * Duration in seconds (optional)
+     */
+    duration?: number | null;
+  };
+  /**
+   * Podcast advertising (Google Ad Manager)
+   */
+  ads?: {
+    adsEnabled?: boolean | null;
+    /**
+     * Disable ads for WaveNation+ subscribers
+     */
+    disableForPremium?: boolean | null;
+    placements?: {
+      preRoll?: string | null;
+      /**
+       * Mid-roll audio ads
+       */
+      midRoll?:
+        | {
+            /**
+             * Seconds into audio
+             */
+            offset?: number | null;
+            vastUrl?: string | null;
+            id?: string | null;
+          }[]
+        | null;
+      postRoll?: string | null;
+    };
+  };
+  /**
+   * Host-read or branded sponsorship
+   */
+  sponsor?: {
+    brandName?: string | null;
+    disclosure?: string | null;
+    /**
+     * Optional sponsor audio intro/outro
+     */
+    audioClip?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1051,6 +1101,57 @@ export interface Vod {
     completionRate?: number | null;
   };
   publishDate?: string | null;
+  /**
+   * Google Ad Manager (VAST) settings
+   */
+  ads?: {
+    adsEnabled?: boolean | null;
+    /**
+     * Disable ads for WaveNation+ users
+     */
+    disableForPremium?: boolean | null;
+    placements?: {
+      preRoll?: string | null;
+      midRoll?: string | null;
+      /**
+       * Seconds into video
+       */
+      midRollOffset?: number | null;
+      postRoll?: string | null;
+    };
+  };
+  /**
+   * Manually curated related shows, episodes, or specials
+   */
+  relatedShows?: (number | Vod)[] | null;
+  /**
+   * Hosts, guests, creators, or on-screen talent
+   */
+  relatedTalent?: (number | User)[] | null;
+  /**
+   * Optional role labels for talent
+   */
+  talentRoles?:
+    | {
+        talent?: (number | null) | Talent;
+        role?: ('Host' | 'Co-Host' | 'Guest' | 'Performer' | 'Director' | 'Producer') | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Premiere and availability scheduling
+   */
+  release?: {
+    /**
+     * Public premiere date (countdown, marketing)
+     */
+    premiereDate?: string | null;
+    /**
+     * When the video becomes playable
+     */
+    availableDate?: string | null;
+    timezone?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1948,6 +2049,36 @@ export interface VodSelect<T extends boolean = true> {
         completionRate?: T;
       };
   publishDate?: T;
+  ads?:
+    | T
+    | {
+        adsEnabled?: T;
+        disableForPremium?: T;
+        placements?:
+          | T
+          | {
+              preRoll?: T;
+              midRoll?: T;
+              midRollOffset?: T;
+              postRoll?: T;
+            };
+      };
+  relatedShows?: T;
+  relatedTalent?: T;
+  talentRoles?:
+    | T
+    | {
+        talent?: T;
+        role?: T;
+        id?: T;
+      };
+  release?:
+    | T
+    | {
+        premiereDate?: T;
+        availableDate?: T;
+        timezone?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2020,6 +2151,40 @@ export interface PodcastsSelect<T extends boolean = true> {
         wavenation?: T;
       };
   status?: T;
+  audio?:
+    | T
+    | {
+        audioSource?: T;
+        audioFile?: T;
+        audioUrl?: T;
+        duration?: T;
+      };
+  ads?:
+    | T
+    | {
+        adsEnabled?: T;
+        disableForPremium?: T;
+        placements?:
+          | T
+          | {
+              preRoll?: T;
+              midRoll?:
+                | T
+                | {
+                    offset?: T;
+                    vastUrl?: T;
+                    id?: T;
+                  };
+              postRoll?: T;
+            };
+      };
+  sponsor?:
+    | T
+    | {
+        brandName?: T;
+        disclosure?: T;
+        audioClip?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
