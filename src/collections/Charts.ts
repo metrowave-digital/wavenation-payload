@@ -42,7 +42,7 @@ function getISOWeek(date: Date): string {
   const dayNum = d.getUTCDay() || 7
   d.setUTCDate(d.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`
 }
 
@@ -75,10 +75,7 @@ const normalizeAndRank: CollectionBeforeChangeHook = async ({ data }) => {
   return data
 }
 
-const createSnapshot: CollectionAfterChangeHook = async ({
-  doc,
-  previousDoc,
-}) => {
+const createSnapshot: CollectionAfterChangeHook = async ({ doc, previousDoc }) => {
   if (!doc || !previousDoc) return
 
   if (!previousDoc.week || previousDoc.week === doc.week) return
@@ -108,14 +105,7 @@ export const Charts: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Music & Programming',
-    defaultColumns: [
-      'title',
-      'chartKey',
-      'chartMode',
-      'week',
-      'status',
-      'publishDate',
-    ],
+    defaultColumns: ['title', 'chartKey', 'chartMode', 'week', 'status', 'publishDate'],
   },
 
   versions: {
@@ -126,17 +116,10 @@ export const Charts: CollectionConfig = {
   access: {
     read: () => true,
     create: ({ req }) =>
-      Boolean(
-        req.user?.roles?.includes('editor') ||
-        req.user?.roles?.includes('admin')
-      ),
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
     update: ({ req }) =>
-      Boolean(
-        req.user?.roles?.includes('editor') ||
-        req.user?.roles?.includes('admin')
-      ),
-    delete: ({ req }) =>
-      Boolean(req.user?.roles?.includes('admin')),
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+    delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')),
   },
 
   hooks: {
@@ -167,6 +150,7 @@ export const Charts: CollectionConfig = {
         { label: 'Hip-Hop', value: 'hip-hop' },
         { label: 'Southern Soul', value: 'southern-soul' },
         { label: 'Gospel', value: 'gospel' },
+        { label: 'House / BPM', value: 'house' },
       ],
     },
 
@@ -183,15 +167,14 @@ export const Charts: CollectionConfig = {
     },
 
     {
-  name: 'playlist',
-  type: 'relationship',
-  relationTo: 'playlists',
-  required: false,
-  admin: {
-    description:
-      'Optional playlist associated with this chart (editorial or promotional)',
-  },
-},
+      name: 'playlist',
+      type: 'relationship',
+      relationTo: 'playlists',
+      required: false,
+      admin: {
+        description: 'Optional playlist associated with this chart (editorial or promotional)',
+      },
+    },
 
     {
       name: 'slug',
