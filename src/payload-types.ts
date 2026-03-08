@@ -792,7 +792,7 @@ export interface Talent {
 export interface Chart {
   id: number;
   title: string;
-  chartKey: 'hitlist' | 'rnb-soul' | 'hip-hop' | 'southern-soul' | 'gospel';
+  chartKey: 'hitlist' | 'rnb-soul' | 'hip-hop' | 'southern-soul' | 'gospel' | 'house';
   chartMode: 'manual' | 'hybrid' | 'automated';
   /**
    * Optional playlist associated with this chart (editorial or promotional)
