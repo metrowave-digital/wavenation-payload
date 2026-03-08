@@ -37,7 +37,7 @@ export const Playlists: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     group: 'Music & Programming',
-    defaultColumns: ['title', 'playlistType', 'status', 'featured', 'publishDate', 'updatedAt'],
+    defaultColumns: ['title', 'playlistType', 'featured', 'publishDate', 'updatedAt'],
     description:
       'Editorial, chart, creator, and sponsored playlists used across WaveNation surfaces.',
   },
@@ -64,11 +64,8 @@ export const Playlists: CollectionConfig = {
   hooks: {
     beforeChange: [
       ({ data }) => {
-        if (data?.status === 'published' && !data?.publishDate) {
-          return {
-            ...data,
-            publishDate: new Date().toISOString(),
-          }
+        if (!data?.publishDate) {
+          return data
         }
 
         return data
@@ -147,17 +144,6 @@ export const Playlists: CollectionConfig = {
               admin: {
                 description: 'Marks the playlist for homepage or editorial spotlight placement.',
               },
-            },
-            {
-              name: 'status',
-              type: 'select',
-              required: true,
-              defaultValue: 'draft',
-              options: [
-                { label: 'Draft', value: 'draft' },
-                { label: 'Published', value: 'published' },
-                { label: 'Archived', value: 'archived' },
-              ],
             },
             {
               name: 'publishDate',

@@ -89,6 +89,7 @@ export interface Config {
     polls: Poll;
     pollVotes: PollVote;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-migrations': PayloadMigration;
   };
@@ -116,6 +117,7 @@ export interface Config {
     polls: PollsSelect<false> | PollsSelect<true>;
     pollVotes: PollVotesSelect<false> | PollVotesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
@@ -130,7 +132,13 @@ export interface Config {
     collection: 'users';
   };
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -864,25 +872,120 @@ export interface Chart {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Editorial, chart, creator, and sponsored playlists used across WaveNation surfaces.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "playlists".
  */
 export interface Playlist {
   id: number;
+  /**
+   * Public-facing playlist title.
+   */
   title: string;
+  /**
+   * URL-safe slug. Auto-generated from title if left blank.
+   */
   slug?: string | null;
+  /**
+   * Determines playlist ownership and workflow.
+   */
   playlistType: 'chart' | 'editorial' | 'creator' | 'sponsored';
+  /**
+   * Public description used on playlist pages and embeds.
+   */
   description?: string | null;
+  /**
+   * Short summary for cards, previews, and app surfaces.
+   */
+  shortDescription?: string | null;
+  /**
+   * Primary artwork for the playlist.
+   */
+  coverImage?: (number | null) | Media;
+  /**
+   * Marks the playlist for homepage or editorial spotlight placement.
+   */
+  featured?: boolean | null;
+  status: 'draft' | 'published' | 'archived';
+  /**
+   * Used for scheduling and sorting published playlists.
+   */
+  publishDate?: string | null;
+  /**
+   * Primary editor, DJ, or curator responsible for the playlist.
+   */
+  curator?: (number | null) | User;
+  genres?:
+    | ('rnb' | 'hiphop' | 'southern-soul' | 'gospel' | 'jazz' | 'house' | 'club' | 'afrobeats' | 'soul' | 'mixed')[]
+    | null;
+  moods?:
+    | (
+        | 'late-night'
+        | 'uplifting'
+        | 'chill'
+        | 'workout'
+        | 'romantic'
+        | 'party'
+        | 'inspirational'
+        | 'throwback'
+        | 'current'
+        | 'sunday'
+      )[]
+    | null;
+  /**
+   * Freeform tags for internal discovery and editorial organization.
+   */
+  platformTags?: string[] | null;
+  /**
+   * Internal curation rationale, notes, or governance comments.
+   */
+  playlistNotes?: string | null;
+  /**
+   * Sponsor name for sponsored playlists.
+   */
+  sponsorName?: string | null;
+  /**
+   * Internal review workflow status.
+   */
+  editorialApprovalStatus?: ('pending' | 'approved' | 'needs-revision') | null;
+  /**
+   * Ordered list of tracks included in this playlist.
+   */
   tracks?:
     | {
         track: number | MediaTrack;
-        order?: number | null;
+        order: number;
+        /**
+         * Highlights a priority or spotlight track within the playlist.
+         */
+        isFeatured?: boolean | null;
+        /**
+         * Optional internal note about why this track is included.
+         */
+        editorNote?: string | null;
         id?: string | null;
       }[]
     | null;
-  status?: ('draft' | 'published' | 'archived') | null;
+  externalLinks?: {
+    spotify?: string | null;
+    appleMusic?: string | null;
+    youtubeMusic?: string | null;
+    audiomack?: string | null;
+    tidal?: string | null;
+  };
+  /**
+   * Surfaces where the playlist has already been published or synced.
+   */
+  distributionStatus?:
+    | ('website' | 'mobile-app' | 'tv-app' | 'spotify' | 'apple-music' | 'youtube-music' | 'audiomack' | 'tidal')[]
+    | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  socialImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1305,6 +1408,98 @@ export interface PayloadKv {
     | number
     | boolean
     | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2231,16 +2426,43 @@ export interface PlaylistsSelect<T extends boolean = true> {
   slug?: T;
   playlistType?: T;
   description?: T;
+  shortDescription?: T;
+  coverImage?: T;
+  featured?: T;
+  status?: T;
+  publishDate?: T;
+  curator?: T;
+  genres?: T;
+  moods?: T;
+  platformTags?: T;
+  playlistNotes?: T;
+  sponsorName?: T;
+  editorialApprovalStatus?: T;
   tracks?:
     | T
     | {
         track?: T;
         order?: T;
+        isFeatured?: T;
+        editorNote?: T;
         id?: T;
       };
-  status?: T;
+  externalLinks?:
+    | T
+    | {
+        spotify?: T;
+        appleMusic?: T;
+        youtubeMusic?: T;
+        audiomack?: T;
+        tidal?: T;
+      };
+  distributionStatus?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  socialImage?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2311,6 +2533,37 @@ export interface PayloadKvSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents_select".
  */
 export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
@@ -2329,6 +2582,23 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?: {
+      relationTo: 'playlists';
+      value: number | Playlist;
+    } | null;
+    global?: string | null;
+    user?: (number | null) | User;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
