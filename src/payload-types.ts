@@ -88,6 +88,7 @@ export interface Config {
     talent: Talent;
     polls: Poll;
     pollVotes: PollVote;
+    events: Event;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -116,6 +117,7 @@ export interface Config {
     talent: TalentSelect<false> | TalentSelect<true>;
     polls: PollsSelect<false> | PollsSelect<true>;
     pollVotes: PollVotesSelect<false> | PollVotesSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -125,8 +127,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'event-settings': EventSetting;
+  };
+  globalsSelect: {
+    'event-settings': EventSettingsSelect<false> | EventSettingsSelect<true>;
+  };
   locale: null;
   user: User & {
     collection: 'users';
@@ -1393,6 +1399,101 @@ export interface PollVote {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * Auto-generated from title if left blank.
+   */
+  slug?: string | null;
+  excerpt: string;
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  eventType: 'virtual' | 'in-person' | 'hybrid';
+  status: 'draft' | 'scheduled' | 'live' | 'ended';
+  startDate: string;
+  endDate: string;
+  timezone: string;
+  heroImage?: (number | null) | Media;
+  thumbnail?: (number | null) | Media;
+  hostName?: string | null;
+  guestName?: string[] | null;
+  sponsorNames?: string[] | null;
+  agenda?:
+    | {
+        time?: string | null;
+        title: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  faq?:
+    | {
+        question: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  virtualEventLabel?: string | null;
+  livestreamPlatform?:
+    | ('wavenation-native' | 'streamlabs' | 'youtube' | 'vimeo' | 'zoom' | 'eventbrite' | 'other')
+    | null;
+  replayUrl?: string | null;
+  livestreamAccessInstructions?: string | null;
+  /**
+   * Optional embed/player URL for livestream or replay.
+   */
+  streamEmbedUrl?: string | null;
+  eventbriteEventId?: string | null;
+  eventbriteUrl?: string | null;
+  eventbriteSyncEnabled?: boolean | null;
+  eventbriteLastSyncedAt?: string | null;
+  visibility?: ('public' | 'private' | 'unlisted') | null;
+  accessType?: ('open' | 'ticketed' | 'invite-only' | 'members-only') | null;
+  registrationRequired?: boolean | null;
+  capacity?: number | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  relatedArticles?: (number | Article)[] | null;
+  relatedRadioShows?: (number | RadioShow)[] | null;
+  relatedVOD?: (number | Vod)[] | null;
+  relatedPlaylists?: (number | Playlist)[] | null;
+  contentVertical: 'music' | 'culture' | 'faith' | 'creator' | 'radio' | 'tv';
+  promotionTier: 'flagship' | 'featured' | 'standard';
+  isFeatured?: boolean | null;
+  onAirMention?: boolean | null;
+  homepagePlacement?: ('none' | 'hero' | 'featured-row' | 'events-grid') | null;
+  /**
+   * Auto-set by promotion tier and featured logic, but can be adjusted.
+   */
+  homepagePriority?: number | null;
+  /**
+   * Internal planning notes for editorial, promo, or production.
+   */
+  internalNotes?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1590,6 +1691,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'pollVotes';
         value: number | PollVote;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2523,6 +2628,72 @@ export interface PollVotesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  excerpt?: T;
+  description?: T;
+  eventType?: T;
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  timezone?: T;
+  heroImage?: T;
+  thumbnail?: T;
+  hostName?: T;
+  guestName?: T;
+  sponsorNames?: T;
+  agenda?:
+    | T
+    | {
+        time?: T;
+        title?: T;
+        description?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        id?: T;
+      };
+  virtualEventLabel?: T;
+  livestreamPlatform?: T;
+  replayUrl?: T;
+  livestreamAccessInstructions?: T;
+  streamEmbedUrl?: T;
+  eventbriteEventId?: T;
+  eventbriteUrl?: T;
+  eventbriteSyncEnabled?: T;
+  eventbriteLastSyncedAt?: T;
+  visibility?: T;
+  accessType?: T;
+  registrationRequired?: T;
+  capacity?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  relatedArticles?: T;
+  relatedRadioShows?: T;
+  relatedVOD?: T;
+  relatedPlaylists?: T;
+  contentVertical?: T;
+  promotionTier?: T;
+  isFeatured?: T;
+  onAirMention?: T;
+  homepagePlacement?: T;
+  homepagePriority?: T;
+  internalNotes?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -2580,6 +2751,40 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-settings".
+ */
+export interface EventSetting {
+  id: number;
+  defaultTimezone?: string | null;
+  defaultVirtualPlatform?:
+    | ('wavenation-native' | 'streamlabs' | 'youtube' | 'vimeo' | 'zoom' | 'eventbrite' | 'other')
+    | null;
+  defaultCTAName?: string | null;
+  homepageFeaturedEventLimit?: number | null;
+  heroEventLimit?: number | null;
+  enableEventbriteSync?: boolean | null;
+  eventbriteOrganizationId?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-settings_select".
+ */
+export interface EventSettingsSelect<T extends boolean = true> {
+  defaultTimezone?: T;
+  defaultVirtualPlatform?: T;
+  defaultCTAName?: T;
+  homepageFeaturedEventLimit?: T;
+  heroEventLimit?: T;
+  enableEventbriteSync?: T;
+  eventbriteOrganizationId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
