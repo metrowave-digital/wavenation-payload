@@ -907,7 +907,6 @@ export interface Playlist {
    * Marks the playlist for homepage or editorial spotlight placement.
    */
   featured?: boolean | null;
-  status: 'draft' | 'published' | 'archived';
   /**
    * Used for scheduling and sorting published playlists.
    */
@@ -2429,7 +2428,6 @@ export interface PlaylistsSelect<T extends boolean = true> {
   shortDescription?: T;
   coverImage?: T;
   featured?: T;
-  status?: T;
   publishDate?: T;
   curator?: T;
   genres?: T;

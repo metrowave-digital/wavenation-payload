@@ -40,6 +40,14 @@ import { PollVotes } from './collections/PollVotes'
 
 import { Talent } from './collections/Talent'
 
+import { Events } from './collections/Events'
+
+/* ======================================================
+   GLOBAL IMPORTS
+====================================================== */
+
+import { EventSettings } from './globals/EventSettings'
+
 /* ======================================================
    PATH HELPERS
 ====================================================== */
@@ -51,7 +59,7 @@ const dirname = path.dirname(filename)
    ENV
 ====================================================== */
 
-const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL!
+const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
 
 /* ======================================================
    PAYLOAD CONFIG
@@ -108,7 +116,12 @@ export default buildConfig({
     /* ===== POLLS ===== */
     Polls,
     PollVotes,
+
+    /* ===== EVENTS ===== */
+    Events,
   ],
+
+  globals: [EventSettings],
 
   editor: lexicalEditor(),
 
@@ -137,7 +150,6 @@ export default buildConfig({
           prefix: 'media',
         },
       },
-
       bucket: process.env.S3_BUCKET || '',
       config: {
         endpoint: process.env.S3_ENDPOINT,
