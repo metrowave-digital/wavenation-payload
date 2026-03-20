@@ -1483,11 +1483,117 @@ export interface Event {
    */
   homepagePriority?: number | null;
   /**
+   * Enable the dedicated WaveNation watch page for this event.
+   */
+  watchPageEnabled?: boolean | null;
+  /**
+   * Optional custom watch path. Leave blank to use /events/[slug]/watch.
+   */
+  watchPagePath?: string | null;
+  /**
+   * Primary Cloudflare Stream playback ID used for live playback.
+   */
+  cloudflarePlaybackId?: string | null;
+  /**
+   * Cloudflare Stream playback ID for the replay version, if different.
+   */
+  cloudflareReplayPlaybackId?: string | null;
+  /**
+   * Optional display label such as Cloudflare Stream, Streamlabs Ultra, or Private Player.
+   */
+  streamProviderLabel?: string | null;
+  streamHealthStatus?: ('unknown' | 'ready' | 'testing' | 'live' | 'issue' | 'offline') | null;
+  /**
+   * Message shown before the event goes live.
+   */
+  preLiveMessage?: string | null;
+  /**
+   * Message shown after the live stream ends.
+   */
+  postEventMessage?: string | null;
+  /**
+   * Internal notes for stream checks, embeds, player setup, or rehearsal findings.
+   */
+  streamTestingNotes?: string | null;
+  chatEnabled?: boolean | null;
+  qaEnabled?: boolean | null;
+  reactionsEnabled?: boolean | null;
+  chatMode?: ('disabled' | 'native' | 'qa-only' | 'external') | null;
+  /**
+   * Optional external chat embed URL if using a third-party chat.
+   */
+  chatEmbedUrl?: string | null;
+  /**
+   * Optional prompt shown above the question form.
+   */
+  qaPrompt?: string | null;
+  /**
+   * Short notice shown in the live room, such as moderation or access reminders.
+   */
+  viewerNotice?: string | null;
+  /**
+   * Optional community guidelines or participation rules displayed on the watch page.
+   */
+  audienceGuidelines?: string | null;
+  replayEnabled?: boolean | null;
+  replayAvailableImmediately?: boolean | null;
+  /**
+   * Optional date/time when replay becomes available.
+   */
+  replayAvailableAt?: string | null;
+  /**
+   * Optional date/time when replay access expires.
+   */
+  replayExpiresAt?: string | null;
+  /**
+   * Optional label for replay CTA, such as Watch Replay.
+   */
+  replayLabel?: string | null;
+  replayThumbnailOverride?: (number | null) | Media;
+  /**
+   * Require a WaveNation account session before viewing.
+   */
+  loginRequired?: boolean | null;
+  /**
+   * Require a verified ticket/registration entitlement before viewing.
+   */
+  ticketVerificationRequired?: boolean | null;
+  /**
+   * Optional membership tier required for access.
+   */
+  memberTierRequired?: string | null;
+  /**
+   * Optional label if access code entry is used on the watch page.
+   */
+  accessCodeLabel?: string | null;
+  /**
+   * Custom message shown when a viewer does not have access.
+   */
+  accessDeniedMessage?: string | null;
+  producerName?: string | null;
+  moderatorName?: string | null;
+  technicalDirectorName?: string | null;
+  /**
+   * Optional internal URL to a run of show, cue sheet, or production doc.
+   */
+  runOfShowUrl?: string | null;
+  /**
+   * Optional private host/guest backstage or green room link.
+   */
+  greenRoomUrl?: string | null;
+  /**
+   * Internal production notes for cues, transitions, sponsor reads, backups, or contingency plans.
+   */
+  productionNotes?: string | null;
+  /**
    * Internal planning notes for editorial, promo, or production.
    */
   internalNotes?: string | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  seoImage?: (number | null) | Media;
+  socialShareTitle?: string | null;
+  socialShareDescription?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -2685,9 +2791,46 @@ export interface EventsSelect<T extends boolean = true> {
   onAirMention?: T;
   homepagePlacement?: T;
   homepagePriority?: T;
+  watchPageEnabled?: T;
+  watchPagePath?: T;
+  cloudflarePlaybackId?: T;
+  cloudflareReplayPlaybackId?: T;
+  streamProviderLabel?: T;
+  streamHealthStatus?: T;
+  preLiveMessage?: T;
+  postEventMessage?: T;
+  streamTestingNotes?: T;
+  chatEnabled?: T;
+  qaEnabled?: T;
+  reactionsEnabled?: T;
+  chatMode?: T;
+  chatEmbedUrl?: T;
+  qaPrompt?: T;
+  viewerNotice?: T;
+  audienceGuidelines?: T;
+  replayEnabled?: T;
+  replayAvailableImmediately?: T;
+  replayAvailableAt?: T;
+  replayExpiresAt?: T;
+  replayLabel?: T;
+  replayThumbnailOverride?: T;
+  loginRequired?: T;
+  ticketVerificationRequired?: T;
+  memberTierRequired?: T;
+  accessCodeLabel?: T;
+  accessDeniedMessage?: T;
+  producerName?: T;
+  moderatorName?: T;
+  technicalDirectorName?: T;
+  runOfShowUrl?: T;
+  greenRoomUrl?: T;
+  productionNotes?: T;
   internalNotes?: T;
   seoTitle?: T;
   seoDescription?: T;
+  seoImage?: T;
+  socialShareTitle?: T;
+  socialShareDescription?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
