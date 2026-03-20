@@ -41,6 +41,8 @@ import { PollVotes } from './collections/PollVotes'
 import { Talent } from './collections/Talent'
 
 import { Events } from './collections/Events'
+import { EventQuestions } from './collections/EventQuestions'
+import { EventChatMessages } from './collections/EventChatMessages'
 
 /* ======================================================
    GLOBAL IMPORTS
@@ -119,6 +121,8 @@ export default buildConfig({
 
     /* ===== EVENTS ===== */
     Events,
+    EventQuestions,
+    EventChatMessages,
   ],
 
   globals: [EventSettings],

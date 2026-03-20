@@ -89,6 +89,8 @@ export interface Config {
     polls: Poll;
     pollVotes: PollVote;
     events: Event;
+    'event-questions': EventQuestion;
+    'event-chat-messages': EventChatMessage;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -118,6 +120,8 @@ export interface Config {
     polls: PollsSelect<false> | PollsSelect<true>;
     pollVotes: PollVotesSelect<false> | PollVotesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    'event-questions': EventQuestionsSelect<false> | EventQuestionsSelect<true>;
+    'event-chat-messages': EventChatMessagesSelect<false> | EventChatMessagesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -1600,6 +1604,56 @@ export interface Event {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-questions".
+ */
+export interface EventQuestion {
+  id: number;
+  /**
+   * Internal admin label for this question.
+   */
+  displayTitle?: string | null;
+  event: number | Event;
+  status: 'pending' | 'approved' | 'rejected' | 'answered';
+  name: string;
+  email?: string | null;
+  question: string;
+  /**
+   * Mark for producer/host priority.
+   */
+  isHighlighted?: boolean | null;
+  source?: ('watch-page' | 'moderator' | 'imported') | null;
+  viewerSessionId?: string | null;
+  ipAddress?: string | null;
+  moderatorNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-chat-messages".
+ */
+export interface EventChatMessage {
+  id: number;
+  /**
+   * Internal admin label for this message.
+   */
+  displayTitle?: string | null;
+  event: number | Event;
+  status: 'approved' | 'pending' | 'rejected' | 'hidden';
+  name: string;
+  role?: ('viewer' | 'moderator' | 'host' | 'producer' | 'system') | null;
+  message: string;
+  isPinned?: boolean | null;
+  isAnnouncement?: boolean | null;
+  source?: ('watch-page' | 'moderator' | 'system') | null;
+  viewerSessionId?: string | null;
+  ipAddress?: string | null;
+  moderatorNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -1801,6 +1855,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'events';
         value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'event-questions';
+        value: number | EventQuestion;
+      } | null)
+    | ({
+        relationTo: 'event-chat-messages';
+        value: number | EventChatMessage;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2834,6 +2896,45 @@ export interface EventsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-questions_select".
+ */
+export interface EventQuestionsSelect<T extends boolean = true> {
+  displayTitle?: T;
+  event?: T;
+  status?: T;
+  name?: T;
+  email?: T;
+  question?: T;
+  isHighlighted?: T;
+  source?: T;
+  viewerSessionId?: T;
+  ipAddress?: T;
+  moderatorNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-chat-messages_select".
+ */
+export interface EventChatMessagesSelect<T extends boolean = true> {
+  displayTitle?: T;
+  event?: T;
+  status?: T;
+  name?: T;
+  role?: T;
+  message?: T;
+  isPinned?: T;
+  isAnnouncement?: T;
+  source?: T;
+  viewerSessionId?: T;
+  ipAddress?: T;
+  moderatorNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
