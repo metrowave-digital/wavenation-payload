@@ -4,77 +4,83 @@ export const DynamicTicker: GlobalConfig = {
   slug: 'dynamic-ticker',
   admin: {
     group: 'Settings',
-    description: 'Manages the scrolling live data items in the site header.',
+    description: 'Live broadcast data with transition and scheduling logic.',
   },
-  access: {
-    read: () => true,
-  },
+  access: { read: () => true },
   fields: [
     {
-      name: 'items',
-      type: 'array',
-      required: true,
-      minRows: 1,
-      admin: {
-        initCollapsed: false,
-      },
-      fields: [
+      type: 'tabs',
+      tabs: [
         {
-          type: 'row',
+          label: 'Global Setup',
           fields: [
             {
-              name: 'medium',
-              type: 'select',
-              required: true,
-              options: [
-                { label: 'FM Radio', value: 'FM' },
-                { label: 'TV / Monitor', value: 'ONE' },
-                { label: 'Digital Plus', value: 'PLUS' },
+              type: 'row',
+              fields: [
+                {
+                  name: 'displayDuration',
+                  type: 'number',
+                  defaultValue: 5000,
+                  admin: { description: 'MS per slide.', width: '50%' },
+                },
+                {
+                  name: 'transitionSpeed',
+                  type: 'number',
+                  defaultValue: 400,
+                  admin: { description: 'Animation speed in MS.', width: '50%' },
+                },
               ],
-              admin: { width: '33%' },
             },
-            {
-              name: 'status',
-              type: 'text',
-              required: true,
-              admin: {
-                placeholder: 'NOW PLAYING',
-                width: '33%',
-              },
-            },
-            {
-              name: 'isLive',
-              type: 'checkbox',
-              label: 'Currently Live',
-              defaultValue: true,
-              admin: { width: '33%' },
-            },
+            { name: 'showVisualizer', type: 'checkbox', defaultValue: true },
           ],
         },
         {
-          type: 'row',
+          label: 'Broadcast Items',
           fields: [
             {
-              name: 'title',
-              type: 'text',
-              required: true,
-              admin: { width: '50%' },
-            },
-            {
-              name: 'subtext',
-              type: 'text',
-              admin: { width: '50%' },
+              name: 'items',
+              type: 'array',
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'medium',
+                      type: 'select',
+                      options: [
+                        { label: 'FM Radio', value: 'FM' },
+                        { label: 'TV / Monitor', value: 'ONE' },
+                        { label: 'Digital Plus', value: 'PLUS' },
+                      ],
+                      admin: { width: '30%' },
+                    },
+                    { name: 'status', type: 'text', admin: { width: '40%' } },
+                    { name: 'isLive', type: 'checkbox', admin: { width: '30%' } },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'title', type: 'text', required: true, admin: { width: '50%' } },
+                    { name: 'subtext', type: 'text', admin: { width: '50%' } },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'accent',
+                      type: 'text',
+                      defaultValue: '#39FF14',
+                      admin: { width: '30%' },
+                    },
+                    { name: 'scheduledStart', type: 'date', admin: { width: '35%' } },
+                    { name: 'scheduledEnd', type: 'date', admin: { width: '35%' } },
+                  ],
+                },
+              ],
             },
           ],
-        },
-        {
-          name: 'accent',
-          type: 'text',
-          required: true,
-          defaultValue: '#39FF14',
-          admin: {
-            description: 'Hex color for the badge and pulse icon.',
-          },
         },
       ],
     },
