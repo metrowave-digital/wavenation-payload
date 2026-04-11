@@ -77,6 +77,7 @@ import { FooterConfig } from './globals/FooterConfig'
 import { NewsTickerSettings } from './globals/NewsTickerSettings'
 import { Homepage } from './globals/Homepage'
 import { EventSettings } from './globals/EventSettings'
+import { DynamicTicker } from './globals/DynamicTicker'
 
 /* ======================================================
    PATH HELPERS
@@ -164,7 +165,15 @@ export default buildConfig({
     Sidebars,
   ],
 
-  globals: [SiteSettings, NavConfig, FooterConfig, NewsTickerSettings, Homepage, EventSettings],
+  globals: [
+    SiteSettings,
+    NavConfig,
+    FooterConfig,
+    NewsTickerSettings,
+    Homepage,
+    EventSettings,
+    DynamicTicker,
+  ],
 
   editor: lexicalEditor(),
 

@@ -168,6 +168,7 @@ export interface Config {
     'news-ticker-settings': NewsTickerSetting;
     homepage: Homepage;
     'event-settings': EventSetting;
+    'dynamic-ticker': DynamicTicker;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
@@ -176,6 +177,7 @@ export interface Config {
     'news-ticker-settings': NewsTickerSettingsSelect<false> | NewsTickerSettingsSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     'event-settings': EventSettingsSelect<false> | EventSettingsSelect<true>;
+    'dynamic-ticker': DynamicTickerSelect<false> | DynamicTickerSelect<true>;
   };
   locale: null;
   user: User & {
@@ -4274,6 +4276,8 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Global branding, SEO, and contact information.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings".
  */
@@ -4281,15 +4285,38 @@ export interface SiteSetting {
   id: number;
   siteTitle: string;
   tagline?: string | null;
+  /**
+   * Site favicon (usually 32x32px .ico or .png).
+   */
+  favicon?: (number | null) | Media;
+  /**
+   * Icon for mobile bookmarks (180x180px).
+   */
+  appleTouchIcon?: (number | null) | Media;
   defaultSeoDescription?: string | null;
   /**
    * Fallback image for social sharing (1200x630).
    */
   defaultShareImage?: (number | null) | Media;
+  /**
+   * Logo for dark backgrounds.
+   */
+  logoLight?: (number | null) | Media;
+  /**
+   * Logo for light backgrounds.
+   */
+  logoDark?: (number | null) | Media;
+  /**
+   * Physical address for the footer.
+   */
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
   instagramUrl?: string | null;
   twitterUrl?: string | null;
   youtubeUrl?: string | null;
   tiktokUrl?: string | null;
+  facebookUrl?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4467,18 +4494,49 @@ export interface EventSetting {
   createdAt?: string | null;
 }
 /**
+ * Manages the scrolling live data items in the site header.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dynamic-ticker".
+ */
+export interface DynamicTicker {
+  id: number;
+  items: {
+    medium: 'FM' | 'ONE' | 'PLUS';
+    status: string;
+    isLive?: boolean | null;
+    title: string;
+    subtext?: string | null;
+    /**
+     * Hex color for the badge and pulse icon.
+     */
+    accent: string;
+    id?: string | null;
+  }[];
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteTitle?: T;
   tagline?: T;
+  favicon?: T;
+  appleTouchIcon?: T;
   defaultSeoDescription?: T;
   defaultShareImage?: T;
+  logoLight?: T;
+  logoDark?: T;
+  address?: T;
+  phone?: T;
+  email?: T;
   instagramUrl?: T;
   twitterUrl?: T;
   youtubeUrl?: T;
   tiktokUrl?: T;
+  facebookUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -4619,6 +4677,26 @@ export interface EventSettingsSelect<T extends boolean = true> {
   heroEventLimit?: T;
   enableEventbriteSync?: T;
   eventbriteOrganizationId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dynamic-ticker_select".
+ */
+export interface DynamicTickerSelect<T extends boolean = true> {
+  items?:
+    | T
+    | {
+        medium?: T;
+        status?: T;
+        isLive?: T;
+        title?: T;
+        subtext?: T;
+        accent?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
