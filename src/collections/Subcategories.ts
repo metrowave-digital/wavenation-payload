@@ -1,36 +1,42 @@
 // apps/cms/src/collections/Subcategories.ts
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, FieldHook } from 'payload'
+
+const slugify = (input: string) =>
+  input
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+
+const autoSlug: FieldHook = ({ value, data }) => {
+  if (typeof value === 'string' && value.trim()) return value
+  const name = typeof data?.name === 'string' ? data.name : null
+  return name ? slugify(name) : value
+}
 
 export const Subcategories: CollectionConfig = {
   slug: 'subcategories',
-  labels: {
-    singular: 'Subcategory',
-    plural: 'Subcategories',
-  },
-  admin: {
-    useAsTitle: 'name',
-    group: 'Taxonomy',
-  },
-  access: {
-    read: () => true,
-  },
+  labels: { singular: 'Subcategory', plural: 'Subcategories' },
+  admin: { useAsTitle: 'name', group: 'Taxonomy', defaultColumns: ['name', 'category', 'status'] },
+  access: { read: () => true },
   fields: [
+    { name: 'name', type: 'text', required: true },
+    { name: 'description', type: 'textarea' },
+    { name: 'category', type: 'relationship', relationTo: 'categories', required: true },
     {
-      name: 'name',
+      name: 'themeColorOverride',
       type: 'text',
-      required: true,
+      admin: { description: 'Leave blank to inherit parent Category color.' },
     },
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
-    },
-    {
-      name: 'category',
-      type: 'relationship',
-      relationTo: 'categories',
-      required: true,
+      hooks: { beforeValidate: [autoSlug] },
+      admin: { position: 'sidebar' },
     },
     {
       name: 'status',
@@ -41,6 +47,7 @@ export const Subcategories: CollectionConfig = {
         { label: 'Active', value: 'active' },
         { label: 'Hidden', value: 'hidden' },
       ],
+      admin: { position: 'sidebar' },
     },
   ],
 }

@@ -1,68 +1,201 @@
-import type { CollectionConfig } from 'payload'
+// src/collections/Podcasts.ts
+import type { CollectionConfig, FieldHook } from 'payload'
+
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+const autoSlug: FieldHook = ({ data, operation, value }) => {
+  if (typeof value === 'string' && value.trim()) return slugify(value)
+  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
+  return value
+}
 
 export const Podcasts: CollectionConfig = {
   slug: 'podcasts',
-  labels: {
-    singular: 'Podcast',
-    plural: 'Podcasts',
-  },
-
+  labels: { singular: 'Podcast', plural: 'Podcasts' },
   admin: {
     useAsTitle: 'title',
     group: 'Audio & Podcasts',
     defaultColumns: ['title', 'status', 'updatedAt'],
   },
-
-  versions: {
-    drafts: true,
-  },
-
+  versions: { drafts: true },
   access: {
     read: () => true,
-
     create: ({ req }) =>
-      Boolean(
-        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
-      ),
-
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
     update: ({ req }) =>
-      Boolean(
-        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
-      ),
-
-    delete: ({ req }) => Boolean(req.user && req.user.roles?.includes('admin')),
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+    delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')),
   },
-
   fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'slug', type: 'text', unique: true },
-
-    { name: 'description', type: 'textarea' },
-
     {
-      name: 'hosts',
-      type: 'relationship',
-      relationTo: 'talent',
-      hasMany: true,
-    },
-
-    {
-      name: 'coverArt',
-      type: 'upload',
-      relationTo: 'media',
-    },
-
-    {
-      name: 'distribution',
-      type: 'group',
-      fields: [
-        { name: 'applePodcasts', type: 'checkbox' },
-        { name: 'spotify', type: 'checkbox' },
-        { name: 'youtube', type: 'checkbox' },
-        { name: 'wavenation', type: 'checkbox', defaultValue: true },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Core Info',
+          fields: [
+            { name: 'title', type: 'text', required: true },
+            {
+              name: 'description',
+              type: 'textarea',
+              required: true,
+              admin: { description: 'Public summary of the podcast.' },
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'podcastFormat',
+                  type: 'select',
+                  defaultValue: 'episodic',
+                  admin: { width: '50%', description: 'Apple Podcasts standard format.' },
+                  options: [
+                    { label: 'Episodic (Stand-alone)', value: 'episodic' },
+                    { label: 'Serial (Season-based)', value: 'serial' },
+                  ],
+                },
+                {
+                  name: 'hosts',
+                  type: 'relationship',
+                  relationTo: 'talent',
+                  hasMany: true,
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              name: 'seasons',
+              type: 'relationship',
+              relationTo: 'seasons',
+              hasMany: true,
+              admin: {
+                description: 'Organize this podcast into seasons.',
+                condition: (_, data) => data?.podcastFormat === 'serial',
+              },
+            },
+            {
+              name: 'coverArt',
+              type: 'upload',
+              relationTo: 'media',
+              required: true,
+              admin: { description: 'Must be 3000x3000px for Apple Podcasts.' },
+            },
+            {
+              name: 'trailer',
+              type: 'group',
+              admin: { description: 'Optional series trailer.' },
+              fields: [
+                { name: 'audioFile', type: 'upload', relationTo: 'media' },
+                { name: 'duration', type: 'number', admin: { description: 'Duration in seconds' } },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'RSS & Directory Meta',
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'author',
+                  type: 'text',
+                  defaultValue: 'WaveNation',
+                  admin: { width: '50%' },
+                },
+                { name: 'language', type: 'text', defaultValue: 'en-us', admin: { width: '50%' } },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'copyright',
+                  type: 'text',
+                  admin: { width: '50%', placeholder: '© 2026 WaveNation' },
+                },
+                {
+                  name: 'isExplicit',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  admin: { width: '50%' },
+                },
+              ],
+            },
+            {
+              name: 'categories',
+              type: 'select',
+              hasMany: true,
+              admin: { description: 'Apple Podcast Directory Categories' },
+              options: [
+                { label: 'Music', value: 'Music' },
+                { label: 'Society & Culture', value: 'Society & Culture' },
+                { label: 'Arts', value: 'Arts' },
+                { label: 'News', value: 'News' },
+                { label: 'Comedy', value: 'Comedy' },
+              ],
+            },
+            {
+              name: 'distribution',
+              type: 'group',
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'applePodcasts', type: 'checkbox' },
+                    { name: 'spotify', type: 'checkbox' },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'youtube', type: 'checkbox' },
+                    { name: 'wavenation', type: 'checkbox', defaultValue: true },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'AdOps & Monetization',
+          fields: [
+            {
+              name: 'ads',
+              type: 'group',
+              admin: { description: 'Default ad behavior for all episodes in this series.' },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'adsEnabled', type: 'checkbox', defaultValue: true },
+                    { name: 'disableForPremium', type: 'checkbox', defaultValue: true },
+                  ],
+                },
+                {
+                  name: 'sponsorBrand',
+                  type: 'text',
+                  admin: { description: 'Overall series title sponsor (if applicable).' },
+                },
+              ],
+            },
+          ],
+        },
       ],
     },
-
+    /* Sidebar */
+    {
+      name: 'slug',
+      type: 'text',
+      unique: true,
+      hooks: { beforeValidate: [autoSlug] },
+      admin: { position: 'sidebar' },
+    },
     {
       name: 'status',
       type: 'select',
@@ -74,138 +207,7 @@ export const Podcasts: CollectionConfig = {
       ],
       admin: { position: 'sidebar' },
     },
-
-    {
-      name: 'audio',
-      type: 'group',
-      admin: {
-        description: 'Primary audio source',
-      },
-      fields: [
-        {
-          name: 'audioSource',
-          type: 'select',
-          defaultValue: 'upload',
-          options: [
-            { label: 'Upload Audio File', value: 'upload' },
-            { label: 'External Audio URL', value: 'external' },
-          ],
-        },
-
-        {
-          name: 'audioFile',
-          type: 'upload',
-          relationTo: 'media',
-          admin: {
-            condition: (_, data) => data?.audio?.audioSource === 'upload',
-          },
-        },
-
-        {
-          name: 'audioUrl',
-          type: 'text',
-          admin: {
-            placeholder: 'https://...',
-            condition: (_, data) => data?.audio?.audioSource === 'external',
-          },
-        },
-
-        {
-          name: 'duration',
-          type: 'number',
-          admin: {
-            description: 'Duration in seconds (optional)',
-          },
-        },
-      ],
-    },
-
-    {
-      name: 'ads',
-      type: 'group',
-      admin: {
-        description: 'Podcast advertising (Google Ad Manager)',
-      },
-      fields: [
-        {
-          name: 'adsEnabled',
-          type: 'checkbox',
-          defaultValue: true,
-        },
-
-        {
-          name: 'disableForPremium',
-          type: 'checkbox',
-          defaultValue: true,
-          admin: {
-            description: 'Disable ads for WaveNation+ subscribers',
-          },
-        },
-
-        {
-          name: 'placements',
-          type: 'group',
-          fields: [
-            {
-              name: 'preRoll',
-              type: 'text',
-              admin: {
-                placeholder: 'GAM VAST URL – Pre-roll audio',
-              },
-            },
-            {
-              name: 'midRoll',
-              type: 'array',
-              admin: {
-                description: 'Mid-roll audio ads',
-              },
-              fields: [
-                {
-                  name: 'offset',
-                  type: 'number',
-                  admin: {
-                    description: 'Seconds into audio',
-                  },
-                },
-                {
-                  name: 'vastUrl',
-                  type: 'text',
-                  admin: {
-                    placeholder: 'GAM VAST URL',
-                  },
-                },
-              ],
-            },
-            {
-              name: 'postRoll',
-              type: 'text',
-              admin: {
-                placeholder: 'GAM VAST URL – Post-roll audio',
-              },
-            },
-          ],
-        },
-      ],
-    },
-
-    {
-      name: 'sponsor',
-      type: 'group',
-      admin: {
-        description: 'Host-read or branded sponsorship',
-      },
-      fields: [
-        { name: 'brandName', type: 'text' },
-        { name: 'disclosure', type: 'text' },
-        {
-          name: 'audioClip',
-          type: 'upload',
-          relationTo: 'media',
-          admin: {
-            description: 'Optional sponsor audio intro/outro',
-          },
-        },
-      ],
-    },
   ],
 }
+
+export default Podcasts

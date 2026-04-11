@@ -69,28 +69,43 @@ export interface Config {
   collections: {
     users: User;
     'payload-preferences': PayloadPreference;
+    subscriptions: Subscription;
     articles: Article;
     'article-series': ArticleSery;
+    authors: Author;
+    curators: Curator;
     categories: Category;
     subcategories: Subcategory;
     tags: Tag;
+    moods: Mood;
     media: Media;
     mediaTracks: MediaTrack;
     albums: Album;
-    charts: Chart;
-    'chart-snapshots': ChartSnapshot;
-    vod: Vod;
-    radioShows: RadioShow;
-    radioSchedule: RadioSchedule;
+    playlists: Playlist;
     podcasts: Podcast;
     episodes: Episode;
-    playlists: Playlist;
-    talent: Talent;
+    vod: Vod;
+    seasons: Season;
+    tvShows: TvShow;
+    tvSchedule: TvSchedule;
+    radioShows: RadioShow;
+    radioSchedule: RadioSchedule;
+    charts: Chart;
+    'chart-snapshots': ChartSnapshot;
     polls: Poll;
     pollVotes: PollVote;
     events: Event;
+    venues: Venue;
+    talent: Talent;
+    moderators: Moderator;
     'event-questions': EventQuestion;
     'event-chat-messages': EventChatMessage;
+    sponsors: Sponsor;
+    ads: Ad;
+    adZones: AdZone;
+    promoBanners: PromoBanner;
+    alerts: Alert;
+    sidebars: Sidebar;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -100,28 +115,43 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    subscriptions: SubscriptionsSelect<false> | SubscriptionsSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
     'article-series': ArticleSeriesSelect<false> | ArticleSeriesSelect<true>;
+    authors: AuthorsSelect<false> | AuthorsSelect<true>;
+    curators: CuratorsSelect<false> | CuratorsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     subcategories: SubcategoriesSelect<false> | SubcategoriesSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    moods: MoodsSelect<false> | MoodsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     mediaTracks: MediaTracksSelect<false> | MediaTracksSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
-    charts: ChartsSelect<false> | ChartsSelect<true>;
-    'chart-snapshots': ChartSnapshotsSelect<false> | ChartSnapshotsSelect<true>;
-    vod: VodSelect<false> | VodSelect<true>;
-    radioShows: RadioShowsSelect<false> | RadioShowsSelect<true>;
-    radioSchedule: RadioScheduleSelect<false> | RadioScheduleSelect<true>;
+    playlists: PlaylistsSelect<false> | PlaylistsSelect<true>;
     podcasts: PodcastsSelect<false> | PodcastsSelect<true>;
     episodes: EpisodesSelect<false> | EpisodesSelect<true>;
-    playlists: PlaylistsSelect<false> | PlaylistsSelect<true>;
-    talent: TalentSelect<false> | TalentSelect<true>;
+    vod: VodSelect<false> | VodSelect<true>;
+    seasons: SeasonsSelect<false> | SeasonsSelect<true>;
+    tvShows: TvShowsSelect<false> | TvShowsSelect<true>;
+    tvSchedule: TvScheduleSelect<false> | TvScheduleSelect<true>;
+    radioShows: RadioShowsSelect<false> | RadioShowsSelect<true>;
+    radioSchedule: RadioScheduleSelect<false> | RadioScheduleSelect<true>;
+    charts: ChartsSelect<false> | ChartsSelect<true>;
+    'chart-snapshots': ChartSnapshotsSelect<false> | ChartSnapshotsSelect<true>;
     polls: PollsSelect<false> | PollsSelect<true>;
     pollVotes: PollVotesSelect<false> | PollVotesSelect<true>;
     events: EventsSelect<false> | EventsSelect<true>;
+    venues: VenuesSelect<false> | VenuesSelect<true>;
+    talent: TalentSelect<false> | TalentSelect<true>;
+    moderators: ModeratorsSelect<false> | ModeratorsSelect<true>;
     'event-questions': EventQuestionsSelect<false> | EventQuestionsSelect<true>;
     'event-chat-messages': EventChatMessagesSelect<false> | EventChatMessagesSelect<true>;
+    sponsors: SponsorsSelect<false> | SponsorsSelect<true>;
+    ads: AdsSelect<false> | AdsSelect<true>;
+    adZones: AdZonesSelect<false> | AdZonesSelect<true>;
+    promoBanners: PromoBannersSelect<false> | PromoBannersSelect<true>;
+    alerts: AlertsSelect<false> | AlertsSelect<true>;
+    sidebars: SidebarsSelect<false> | SidebarsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -132,9 +162,19 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    'site-settings': SiteSetting;
+    'nav-config': NavConfig;
+    'footer-config': FooterConfig;
+    'news-ticker-settings': NewsTickerSetting;
+    homepage: Homepage;
     'event-settings': EventSetting;
   };
   globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'nav-config': NavConfigSelect<false> | NavConfigSelect<true>;
+    'footer-config': FooterConfigSelect<false> | FooterConfigSelect<true>;
+    'news-ticker-settings': NewsTickerSettingsSelect<false> | NewsTickerSettingsSelect<true>;
+    homepage: HomepageSelect<false> | HomepageSelect<true>;
     'event-settings': EventSettingsSelect<false> | EventSettingsSelect<true>;
   };
   locale: null;
@@ -176,7 +216,8 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  roles: ('admin' | 'editor' | 'talent' | 'creator' | 'listener')[];
+  firstName?: string | null;
+  lastName?: string | null;
   /**
    * Public-facing name used across the platform.
    */
@@ -185,13 +226,27 @@ export interface User {
    * Square image recommended. Used for profile and bylines.
    */
   avatar?: (number | null) | Media;
+  bio?: string | null;
+  roles: ('admin' | 'editor' | 'talent' | 'creator' | 'listener')[];
   subscription?: ('free' | 'premium') | null;
+  /**
+   * Used by the frontend to determine if the user needs to complete their profile setup.
+   */
+  onboardingCompleted?: boolean | null;
+  /**
+   * How this user authenticates.
+   */
+  authProvider?: ('local' | 'auth0') | null;
+  /**
+   * The unique "sub" ID provided by Auth0. Do not edit manually.
+   */
+  auth0Id?: string | null;
+  lastLoginAt?: string | null;
   creatorProfile?: {
     /**
-     * Email used for creator payouts.
+     * Email used for creator payouts via Stripe/PayPal.
      */
     payoutEmail?: string | null;
-    bio?: string | null;
   };
   updatedAt: string;
   createdAt: string;
@@ -212,16 +267,32 @@ export interface User {
   password?: string | null;
 }
 /**
- * Images, audio, and video assets used across WaveNation platforms.
+ * Images, audio, video, and documents used across WaveNation platforms.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
   id: number;
+  /**
+   * Crucial for screen readers and SEO.
+   */
   alt?: string | null;
   caption?: string | null;
   credit?: string | null;
+  /**
+   * Helps editors filter the media library.
+   */
+  mediaType?: ('image' | 'audio' | 'video' | 'document') | null;
+  /**
+   * Internal keywords to find this asset later (e.g., "Summer Fest 2026", "Logo").
+   */
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   prefix?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -294,136 +365,50 @@ export interface PayloadPreference {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions".
+ */
+export interface Subscription {
+  id: number;
+  /**
+   * e.g., "WaveNation+"
+   */
+  tierName: string;
+  description?: string | null;
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  price: number;
+  billingInterval: 'monthly' | 'yearly' | 'one-time';
+  stripeProductId?: string | null;
+  stripePriceId?: string | null;
+  /**
+   * Apple App Store In-App Purchase ID
+   */
+  appleIapId?: string | null;
+  /**
+   * Google Play Store ID
+   */
+  googlePlayId?: string | null;
+  slug?: string | null;
+  /**
+   * Legacy means active for current users but hidden from sign-up.
+   */
+  status?: ('active' | 'legacy' | 'draft') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "articles".
  */
 export interface Article {
   id: number;
   title: string;
   subtitle?: string | null;
-  /**
-   * Auto-generated from title. Do not change after publish.
-   */
-  slug: string;
-  /**
-   * Primary editorial categories for this article.
-   */
-  categories?: (number | Category)[] | null;
-  /**
-   * Related subcategories for secondary classification and discovery.
-   */
-  subcategories?: (number | Subcategory)[] | null;
-  /**
-   * Keywords for SEO, discovery, playlists, and recommendations.
-   */
-  tags?: (number | Tag)[] | null;
-  /**
-   * Public publish date. Can be manually overridden. Auto-set on first publish if empty.
-   */
-  publishDate?: string | null;
-  /**
-   * Automatically publishes this article at the scheduled time.
-   */
-  scheduledPublishAt?: string | null;
-  status?: ('draft' | 'in-review' | 'approved' | 'published' | 'unpublished' | 'archived') | null;
-  reviewTier?: ('tier1' | 'tier2' | 'tier3' | 'tier4') | null;
-  /**
-   * Marks this article as breaking news. Triggers AI ranking boosts and high-priority placement.
-   */
-  isBreaking?: boolean | null;
-  /**
-   * Displays this article in the Spotlight section below the homepage hero.
-   */
-  isFeatured?: boolean | null;
-  author: number | User;
-  editorPreset?: ('interview' | 'review' | 'news') | null;
-  /**
-   * Internal notes explaining significant editorial changes. Not public.
-   */
-  editorialNotes?:
-    | {
-        noteType: 'correction' | 'update' | 'breaking-update' | 'seo' | 'legal' | 'review' | 'internal';
-        note: string;
-        author?: (number | null) | User;
-        createdAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   excerpt?: string | null;
-  /**
-   * Primary sources used in reporting this article. Required for news, investigations, and fact-based reporting.
-   */
-  sources?:
-    | {
-        sourceType: 'news' | 'interview' | 'press' | 'government' | 'research' | 'statement' | 'other';
-        title: string;
-        /**
-         * Outlet, organization, or institution name.
-         */
-        publication?: string | null;
-        /**
-         * Link to the original source.
-         */
-        url?: string | null;
-        author?: string | null;
-        publishedDate?: string | null;
-        /**
-         * Marks this as a primary source for the article.
-         */
-        isPrimary?: boolean | null;
-        /**
-         * Internal notes about how this source was used.
-         */
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Supporting references, documents, archives, or background materials.
-   */
-  references?:
-    | {
-        label: string;
-        referenceType?: ('law' | 'court' | 'academic' | 'book' | 'archive' | 'media' | 'web' | 'other') | null;
-        url?: string | null;
-        /**
-         * Optional context for editors or AI.
-         */
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Optional series this article belongs to.
-   */
-  series?: (number | null) | ArticleSery;
-  /**
-   * Link this article to a WaveNation radio, TV, or podcast show.
-   */
-  relatedShow?: (number | null) | RadioShow;
-  /**
-   * Link this article to a WaveNation radio, TV, or podcast show.
-   */
-  relatedPosdcast?: (number | null) | Podcast;
-  /**
-   * Link this article to a WaveNation radio, TV, or podcast show.
-   */
-  relatedVOD?: (number | null) | Vod;
-  /**
-   * Optional album related to this article (featured release, review, or spotlight).
-   */
-  relatedAlbum?: (number | null) | Album;
-  /**
-   * Attach relevant polls to this article
-   */
-  relatedPolls?: (number | Poll)[] | null;
-  menuFeature?: boolean | null;
-  menuContext?: ('discover' | 'on-air' | 'news' | 'watch' | 'merch' | 'connect') | null;
-  menuEyebrow?: string | null;
-  menuDescription?: string | null;
-  /**
-   * Estimated reading time in minutes (auto-calculated from rich text blocks).
-   */
-  readingTime?: number | null;
   hero?: {
     image?: (number | null) | Media;
     caption?: string | null;
@@ -446,9 +431,122 @@ export interface Article {
           };
           [k: string]: unknown;
         };
+        /**
+         * Stylize the first letter as a large drop cap.
+         */
+        dropCap?: boolean | null;
         id?: string | null;
         blockName?: string | null;
         blockType: 'richText';
+      }
+    | {
+        image: number | Media;
+        caption?: string | null;
+        credit?: string | null;
+        layout?: ('standard' | 'wide' | 'float-left' | 'float-right') | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'image';
+      }
+    | {
+        layout?: ('grid' | 'carousel') | null;
+        images?:
+          | {
+              image: number | Media;
+              caption?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'gallery';
+      }
+    | {
+        quote: string;
+        attribution?: string | null;
+        style?: ('standard' | 'float-right' | 'float-left') | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'pullQuote';
+      }
+    | {
+        sourceType?: ('external' | 'internal-vod') | null;
+        provider?: ('youtube' | 'vimeo' | 'enterprise' | 'upload') | null;
+        /**
+         * Enter URL or Stream ID depending on provider.
+         */
+        url?: string | null;
+        file?: (number | null) | Media;
+        vodItem?: (number | null) | Vod;
+        caption?: string | null;
+        autoplay?: boolean | null;
+        loop?: boolean | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'video';
+      }
+    | {
+        sourceType?: ('track' | 'episode' | 'upload') | null;
+        track?: (number | null) | MediaTrack;
+        episode?: (number | null) | Episode;
+        manualAudio?: {
+          title?: string | null;
+          audioFile: number | Media;
+          showName?: string | null;
+        };
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'audio';
+      }
+    | {
+        provider?: ('instagram' | 'tiktok' | 'twitter' | 'spotify' | 'appleMusic' | 'other') | null;
+        embedUrl: string;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'embed';
+      }
+    | {
+        /**
+         * Select an existing talent to automatically pull their bio and image, or fill manually below.
+         */
+        linkedTalent?: (number | null) | Talent;
+        artistName?: string | null;
+        image?: (number | null) | Media;
+        description?: string | null;
+        links?:
+          | {
+              label?: string | null;
+              url?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'artistSpotlight';
+      }
+    | {
+        title?: string | null;
+        layout?: ('list' | 'grid') | null;
+        articles?: (number | Article)[] | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'relatedArticles';
+      }
+    | {
+        headline: string;
+        body?: string | null;
+        buttonLabel?: string | null;
+        buttonUrl?: string | null;
+        variant?: ('primary' | 'secondary' | 'outline') | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'cta';
+      }
+    | {
+        style?: ('solid' | 'spacing' | 'asterisks') | null;
+        id?: string | null;
+        blockName?: string | null;
+        blockType: 'divider';
       }
     | {
         /**
@@ -495,104 +593,20 @@ export interface Article {
         blockType: 'interviewAnswer';
       }
     | {
-        image: number | Media;
-        caption?: string | null;
-        credit?: string | null;
-        fullWidth?: boolean | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'image';
-      }
-    | {
-        images?:
-          | {
-              image: number | Media;
-              caption?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'gallery';
-      }
-    | {
-        quote: string;
-        attribution?: string | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'pullQuote';
-      }
-    | {
-        provider: 'youtube' | 'vimeo' | 'upload';
-        url?: string | null;
-        file?: (number | null) | Media;
-        caption?: string | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'video';
-      }
-    | {
-        title?: string | null;
-        audioFile: number | Media;
-        showName?: string | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'audio';
-      }
-    | {
-        provider?: ('youtube' | 'instagram' | 'tiktok' | 'twitter' | 'other') | null;
-        embedUrl: string;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'embed';
-      }
-    | {
-        artistName: string;
-        image?: (number | null) | Media;
-        description?: string | null;
-        links?:
-          | {
-              label?: string | null;
-              url?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'artistSpotlight';
-      }
-    | {
-        articles?: (number | Article)[] | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'relatedArticles';
-      }
-    | {
-        headline: string;
-        body?: string | null;
-        buttonLabel?: string | null;
-        buttonUrl?: string | null;
-        variant?: ('primary' | 'secondary' | 'outline') | null;
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'cta';
-      }
-    | {
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'divider';
-      }
-    | {
         /**
          * Optional heading for the timeline.
          */
         title?: string | null;
         /**
+         * Visual presentation hint for frontend rendering.
+         */
+        style?: ('vertical' | 'horizontal' | 'compact') | null;
+        /**
          * Chronological sequence of events or milestones.
          */
         items: {
           /**
-           * Date or time label (e.g. “2018”, “March 2024”, “Day 3”).
+           * Date or time label (e.g. “2018”, “March 2024”).
            */
           date?: string | null;
           /**
@@ -611,145 +625,464 @@ export interface Article {
           highlight?: boolean | null;
           id?: string | null;
         }[];
-        /**
-         * Visual presentation hint for frontend rendering.
-         */
-        style?: ('vertical' | 'horizontal' | 'compact') | null;
         id?: string | null;
         blockName?: string | null;
         blockType: 'timeline';
       }
   )[];
+  author: number | Author;
+  editorialNotes?:
+    | {
+        noteType?: ('correction' | 'update' | 'internal') | null;
+        note: string;
+        author?: (number | null) | User;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  sources?:
+    | {
+        sourceType?: ('interview' | 'news') | null;
+        title: string;
+        url?: string | null;
+        isPrimary?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  categories?: (number | Category)[] | null;
+  subcategories?: (number | Subcategory)[] | null;
+  tags?: (number | Tag)[] | null;
+  series?: (number | null) | ArticleSery;
+  /**
+   * If this is a sponsored or branded article, link the sponsor here.
+   */
+  sponsor?: (number | null) | Sponsor;
+  relatedShow?: (number | null) | RadioShow;
+  relatedPosdcast?: (number | null) | Podcast;
+  relatedVOD?: (number | null) | Vod;
+  relatedAlbum?: (number | null) | Album;
+  relatedPolls?: (number | Poll)[] | null;
+  menuFeature?: boolean | null;
+  menuContext?: ('news' | 'watch') | null;
+  menuDescription?: string | null;
   aiRanking?: {
     boost?: number | null;
     decay?: number | null;
     freshness?: number | null;
+    engagementPotential?: number | null;
+    contentDensity?: number | null;
     aiNotes?: string | null;
   };
+  aiMetadata?: {
+    autoSummary?: string | null;
+    suggestedKeywords?: string | null;
+  };
+  slug: string;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishDate?: string | null;
+  scheduledPublishAt?: string | null;
+  reviewTier?: ('tier1' | 'tier2' | 'tier3' | 'tier4') | null;
+  isBreaking?: boolean | null;
+  isFeatured?: boolean | null;
+  editorPreset?: ('interview' | 'review' | 'news') | null;
+  readingTime?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
+ * via the `definition` "vod".
  */
-export interface Category {
+export interface Vod {
   id: number;
-  name: string;
-  slug: string;
+  title: string;
   description?: string | null;
-  parent?: (number | null) | Category;
-  status: 'active' | 'hidden' | 'archived';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subcategories".
- */
-export interface Subcategory {
-  id: number;
-  name: string;
-  slug: string;
-  category: number | Category;
-  status: 'active' | 'hidden';
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
- */
-export interface Tag {
-  id: number;
+  vodType: 'episode' | 'film' | 'documentary' | 'clip' | 'liveReplay';
+  source?: ('original' | 'creator' | 'partner') | null;
+  tvShowContext?: {
+    series?: (number | null) | TvShow;
+    season?: number | null;
+    episodeNumber?: number | null;
+  };
   /**
-   * Human-readable tag name (e.g. “Southern Soul”)
+   * Enterprise streaming delivery (Mux, AWS MediaConvert, etc.)
    */
-  label: string;
+  streaming?: {
+    /**
+     * The .m3u8 playback URL.
+     */
+    hlsUrl?: string | null;
+    /**
+     * Asset ID from your encoding provider.
+     */
+    providerAssetId?: string | null;
+    /**
+     * Total runtime in seconds.
+     */
+    runtimeSeconds?: number | null;
+  };
   /**
-   * Auto-generated URL-safe identifier
+   * Raw fallback MP4.
    */
+  fallbackMp4?: (number | null) | Media;
+  /**
+   * 16:9 Thumbnail
+   */
+  poster?: (number | null) | Media;
+  captions?:
+    | {
+        language?: string | null;
+        vttFile?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Player seek-bar markers.
+   */
+  chapters?:
+    | {
+        title?: string | null;
+        timestampSeconds?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  visibility?: ('free' | 'premium' | 'ppv' | 'unlisted') | null;
+  releaseDate?: string | null;
+  pricing?: {
+    price?: number | null;
+    currency?: string | null;
+  };
+  rights?: {
+    rightsHolder?: string | null;
+    territories?: string | null;
+    expiryDate?: string | null;
+  };
+  /**
+   * Title or presenting sponsor for this VOD.
+   */
+  sponsor?: (number | null) | Sponsor;
+  ads?: {
+    adsEnabled?: boolean | null;
+    disableForPremium?: boolean | null;
+    preRoll?: string | null;
+    midRoll?: string | null;
+    /**
+     * Seconds into video to trigger mid-roll
+     */
+    midRollOffset?: number | null;
+    postRoll?: string | null;
+  };
   slug?: string | null;
-  /**
-   * Optional context for editors and AI classification
-   */
-  description?: string | null;
-  /**
-   * Used for trending tags, homepage features, or playlists
-   */
+  status?: ('draft' | 'review' | 'published' | 'archived') | null;
+  publishDate?: string | null;
   isFeatured?: boolean | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "article-series".
+ * via the `definition` "tvShows".
  */
-export interface ArticleSery {
+export interface TvShow {
+  id: number;
+  title: string;
+  description?: string | null;
+  format?: ('reality' | 'talk' | 'drama' | 'comedy' | 'event') | null;
+  network?: ('wavenation' | 'syndicated') | null;
+  /**
+   * Brands officially sponsoring or presenting this TV Show.
+   */
+  sponsors?: (number | Sponsor)[] | null;
+  /**
+   * Vertical 2:3 Poster
+   */
+  posterArt?: (number | null) | Media;
+  /**
+   * 16:9 Landscape Banner
+   */
+  heroBanner?: (number | null) | Media;
+  trailer?: (number | null) | Media;
+  /**
+   * The seasons belonging to this TV Show.
+   */
+  seasons?: (number | Season)[] | null;
+  ageRating?: ('TV-G' | 'TV-PG' | 'TV-14' | 'TV-MA') | null;
+  talent?: (number | Talent)[] | null;
+  genres?: (number | Category)[] | null;
+  slug?: string | null;
+  status?: ('production' | 'airing' | 'ended') | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sponsors".
+ */
+export interface Sponsor {
+  id: number;
+  name: string;
+  website?: string | null;
+  description?: string | null;
+  logoDark?: (number | null) | Media;
+  logoLight?: (number | null) | Media;
+  tier?: ('Title Sponsor' | 'Presenting' | 'Standard' | 'Media Partner') | null;
+  /**
+   * Link to specific Ad inventory/campaigns running for this brand.
+   */
+  activeCampaigns?: (number | Ad)[] | null;
+  contactInfo?: {
+    contactName?: string | null;
+    email?: string | null;
+  };
+  slug?: string | null;
+  status?: ('active' | 'inactive') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ads".
+ */
+export interface Ad {
+  id: number;
+  campaignName: string;
+  sponsor: number | Sponsor;
+  adType: 'Video Pre-Roll' | 'Video Mid-Roll' | 'Audio Spot' | 'Display Banner' | 'Native In-Feed';
+  /**
+   * Where the user goes when they click.
+   */
+  destinationUrl?: string | null;
+  /**
+   * Primary VAST/VPAID Tag URL from Google Ad Manager.
+   */
+  vastUrl?: string | null;
+  /**
+   * Direct video file upload for hard-coded fallback if VAST fails.
+   */
+  ssaiFallbackVideo?: (number | null) | Media;
+  /**
+   * If using Mux SSAI, the specific Mux Asset ID of this ad.
+   */
+  muxAssetId?: string | null;
+  desktopImage?: (number | null) | Media;
+  mobileImage?: (number | null) | Media;
+  headline?: string | null;
+  ctaText?: string | null;
+  status?: ('draft' | 'active' | 'paused' | 'completed') | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manages individual seasons for both TV Shows and Podcasts.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons".
+ */
+export interface Season {
   id: number;
   /**
-   * Series title (e.g. “Justice Rides a White Horse”)
+   * e.g., "Season 1" or "The Tournament Arc"
    */
   title: string;
+  seasonNumber: number;
   /**
-   * Optional subtitle or theme line.
+   * The Show or Podcast this season belongs to.
    */
-  subtitle?: string | null;
+  parentProgram:
+    | {
+        relationTo: 'tvShows';
+        value: number | TvShow;
+      }
+    | {
+        relationTo: 'podcasts';
+        value: number | Podcast;
+      };
   /**
-   * URL-friendly identifier for the series.
-   */
-  slug: string;
-  /**
-   * Overview of the series purpose, scope, or narrative arc.
+   * Season-specific synopsis.
    */
   description?: string | null;
-  status?: ('draft' | 'active' | 'completed' | 'archived') | null;
   /**
-   * Feature this series on landing pages or homepage.
+   * Optional: Season-specific cover art (overrides the main show art).
+   */
+  coverArt?: (number | null) | Media;
+  /**
+   * Season trailer.
+   */
+  trailer?: (number | null) | Media;
+  /**
+   * Premiere date for this specific season.
+   */
+  releaseDate?: string | null;
+  /**
+   * Optional: Talent introduced or specific to this season.
+   */
+  newTalent?: (number | Talent)[] | null;
+  slug?: string | null;
+  status?: ('production' | 'airing' | 'ended') | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts".
+ */
+export interface Podcast {
+  id: number;
+  title: string;
+  /**
+   * Public summary of the podcast.
+   */
+  description: string;
+  /**
+   * Apple Podcasts standard format.
+   */
+  podcastFormat?: ('episodic' | 'serial') | null;
+  hosts?: (number | Talent)[] | null;
+  /**
+   * Organize this podcast into seasons.
+   */
+  seasons?: (number | Season)[] | null;
+  /**
+   * Must be 3000x3000px for Apple Podcasts.
+   */
+  coverArt: number | Media;
+  /**
+   * Optional series trailer.
+   */
+  trailer?: {
+    audioFile?: (number | null) | Media;
+    /**
+     * Duration in seconds
+     */
+    duration?: number | null;
+  };
+  author?: string | null;
+  language?: string | null;
+  copyright?: string | null;
+  isExplicit?: boolean | null;
+  /**
+   * Apple Podcast Directory Categories
+   */
+  categories?: ('Music' | 'Society & Culture' | 'Arts' | 'News' | 'Comedy')[] | null;
+  distribution?: {
+    applePodcasts?: boolean | null;
+    spotify?: boolean | null;
+    youtube?: boolean | null;
+    wavenation?: boolean | null;
+  };
+  /**
+   * Default ad behavior for all episodes in this series.
+   */
+  ads?: {
+    adsEnabled?: boolean | null;
+    disableForPremium?: boolean | null;
+    /**
+     * Overall series title sponsor (if applicable).
+     */
+    sponsorBrand?: string | null;
+  };
+  slug?: string | null;
+  status?: ('draft' | 'active' | 'archived') | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Public-facing profiles for Hosts, DJs, and official WaveNation personalities.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "talent".
+ */
+export interface Talent {
+  id: number;
+  firstName?: string | null;
+  lastName?: string | null;
+  /**
+   * The public stage name or moniker.
+   */
+  displayName: string;
+  /**
+   * A brief summary for UI cards and search results.
+   */
+  shortBio?: string | null;
+  /**
+   * The full biography for the main talent page.
+   */
+  fullBio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  mediaAssets?: {
+    /**
+     * Primary 1:1 or 4:5 portrait.
+     */
+    headshot?: (number | null) | Media;
+    /**
+     * 16:9 banner for the top of their talent page.
+     */
+    heroBanner?: (number | null) | Media;
+    /**
+     * Optional downloadable EPK (PDF or ZIP).
+     */
+    pressKit?: (number | null) | Media;
+  };
+  /**
+   * Radio shows or broadcast blocks this talent hosts.
+   */
+  associatedShows?: (number | RadioShow)[] | null;
+  /**
+   * Podcasts hosted or co-hosted by this talent.
+   */
+  associatedPodcasts?: (number | Podcast)[] | null;
+  /**
+   * Editorial playlists this talent officially curates.
+   */
+  curatedPlaylists?: (number | Playlist)[] | null;
+  socials?: {
+    instagram?: string | null;
+    twitter?: string | null;
+    youtube?: string | null;
+    tiktok?: string | null;
+  };
+  /**
+   * Internal or public booking/management contacts.
+   */
+  bookingInfo?: {
+    managerName?: string | null;
+    bookingEmail?: string | null;
+    /**
+     * If checked, display this booking email publicly.
+     */
+    isPublic?: boolean | null;
+  };
+  slug?: string | null;
+  status?: ('active' | 'hiatus' | 'alumni') | null;
+  role: 'host' | 'dj' | 'producer' | 'contributor' | 'guest';
+  /**
+   * Pin to the top of the Talent directory.
    */
   isFeatured?: boolean | null;
-  hero?: {
-    image?: (number | null) | Media;
-    alt?: string | null;
-    credit?: string | null;
-  };
   /**
-   * Articles included in this series, in reading order.
+   * Link to internal platform user account.
    */
-  articles?:
-    | {
-        article: number | Article;
-        /**
-         * Reading order within the series (1, 2, 3…).
-         */
-        order: number;
-        /**
-         * Optional display label (e.g. “Part II”, “Chapter 3”).
-         */
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Auto-calculated count of articles in this series.
-   */
-  totalArticles?: number | null;
-  /**
-   * Internal notes about the series direction, updates, or changes.
-   */
-  editorialNotes?:
-    | {
-        note: string;
-        createdAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  seo?: {
-    metaTitle?: string | null;
-    metaDescription?: string | null;
-    noIndex?: boolean | null;
-  };
+  user?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -760,50 +1093,53 @@ export interface ArticleSery {
 export interface RadioShow {
   id: number;
   title: string;
-  slug?: string | null;
   showType: 'live' | 'recorded' | 'syndicated' | 'chart';
+  /**
+   * Brands officially sponsoring this Radio Show.
+   */
+  sponsors?: (number | Sponsor)[] | null;
+  description?: string | null;
   hosts?: (number | Talent)[] | null;
-  schedule?: {
+  /**
+   * Primary 1:1 Show Cover
+   */
+  coverArt?: (number | null) | Media;
+  /**
+   * Transparent PNG Show Logo
+   */
+  logo?: (number | null) | Media;
+  /**
+   * Hex code for the show page UI.
+   */
+  themeColor?: string | null;
+  /**
+   * The baseline schedule. Specific airing overrides happen in the Schedule collection.
+   */
+  standardSchedule?: {
     days?: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[] | null;
     startTime?: string | null;
     endTime?: string | null;
+    timezone?: string | null;
   };
-  description?: string | null;
   genres?: ('rnb' | 'hip_hop' | 'southern_soul' | 'gospel' | 'talk' | 'culture' | 'news')[] | null;
+  /**
+   * Link to a Chart if this is a Countdown show.
+   */
   chart?: (number | null) | Chart;
-  coverArt?: (number | null) | Media;
+  slug?: string | null;
+  status?: ('active' | 'hiatus' | 'cancelled') | null;
   isFeatured?: boolean | null;
+  /**
+   * Also distributes as an RSS podcast.
+   */
   isPodcast?: boolean | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "talent".
- */
-export interface Talent {
-  id: number;
-  displayName: string;
-  slug?: string | null;
-  role: 'host' | 'dj' | 'producer' | 'contributor' | 'guest';
-  bio?: string | null;
-  photo?: (number | null) | Media;
-  socials?: {
-    instagram?: string | null;
-    twitter?: string | null;
-    youtube?: string | null;
-    tiktok?: string | null;
-  };
-  /**
-   * Link to platform user account (optional)
-   */
-  user?: (number | null) | User;
-  isFeatured?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
+ * Weekly ranked charts. Duplicate last week’s chart, link it in "Previous Chart", and reorder entries to auto-calculate metrics.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "charts".
  */
@@ -811,13 +1147,58 @@ export interface Chart {
   id: number;
   title: string;
   chartKey: 'hitlist' | 'rnb-soul' | 'hip-hop' | 'southern-soul' | 'gospel' | 'house';
-  chartMode: 'manual' | 'hybrid' | 'automated';
   /**
-   * Optional playlist associated with this chart (editorial or promotional)
+   * Editorial summary of this week's chart.
+   */
+  description?: string | null;
+  coverImage?: (number | null) | Media;
+  /**
+   * Optional playlist associated with this chart
    */
   playlist?: (number | null) | Playlist;
   /**
-   * Auto format: chartKey-week
+   * Tracking week range for this chart
+   */
+  weekRange: {
+    startDate: string;
+    endDate: string;
+  };
+  /**
+   * Drag to reorder. Rank, Last Week, Peak, and WOC will auto-calculate on save if a Previous Chart is linked.
+   */
+  entries: {
+    rank?: number | null;
+    previousRank?: number | null;
+    peakRank?: number | null;
+    weeksOnChart?: number | null;
+    movement?: ('up' | 'down' | 'same' | 'new' | 're-entry') | null;
+    accolade?: ('none' | 'hot-shot-debut' | 'greatest-gainer' | 'pacesetter') | null;
+    manualTrack: {
+      title: string;
+      artist: string;
+      featuredArtists?: string | null;
+      label?: string | null;
+      /**
+       * Highly recommended for accurate auto-tracking
+       */
+      isrc?: string | null;
+      artwork?: (number | null) | Media;
+      /**
+       * Direct URL to a 30s mp3 preview snippet.
+       */
+      previewUrl?: string | null;
+    };
+    /**
+     * Public-facing note (e.g. "Jumping 15 spots after their viral TV performance...")
+     */
+    editorialNote?: string | null;
+    trackTitle?: string | null;
+    artist?: string | null;
+    score?: number | null;
+    id?: string | null;
+  }[];
+  /**
+   * Auto-generated chart identifier
    */
   slug?: string | null;
   status?: ('draft' | 'review' | 'published' | 'archived') | null;
@@ -827,56 +1208,10 @@ export interface Chart {
    */
   week?: string | null;
   /**
-   * Coverage range for this chart
+   * LINK THIS to last week's chart so the system can auto-calculate Peak, Movement, and Weeks on Chart.
    */
-  weekRange: {
-    startDate: string;
-    endDate: string;
-  };
-  /**
-   * Drag to reorder — rank auto-updates
-   */
-  entries: {
-    rank?: number | null;
-    movement?: ('up' | 'down' | 'same' | 'new') | null;
-    manualTrack: {
-      title: string;
-      artist: string;
-      isrc?: string | null;
-      label?: string | null;
-      releaseDate?: string | null;
-    };
-    trackTitle?: string | null;
-    artist?: string | null;
-    /**
-     * Optional editorial score
-     */
-    score?: number | null;
-    id?: string | null;
-  }[];
-  /**
-   * Historical weekly snapshots
-   */
-  snapshots?:
-    | {
-        week?: string | null;
-        weekRange?: {
-          startDate?: string | null;
-          endDate?: string | null;
-        };
-        entries?:
-          | {
-              [k: string]: unknown;
-            }
-          | unknown[]
-          | string
-          | number
-          | boolean
-          | null;
-        createdAt?: string | null;
-        id?: string | null;
-      }[]
-    | null;
+  previousChart?: (number | null) | Chart;
+  chartMode: 'manual' | 'hybrid' | 'automated';
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -928,20 +1263,10 @@ export interface Playlist {
   genres?:
     | ('rnb' | 'hiphop' | 'southern-soul' | 'gospel' | 'jazz' | 'house' | 'club' | 'afrobeats' | 'soul' | 'mixed')[]
     | null;
-  moods?:
-    | (
-        | 'late-night'
-        | 'uplifting'
-        | 'chill'
-        | 'workout'
-        | 'romantic'
-        | 'party'
-        | 'inspirational'
-        | 'throwback'
-        | 'current'
-        | 'sunday'
-      )[]
-    | null;
+  /**
+   * Link to defined Mood taxonomies.
+   */
+  moods?: (number | Mood)[] | null;
   /**
    * Freeform tags for internal discovery and editorial organization.
    */
@@ -951,9 +1276,9 @@ export interface Playlist {
    */
   playlistNotes?: string | null;
   /**
-   * Sponsor name for sponsored playlists.
+   * Official sponsor for this branded playlist.
    */
-  sponsorName?: string | null;
+  sponsor?: (number | null) | Sponsor;
   /**
    * Internal review workflow status.
    */
@@ -976,25 +1301,67 @@ export interface Playlist {
         id?: string | null;
       }[]
     | null;
-  externalLinks?: {
-    spotify?: string | null;
-    appleMusic?: string | null;
-    youtubeMusic?: string | null;
-    audiomack?: string | null;
-    tidal?: string | null;
-  };
   /**
-   * Surfaces where the playlist has already been published or synced.
+   * Manage API IDs and Sync Statuses for external platforms like Spotify and Apple Music.
    */
-  distributionStatus?:
-    | ('website' | 'mobile-app' | 'tv-app' | 'spotify' | 'apple-music' | 'youtube-music' | 'audiomack' | 'tidal')[]
+  dspIntegrations?:
+    | {
+        provider: 'spotify' | 'appleMusic' | 'youtubeMusic' | 'audiomack' | 'tidal';
+        /**
+         * The official Playlist ID from the DSP (e.g., 37i9dQZF1DXcBWIGoYBM5M).
+         */
+        platformId?: string | null;
+        /**
+         * The public sharable link (e.g., open.spotify.com/playlist/...)
+         */
+        publicUrl?: string | null;
+        syncStatus?: ('pending' | 'synced' | 'failed') | null;
+        lastSyncedAt?: string | null;
+        /**
+         * Enable automatic push to this DSP via API.
+         */
+        autoSync?: boolean | null;
+        id?: string | null;
+      }[]
     | null;
+  /**
+   * Internal surfaces where the playlist is visible.
+   */
+  distributionStatus?: ('website' | 'mobile-app' | 'tv-app')[] | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
   socialImage?: (number | null) | Media;
+  /**
+   * Auto-calculated sum of tracks.
+   */
+  totalTracks?: number | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moods".
+ */
+export interface Mood {
+  id: number;
+  name: string;
+  slug?: string | null;
+  /**
+   * Internal or public description of this mood vibe.
+   */
+  description?: string | null;
+  /**
+   * Hex code (e.g., #FF5733) for UI accents on mood hubs.
+   */
+  themeColor?: string | null;
+  /**
+   * SVG or transparent PNG icon for nav menus.
+   */
+  icon?: (number | null) | Media;
+  status: 'active' | 'hidden';
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1003,7 +1370,6 @@ export interface Playlist {
 export interface MediaTrack {
   id: number;
   title: string;
-  slug?: string | null;
   primaryArtist: string;
   featuredArtists?:
     | {
@@ -1011,36 +1377,72 @@ export interface MediaTrack {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Required for charts and royalty tracking.
+   */
+  isrc?: string | null;
   releaseDate?: string | null;
   label?: string | null;
-  isrc?: string | null;
   explicit?: boolean | null;
+  /**
+   * Track-level artwork (if different from album).
+   */
+  coverArt?: (number | null) | Media;
+  /**
+   * High-res internal file (WAV/MP3)
+   */
+  audioFile?: (number | null) | Media;
+  /**
+   * 30s preview URL (often synced from Spotify API)
+   */
+  previewUrl?: string | null;
+  /**
+   * Tempo / Beats Per Minute
+   */
+  bpm?: number | null;
+  musicalKey?: string | null;
+  isIndie?: boolean | null;
+  isRadioApproved?: boolean | null;
+  isChartEligible?: boolean | null;
+  /**
+   * Map this track to external platforms.
+   */
+  dspLinks?:
+    | {
+        provider: 'spotify' | 'appleMusic' | 'tidal' | 'audiomack';
+        /**
+         * e.g., Spotify Track ID
+         */
+        platformId?: string | null;
+        /**
+         * Public Share URL
+         */
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   genres?: ('rnb' | 'hip_hop' | 'southern_soul' | 'gospel' | 'talk' | 'culture' | 'news')[] | null;
   moods?: ('Chill' | 'Upbeat' | 'Late Night' | 'Inspirational' | 'Party' | 'Romantic' | 'Reflective')[] | null;
-  audioFile?: (number | null) | Media;
-  coverArt?: (number | null) | Media;
+  metrics?: {
+    radioPlays?: number | null;
+    streams?: number | null;
+    listenerVotes?: number | null;
+  };
+  source?: ('label' | 'creator' | 'internal') | null;
+  creator?: (number | null) | User;
   rights?: {
     rightsHolder?: string | null;
     publishing?: string | null;
     territories?: string | null;
     expiryDate?: string | null;
   };
-  source?: ('label' | 'creator' | 'internal') | null;
-  creator?: (number | null) | User;
-  isIndie?: boolean | null;
-  isRadioApproved?: boolean | null;
-  isChartEligible?: boolean | null;
+  slug?: string | null;
   status?: ('draft' | 'review' | 'approved' | 'archived') | null;
-  editorialNotes?: string | null;
-  metrics?: {
-    radioPlays?: number | null;
-    streams?: number | null;
-    listenerVotes?: number | null;
-  };
   /**
    * Album this track belongs to.
    */
   album?: (number | null) | Album;
+  editorialNotes?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1052,8 +1454,9 @@ export interface MediaTrack {
 export interface Album {
   id: number;
   title: string;
-  slug?: string | null;
+  albumType?: ('album' | 'ep' | 'single' | 'compilation') | null;
   primaryArtist: string;
+  label?: string | null;
   featuredArtists?:
     | {
         name?: string | null;
@@ -1061,10 +1464,13 @@ export interface Album {
       }[]
     | null;
   releaseDate?: string | null;
-  label?: string | null;
+  /**
+   * UPC / EAN Barcode
+   */
+  upc?: string | null;
   coverArt: number | Media;
   /**
-   * Tracks associated with this album. You may manually add tracks or rely on auto-association.
+   * Internal tracks associated with this album.
    */
   tracks?: (number | MediaTrack)[] | null;
   /**
@@ -1079,8 +1485,26 @@ export interface Album {
         id?: string | null;
       }[]
     | null;
-  status?: ('draft' | 'published' | 'archived') | null;
+  /**
+   * Map this album to external platforms (Spotify, Apple Music, etc.)
+   */
+  dspLinks?:
+    | {
+        provider: 'spotify' | 'appleMusic' | 'tidal' | 'audiomack';
+        /**
+         * e.g., Spotify Album ID
+         */
+        platformId?: string | null;
+        /**
+         * Public Share URL
+         */
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   editorialNotes?: string | null;
+  slug?: string | null;
+  status?: ('draft' | 'published' | 'archived') | null;
   /**
    * Highlights this album in the homepage Featured Release slot.
    */
@@ -1090,183 +1514,306 @@ export interface Album {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcasts".
+ * via the `definition` "categories".
  */
-export interface Podcast {
+export interface Category {
+  id: number;
+  name: string;
+  description?: string | null;
+  parent?: (number | null) | Category;
+  /**
+   * Hex code (e.g., #FF5733) for UI accents.
+   */
+  themeColor?: string | null;
+  /**
+   * SVG or transparent PNG icon for nav menus.
+   */
+  icon?: (number | null) | Media;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+  slug: string;
+  status: 'active' | 'hidden' | 'archived';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "episodes".
+ */
+export interface Episode {
   id: number;
   title: string;
-  slug?: string | null;
-  description?: string | null;
-  hosts?: (number | Talent)[] | null;
-  coverArt?: (number | null) | Media;
-  distribution?: {
-    applePodcasts?: boolean | null;
-    spotify?: boolean | null;
-    youtube?: boolean | null;
-    wavenation?: boolean | null;
-  };
-  status?: ('draft' | 'active' | 'archived') | null;
   /**
-   * Primary audio source
+   * Episode description, links, and credits. Displayed in podcast apps.
    */
-  audio?: {
-    audioSource?: ('upload' | 'external') | null;
-    audioFile?: (number | null) | Media;
-    audioUrl?: string | null;
-    /**
-     * Duration in seconds (optional)
-     */
-    duration?: number | null;
-  };
-  /**
-   * Podcast advertising (Google Ad Manager)
-   */
-  ads?: {
-    adsEnabled?: boolean | null;
-    /**
-     * Disable ads for WaveNation+ subscribers
-     */
-    disableForPremium?: boolean | null;
-    placements?: {
-      preRoll?: string | null;
-      /**
-       * Mid-roll audio ads
-       */
-      midRoll?:
-        | {
-            /**
-             * Seconds into audio
-             */
-            offset?: number | null;
-            vastUrl?: string | null;
-            id?: string | null;
-          }[]
-        | null;
-      postRoll?: string | null;
+  showNotes: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
     };
+    [k: string]: unknown;
+  };
+  episodeType: 'podcast' | 'radio' | 'special';
+  /**
+   * RSS standard format.
+   */
+  format?: ('full' | 'trailer' | 'bonus') | null;
+  context?: {
+    podcast?: (number | null) | Podcast;
+    radioShow?: (number | null) | RadioShow;
+    seasonNumber?: number | null;
+    episodeNumber?: number | null;
+  };
+  hosts?: (number | Talent)[] | null;
+  audioSource?: ('upload' | 'external') | null;
+  audioFile?: (number | null) | Media;
+  externalAudioUrl?: string | null;
+  /**
+   * Duration in seconds. Critical for player UI.
+   */
+  duration?: number | null;
+  videoContext?: {
+    hasVideo?: boolean | null;
+    vodLink?: (number | null) | Vod;
   };
   /**
-   * Host-read or branded sponsorship
+   * VTT or text file for closed captioning/transcripts.
    */
-  sponsor?: {
-    brandName?: string | null;
-    disclosure?: string | null;
-    /**
-     * Optional sponsor audio intro/outro
-     */
-    audioClip?: (number | null) | Media;
+  transcript?: (number | null) | Media;
+  /**
+   * Interactive timestamp markers.
+   */
+  chapters?:
+    | {
+        timestamp?: string | null;
+        title?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  ads?: {
+    overrideSeriesDefaults?: boolean | null;
+    preRoll?: string | null;
+    midRolls?:
+      | {
+          offsetSeconds?: number | null;
+          vastUrl?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    postRoll?: string | null;
   };
+  slug?: string | null;
+  isExplicit?: boolean | null;
+  isFeatured?: boolean | null;
+  status?: ('draft' | 'published' | 'archived') | null;
+  publishDate?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "vod".
+ * via the `definition` "authors".
  */
-export interface Vod {
+export interface Author {
   id: number;
-  title: string;
-  slug?: string | null;
-  vodType: 'episode' | 'series' | 'film' | 'documentary' | 'clip' | 'liveReplay' | 'special';
-  series?: (number | null) | Vod;
-  season?: number | null;
-  episodeNumber?: number | null;
-  status?: ('draft' | 'review' | 'published' | 'archived') | null;
-  visibility?: ('free' | 'premium' | 'ppv' | 'unlisted') | null;
-  video: number | Media;
-  poster?: (number | null) | Media;
-  trailer?: (number | null) | Media;
-  description?: string | null;
-  runtime?: number | null;
-  releaseDate?: string | null;
-  genres?:
-    | ('Music' | 'Talk' | 'Documentary' | 'Film' | 'Faith' | 'Culture' | 'News' | 'Lifestyle' | 'Comedy' | 'Southern')[]
-    | null;
-  tags?:
-    | {
-        tag?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  source?: ('original' | 'creator' | 'partner' | 'event') | null;
-  creator?: (number | null) | User;
-  rights?: {
-    rightsHolder?: string | null;
-    territories?: string | null;
-    expiryDate?: string | null;
-  };
-  pricing?: {
-    price?: number | null;
-    currency?: string | null;
-  };
-  isFeatured?: boolean | null;
-  isTVEligible?: boolean | null;
-  distribution?: {
-    web?: boolean | null;
-    mobile?: boolean | null;
-    tv?: boolean | null;
-  };
-  metrics?: {
-    views?: number | null;
-    watchTime?: number | null;
-    completionRate?: number | null;
-  };
-  publishDate?: string | null;
+  firstName: string;
+  lastName: string;
   /**
-   * Google Ad Manager (VAST) settings
+   * Auto-generated from First and Last name.
    */
-  ads?: {
-    adsEnabled?: boolean | null;
-    /**
-     * Disable ads for WaveNation+ users
-     */
-    disableForPremium?: boolean | null;
-    placements?: {
-      preRoll?: string | null;
-      midRoll?: string | null;
-      /**
-       * Seconds into video
-       */
-      midRollOffset?: number | null;
-      postRoll?: string | null;
+  fullName?: string | null;
+  email?: string | null;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
     };
-  };
-  /**
-   * Manually curated related shows, episodes, or specials
-   */
-  relatedShows?: (number | Vod)[] | null;
-  /**
-   * Hosts, guests, creators, or on-screen talent
-   */
-  relatedTalent?: (number | User)[] | null;
-  /**
-   * Optional role labels for talent
-   */
-  talentRoles?:
+    [k: string]: unknown;
+  } | null;
+  avatar?: (number | null) | Media;
+  socialLinks?:
     | {
-        talent?: (number | null) | Talent;
-        role?: ('Host' | 'Co-Host' | 'Guest' | 'Performer' | 'Director' | 'Producer') | null;
+        platform?: ('twitter' | 'instagram' | 'linkedin' | 'website') | null;
+        url: string;
         id?: string | null;
       }[]
     | null;
   /**
-   * Premiere and availability scheduling
+   * Primary topics or categories this author covers.
    */
-  release?: {
+  beats?: (number | Category)[] | null;
+  /**
+   * Internal score used to boost author content in AI ranking algorithms.
+   */
+  aiAuthorityScore?: number | null;
+  slug?: string | null;
+  status?: ('active' | 'inactive') | null;
+  role?: ('staff' | 'contributor' | 'editor') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subcategories".
+ */
+export interface Subcategory {
+  id: number;
+  name: string;
+  description?: string | null;
+  category: number | Category;
+  /**
+   * Leave blank to inherit parent Category color.
+   */
+  themeColorOverride?: string | null;
+  slug: string;
+  status: 'active' | 'hidden';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  /**
+   * Human-readable tag name.
+   */
+  label: string;
+  tagType?: ('general' | 'genre' | 'location' | 'mood') | null;
+  /**
+   * Optional context for editors and AI classification
+   */
+  description?: string | null;
+  /**
+   * Alternative names for AI and search algorithms to route to this primary tag.
+   */
+  synonyms?:
+    | {
+        term: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Auto-generated URL-safe identifier
+   */
+  slug?: string | null;
+  /**
+   * Used for trending tags, homepage features, or playlists
+   */
+  isFeatured?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manage multi-part editorial series, deep-dives, and sponsored content hubs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-series".
+ */
+export interface ArticleSery {
+  id: number;
+  /**
+   * Series title (e.g. “Justice Rides a White Horse”)
+   */
+  title: string;
+  /**
+   * Optional subtitle or theme line.
+   */
+  subtitle?: string | null;
+  /**
+   * Overview of the series purpose, scope, or narrative arc.
+   */
+  description?: string | null;
+  /**
+   * Optional: Title sponsor for this series.
+   */
+  sponsor?: (number | null) | Sponsor;
+  /**
+   * Lead journalist, editor, or curator.
+   */
+  leadEditor?: (number | null) | Author;
+  branding?: {
     /**
-     * Public premiere date (countdown, marketing)
+     * Primary 16:9 banner.
      */
-    premiereDate?: string | null;
+    image?: (number | null) | Media;
     /**
-     * When the video becomes playable
+     * Transparent PNG logo for the hub header.
      */
-    availableDate?: string | null;
-    timezone?: string | null;
+    seriesLogo?: (number | null) | Media;
+    /**
+     * Hex color for frontend accents.
+     */
+    themeColor?: string | null;
+    /**
+     * Artwork credit.
+     */
+    credit?: string | null;
+  };
+  /**
+   * Articles included in this series, in reading order.
+   */
+  articles?:
+    | {
+        article: number | Article;
+        /**
+         * Reading order within the series (1, 2, 3…).
+         */
+        order: number;
+        /**
+         * Optional display label (e.g. “Part II”, “Chapter 3”).
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  categories?: (number | Category)[] | null;
+  tags?: (number | Tag)[] | null;
+  /**
+   * Internal notes about the series direction, updates, or changes.
+   */
+  editorialNotes?:
+    | {
+        note: string;
+        createdAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  slug: string;
+  status?: ('draft' | 'active' | 'completed' | 'archived') | null;
+  /**
+   * Feature this series on landing pages or homepage.
+   */
+  isFeatured?: boolean | null;
+  /**
+   * Auto-calculated count of articles.
+   */
+  totalArticles?: number | null;
+  seo?: {
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+    noIndex?: boolean | null;
   };
   updatedAt: string;
   createdAt: string;
-  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1308,6 +1855,118 @@ export interface Poll {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "curators".
+ */
+export interface Curator {
+  id: number;
+  name: string;
+  curatorType: 'Internal Editorial' | 'Guest Artist' | 'Brand / Sponsor';
+  bio?: string | null;
+  avatar?: (number | null) | Media;
+  /**
+   * Link to internal profiles if this curator already exists in the system.
+   */
+  links?: {
+    linkedUser?: (number | null) | User;
+    linkedTalent?: (number | null) | Talent;
+  };
+  slug?: string | null;
+  status?: ('active' | 'inactive') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Manages the linear broadcast schedule for WaveNation TV.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tvSchedule".
+ */
+export interface TvSchedule {
+  id: number;
+  /**
+   * Internal reference (e.g. "Morning News - Weekdays")
+   */
+  label: string;
+  tvShow: number | TvShow;
+  /**
+   * Optional: Link the specific episode being aired to populate the TV Guide with accurate metadata.
+   */
+  vodEpisode?: (number | null) | Vod;
+  programmingType: 'live' | 'automation' | 'replay';
+  liveStream?: {
+    /**
+     * The .m3u8 HLS manifest URL for overriding the default 24/7 channel stream during live events.
+     */
+    hlsUrl?: string | null;
+  };
+  scheduleType: 'recurring' | 'oneTime' | 'special';
+  timezone: string;
+  recurringRules?: {
+    daysOfWeek?: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[] | null;
+    startTime: string;
+    endTime: string;
+    /**
+     * When this block starts applying to the calendar.
+     */
+    effectiveStartDate?: string | null;
+    /**
+     * When this block stops applying to the calendar.
+     */
+    effectiveEndDate?: string | null;
+  };
+  absoluteTime?: {
+    startDateTime: string;
+    endDateTime: string;
+  };
+  /**
+   * Higher numbers override lower numbers. (e.g., Breaking News = 100, Standard Programming = 1)
+   */
+  conflictPriority?: number | null;
+  status?: ('active' | 'suspended') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "radioSchedule".
+ */
+export interface RadioSchedule {
+  id: number;
+  /**
+   * Internal reference (e.g. "Morning Drive - Fall 2026")
+   */
+  label: string;
+  radioShow: number | RadioShow;
+  programmingType: 'live' | 'automation' | 'replay';
+  liveStream?: {
+    /**
+     * Icecast/Shoutcast or HLS Audio URL
+     */
+    streamUrl?: string | null;
+  };
+  scheduleType: 'recurring' | 'oneTime' | 'special';
+  timezone: string;
+  recurringRules?: {
+    daysOfWeek?: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[] | null;
+    startTime: string;
+    endTime: string;
+    effectiveStartDate?: string | null;
+    effectiveEndDate?: string | null;
+  };
+  absoluteTime?: {
+    startDateTime: string;
+    endDateTime: string;
+  };
+  /**
+   * Higher numbers override lower numbers during conflicts (e.g., Breaking News = 100)
+   */
+  conflictPriority?: number | null;
+  status?: ('active' | 'suspended') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Immutable weekly snapshots used for chart history, movement, and analytics.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1335,62 +1994,6 @@ export interface ChartSnapshot {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "radioSchedule".
- */
-export interface RadioSchedule {
-  id: number;
-  label: string;
-  scheduleType: 'recurring' | 'oneTime' | 'special';
-  radioShow: number | RadioShow;
-  episode?: (number | null) | Episode;
-  chart?: (number | null) | Chart;
-  daysOfWeek?: ('Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday')[] | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  startTime: string;
-  endTime: string;
-  priority?: number | null;
-  overrideReason?: string | null;
-  isLive?: boolean | null;
-  isReplay?: boolean | null;
-  isAutomation?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "episodes".
- */
-export interface Episode {
-  id: number;
-  title: string;
-  slug?: string | null;
-  episodeType: 'podcast' | 'radio' | 'special';
-  podcast?: (number | null) | Podcast;
-  radioShow?: (number | null) | RadioShow;
-  audio: number | Media;
-  hasVideo?: boolean | null;
-  vod?: (number | null) | Vod;
-  description?: string | null;
-  duration?: number | null;
-  hosts?: (number | Talent)[] | null;
-  isExplicit?: boolean | null;
-  isFeatured?: boolean | null;
-  distribution?: {
-    podcastPlatforms?: boolean | null;
-    radioReplay?: boolean | null;
-    web?: boolean | null;
-    mobile?: boolean | null;
-    tv?: boolean | null;
-  };
-  status?: ('draft' | 'published' | 'archived') | null;
-  publishDate?: string | null;
-  updatedAt: string;
-  createdAt: string;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "pollVotes".
  */
 export interface PollVote {
@@ -1402,6 +2005,8 @@ export interface PollVote {
   createdAt: string;
 }
 /**
+ * Manages physical, virtual, and hybrid live events, including streaming and ticketing integrations.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "events".
  */
@@ -1409,9 +2014,8 @@ export interface Event {
   id: number;
   title: string;
   /**
-   * Auto-generated from title if left blank.
+   * Short summary for event cards.
    */
-  slug?: string | null;
   excerpt: string;
   description: {
     root: {
@@ -1429,15 +2033,18 @@ export interface Event {
     [k: string]: unknown;
   };
   eventType: 'virtual' | 'in-person' | 'hybrid';
-  status: 'draft' | 'scheduled' | 'live' | 'ended';
+  contentVertical: 'music' | 'culture' | 'faith' | 'creator' | 'radio' | 'tv';
   startDate: string;
   endDate: string;
   timezone: string;
+  /**
+   * 16:9 Desktop Hero
+   */
   heroImage?: (number | null) | Media;
+  /**
+   * 1:1 or 4:5 Mobile Card
+   */
   thumbnail?: (number | null) | Media;
-  hostName?: string | null;
-  guestName?: string[] | null;
-  sponsorNames?: string[] | null;
   agenda?:
     | {
         time?: string | null;
@@ -1453,154 +2060,173 @@ export interface Event {
         id?: string | null;
       }[]
     | null;
-  virtualEventLabel?: string | null;
-  livestreamPlatform?:
-    | ('wavenation-native' | 'streamlabs' | 'youtube' | 'vimeo' | 'zoom' | 'eventbrite' | 'other')
-    | null;
-  replayUrl?: string | null;
-  livestreamAccessInstructions?: string | null;
   /**
-   * Optional embed/player URL for livestream or replay.
+   * Physical or primary studio location.
    */
-  streamEmbedUrl?: string | null;
-  eventbriteEventId?: string | null;
-  eventbriteUrl?: string | null;
-  eventbriteSyncEnabled?: boolean | null;
-  eventbriteLastSyncedAt?: string | null;
-  visibility?: ('public' | 'private' | 'unlisted') | null;
-  accessType?: ('open' | 'ticketed' | 'invite-only' | 'members-only') | null;
-  registrationRequired?: boolean | null;
-  capacity?: number | null;
-  ctaLabel?: string | null;
-  ctaUrl?: string | null;
-  relatedArticles?: (number | Article)[] | null;
-  relatedRadioShows?: (number | RadioShow)[] | null;
-  relatedVOD?: (number | Vod)[] | null;
-  relatedPlaylists?: (number | Playlist)[] | null;
-  contentVertical: 'music' | 'culture' | 'faith' | 'creator' | 'radio' | 'tv';
-  promotionTier: 'flagship' | 'featured' | 'standard';
-  isFeatured?: boolean | null;
-  onAirMention?: boolean | null;
-  homepagePlacement?: ('none' | 'hero' | 'featured-row' | 'events-grid') | null;
+  venue?: (number | null) | Venue;
+  hosts?: (number | Talent)[] | null;
+  guests?: (number | Talent)[] | null;
   /**
-   * Auto-set by promotion tier and featured logic, but can be adjusted.
+   * Brands officially sponsoring this event.
    */
-  homepagePriority?: number | null;
+  sponsors?: (number | Sponsor)[] | null;
   /**
-   * Enable the dedicated WaveNation watch page for this event.
+   * Enable the dedicated WaveNation watch page.
    */
   watchPageEnabled?: boolean | null;
   /**
-   * Optional custom watch path. Leave blank to use /events/[slug]/watch.
+   * Leave blank to use /events/[slug]/watch
    */
   watchPagePath?: string | null;
+  livestreamPlatform?: ('wavenation-native' | 'cloudflare' | 'mux' | 'streamlabs' | 'youtube' | 'other') | null;
+  streamHealthStatus?: ('unknown' | 'ready' | 'live' | 'offline') | null;
   /**
-   * Primary Cloudflare Stream playback ID used for live playback.
+   * Cloudflare/Mux Stream playback ID.
    */
   cloudflarePlaybackId?: string | null;
   /**
-   * Cloudflare Stream playback ID for the replay version, if different.
+   * Fallback iframe embed URL.
    */
-  cloudflareReplayPlaybackId?: string | null;
+  streamEmbedUrl?: string | null;
+  messaging?: {
+    preLiveMessage?: string | null;
+    postEventMessage?: string | null;
+    livestreamAccessInstructions?: string | null;
+  };
+  replay?: {
+    replayEnabled?: boolean | null;
+    replayAvailableImmediately?: boolean | null;
+    replayAvailableAt?: string | null;
+    replayExpiresAt?: string | null;
+    cloudflareReplayPlaybackId?: string | null;
+    /**
+     * External replay link (e.g. YouTube VOD)
+     */
+    replayUrl?: string | null;
+  };
+  visibility?: ('public' | 'private' | 'unlisted') | null;
+  accessType?: ('open' | 'ticketed' | 'invite-only' | 'members-only') | null;
+  registrationRequired?: boolean | null;
+  loginRequired?: boolean | null;
+  ticketVerificationRequired?: boolean | null;
+  capacity?: number | null;
   /**
-   * Optional display label such as Cloudflare Stream, Streamlabs Ultra, or Private Player.
+   * Gate access to specific WaveNation+ tiers.
    */
-  streamProviderLabel?: string | null;
-  streamHealthStatus?: ('unknown' | 'ready' | 'testing' | 'live' | 'issue' | 'offline') | null;
-  /**
-   * Message shown before the event goes live.
-   */
-  preLiveMessage?: string | null;
-  /**
-   * Message shown after the live stream ends.
-   */
-  postEventMessage?: string | null;
-  /**
-   * Internal notes for stream checks, embeds, player setup, or rehearsal findings.
-   */
-  streamTestingNotes?: string | null;
+  requiredSubscriptionTier?: (number | null) | Subscription;
+  accessDeniedMessage?: string | null;
+  eventbrite?: {
+    eventbriteEventId?: string | null;
+    eventbriteUrl?: string | null;
+    eventbriteSyncEnabled?: boolean | null;
+    eventbriteLastSyncedAt?: string | null;
+  };
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
   chatEnabled?: boolean | null;
   qaEnabled?: boolean | null;
   reactionsEnabled?: boolean | null;
   chatMode?: ('disabled' | 'native' | 'qa-only' | 'external') | null;
   /**
-   * Optional external chat embed URL if using a third-party chat.
+   * External chat embed URL (e.g. Arena.im).
    */
   chatEmbedUrl?: string | null;
+  /**
+   * Staff assigned to moderate the chat for this event.
+   */
+  moderators?: (number | Moderator)[] | null;
   /**
    * Optional prompt shown above the question form.
    */
   qaPrompt?: string | null;
   /**
-   * Short notice shown in the live room, such as moderation or access reminders.
+   * Short notice shown in the live room (e.g. moderation rules).
    */
   viewerNotice?: string | null;
-  /**
-   * Optional community guidelines or participation rules displayed on the watch page.
-   */
   audienceGuidelines?: string | null;
-  replayEnabled?: boolean | null;
-  replayAvailableImmediately?: boolean | null;
+  productionTeam?: {
+    producerName?: string | null;
+    technicalDirectorName?: string | null;
+    runOfShowUrl?: string | null;
+    greenRoomUrl?: string | null;
+    productionNotes?: string | null;
+    streamTestingNotes?: string | null;
+  };
+  relatedContent?: {
+    relatedArticles?: (number | Article)[] | null;
+    relatedRadioShows?: (number | RadioShow)[] | null;
+    relatedVOD?: (number | Vod)[] | null;
+    relatedPlaylists?: (number | Playlist)[] | null;
+  };
+  seo?: {
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    seoImage?: (number | null) | Media;
+  };
   /**
-   * Optional date/time when replay becomes available.
+   * Auto-generated from title if left blank.
    */
-  replayAvailableAt?: string | null;
-  /**
-   * Optional date/time when replay access expires.
-   */
-  replayExpiresAt?: string | null;
-  /**
-   * Optional label for replay CTA, such as Watch Replay.
-   */
-  replayLabel?: string | null;
-  replayThumbnailOverride?: (number | null) | Media;
-  /**
-   * Require a WaveNation account session before viewing.
-   */
-  loginRequired?: boolean | null;
-  /**
-   * Require a verified ticket/registration entitlement before viewing.
-   */
-  ticketVerificationRequired?: boolean | null;
-  /**
-   * Optional membership tier required for access.
-   */
-  memberTierRequired?: string | null;
-  /**
-   * Optional label if access code entry is used on the watch page.
-   */
-  accessCodeLabel?: string | null;
-  /**
-   * Custom message shown when a viewer does not have access.
-   */
-  accessDeniedMessage?: string | null;
-  producerName?: string | null;
-  moderatorName?: string | null;
-  technicalDirectorName?: string | null;
-  /**
-   * Optional internal URL to a run of show, cue sheet, or production doc.
-   */
-  runOfShowUrl?: string | null;
-  /**
-   * Optional private host/guest backstage or green room link.
-   */
-  greenRoomUrl?: string | null;
-  /**
-   * Internal production notes for cues, transitions, sponsor reads, backups, or contingency plans.
-   */
-  productionNotes?: string | null;
-  /**
-   * Internal planning notes for editorial, promo, or production.
-   */
+  slug?: string | null;
+  status: 'draft' | 'scheduled' | 'live' | 'ended';
+  promotionTier: 'flagship' | 'featured' | 'standard';
+  isFeatured?: boolean | null;
+  homepagePlacement?: ('none' | 'hero' | 'featured-row' | 'events-grid') | null;
+  homepagePriority?: number | null;
+  onAirMention?: boolean | null;
   internalNotes?: string | null;
-  seoTitle?: string | null;
-  seoDescription?: string | null;
-  seoImage?: (number | null) | Media;
-  socialShareTitle?: string | null;
-  socialShareDescription?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venues".
+ */
+export interface Venue {
+  id: number;
+  name: string;
+  description?: string | null;
+  venueType?: ('Physical' | 'Virtual' | 'Hybrid' | 'Studio') | null;
+  capacity?: number | null;
+  photos?: (number | Media)[] | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  timezone: string;
+  lat?: number | null;
+  lng?: number | null;
+  internetSpeed?: string | null;
+  /**
+   * Standard RTMP URL for this venue’s hardware encoder.
+   */
+  defaultRtmpIngest?: string | null;
+  muxLiveStreamId?: string | null;
+  cloudflareLiveInputId?: string | null;
+  slug?: string | null;
+  status?: ('active' | 'inactive') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderators".
+ */
+export interface Moderator {
+  id: number;
+  displayName: string;
+  /**
+   * The internal user account tied to this moderator.
+   */
+  user: number | User;
+  permissions: ('Approve Q&A' | 'Delete Chat Messages' | 'Ban Users' | 'Pin Messages' | 'Stream Status Override')[];
+  /**
+   * Specific upcoming events this moderator is scheduled for.
+   */
+  assignedEvents?: (number | Event)[] | null;
+  status?: ('active' | 'inactive') | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1649,6 +2275,127 @@ export interface EventChatMessage {
   viewerSessionId?: string | null;
   ipAddress?: string | null;
   moderatorNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Map active Ad Campaigns or Sponsors to specific UI slots on the frontend.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adZones".
+ */
+export interface AdZone {
+  id: number;
+  /**
+   * The hardcoded ID used by the frontend (e.g., "homepage-top-leaderboard").
+   */
+  zoneId: string;
+  /**
+   * Where does this live?
+   */
+  description?: string | null;
+  activeFill?: {
+    fillType?: ('ad' | 'sponsor') | null;
+    adCampaign?: (number | null) | Ad;
+    sponsorFill?: (number | null) | Sponsor;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promoBanners".
+ */
+export interface PromoBanner {
+  id: number;
+  /**
+   * e.g., "Summer Fest 2026 Presale"
+   */
+  internalName: string;
+  placement?: ('Homepage Hero' | 'App Interstitial' | 'Article Sidebar' | 'Video Player Overlay')[] | null;
+  headline: string;
+  subheadline?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  desktopAsset?: (number | null) | Media;
+  mobileAsset?: (number | null) | Media;
+  videoBackground?: {
+    /**
+     * For looping silent video backgrounds via Cloudflare Stream.
+     */
+    cloudflarePlaybackId?: string | null;
+  };
+  targeting?: {
+    audience?: ('All Users' | 'Logged Out Only' | 'Logged In (Free)' | 'WaveNation+ Premium') | null;
+  };
+  status?: ('draft' | 'scheduled' | 'live' | 'ended') | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "alerts".
+ */
+export interface Alert {
+  id: number;
+  internalName: string;
+  alertType: 'Top Announcement Bar' | 'Modal Popup' | 'Toast Notification';
+  theme?: ('info' | 'warning' | 'emergency' | 'promo') | null;
+  headline: string;
+  message?: string | null;
+  ctaLabel?: string | null;
+  ctaUrl?: string | null;
+  targeting?: {
+    /**
+     * Comma-separated paths (e.g. /, /news, /radio). Leave blank for sitewide.
+     */
+    showOnPaths?: string | null;
+    dismissible?: boolean | null;
+  };
+  status?: ('draft' | 'scheduled' | 'active' | 'archived') | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sidebars".
+ */
+export interface Sidebar {
+  id: number;
+  internalName: string;
+  widgets?:
+    | (
+        | {
+            headline?: string | null;
+            hubspotFormId?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'newsletter';
+          }
+        | {
+            limit?: number | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'trendingArticles';
+          }
+        | {
+            zone?: (number | null) | AdZone;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'adZone';
+          }
+        | {
+            banner?: (number | null) | PromoBanner;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'promoBanner';
+          }
+      )[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1777,12 +2524,24 @@ export interface PayloadLockedDocument {
         value: number | PayloadPreference;
       } | null)
     | ({
+        relationTo: 'subscriptions';
+        value: number | Subscription;
+      } | null)
+    | ({
         relationTo: 'articles';
         value: number | Article;
       } | null)
     | ({
         relationTo: 'article-series';
         value: number | ArticleSery;
+      } | null)
+    | ({
+        relationTo: 'authors';
+        value: number | Author;
+      } | null)
+    | ({
+        relationTo: 'curators';
+        value: number | Curator;
       } | null)
     | ({
         relationTo: 'categories';
@@ -1797,6 +2556,10 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
+        relationTo: 'moods';
+        value: number | Mood;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -1809,24 +2572,8 @@ export interface PayloadLockedDocument {
         value: number | Album;
       } | null)
     | ({
-        relationTo: 'charts';
-        value: number | Chart;
-      } | null)
-    | ({
-        relationTo: 'chart-snapshots';
-        value: number | ChartSnapshot;
-      } | null)
-    | ({
-        relationTo: 'vod';
-        value: number | Vod;
-      } | null)
-    | ({
-        relationTo: 'radioShows';
-        value: number | RadioShow;
-      } | null)
-    | ({
-        relationTo: 'radioSchedule';
-        value: number | RadioSchedule;
+        relationTo: 'playlists';
+        value: number | Playlist;
       } | null)
     | ({
         relationTo: 'podcasts';
@@ -1837,12 +2584,36 @@ export interface PayloadLockedDocument {
         value: number | Episode;
       } | null)
     | ({
-        relationTo: 'playlists';
-        value: number | Playlist;
+        relationTo: 'vod';
+        value: number | Vod;
       } | null)
     | ({
-        relationTo: 'talent';
-        value: number | Talent;
+        relationTo: 'seasons';
+        value: number | Season;
+      } | null)
+    | ({
+        relationTo: 'tvShows';
+        value: number | TvShow;
+      } | null)
+    | ({
+        relationTo: 'tvSchedule';
+        value: number | TvSchedule;
+      } | null)
+    | ({
+        relationTo: 'radioShows';
+        value: number | RadioShow;
+      } | null)
+    | ({
+        relationTo: 'radioSchedule';
+        value: number | RadioSchedule;
+      } | null)
+    | ({
+        relationTo: 'charts';
+        value: number | Chart;
+      } | null)
+    | ({
+        relationTo: 'chart-snapshots';
+        value: number | ChartSnapshot;
       } | null)
     | ({
         relationTo: 'polls';
@@ -1857,12 +2628,48 @@ export interface PayloadLockedDocument {
         value: number | Event;
       } | null)
     | ({
+        relationTo: 'venues';
+        value: number | Venue;
+      } | null)
+    | ({
+        relationTo: 'talent';
+        value: number | Talent;
+      } | null)
+    | ({
+        relationTo: 'moderators';
+        value: number | Moderator;
+      } | null)
+    | ({
         relationTo: 'event-questions';
         value: number | EventQuestion;
       } | null)
     | ({
         relationTo: 'event-chat-messages';
         value: number | EventChatMessage;
+      } | null)
+    | ({
+        relationTo: 'sponsors';
+        value: number | Sponsor;
+      } | null)
+    | ({
+        relationTo: 'ads';
+        value: number | Ad;
+      } | null)
+    | ({
+        relationTo: 'adZones';
+        value: number | AdZone;
+      } | null)
+    | ({
+        relationTo: 'promoBanners';
+        value: number | PromoBanner;
+      } | null)
+    | ({
+        relationTo: 'alerts';
+        value: number | Alert;
+      } | null)
+    | ({
+        relationTo: 'sidebars';
+        value: number | Sidebar;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1888,15 +2695,21 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  roles?: T;
+  firstName?: T;
+  lastName?: T;
   displayName?: T;
   avatar?: T;
+  bio?: T;
+  roles?: T;
   subscription?: T;
+  onboardingCompleted?: T;
+  authProvider?: T;
+  auth0Id?: T;
+  lastLoginAt?: T;
   creatorProfile?:
     | T
     | {
         payoutEmail?: T;
-        bio?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1928,66 +2741,36 @@ export interface PayloadPreferencesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscriptions_select".
+ */
+export interface SubscriptionsSelect<T extends boolean = true> {
+  tierName?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  price?: T;
+  billingInterval?: T;
+  stripeProductId?: T;
+  stripePriceId?: T;
+  appleIapId?: T;
+  googlePlayId?: T;
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "articles_select".
  */
 export interface ArticlesSelect<T extends boolean = true> {
   title?: T;
   subtitle?: T;
-  slug?: T;
-  categories?: T;
-  subcategories?: T;
-  tags?: T;
-  publishDate?: T;
-  scheduledPublishAt?: T;
-  status?: T;
-  reviewTier?: T;
-  isBreaking?: T;
-  isFeatured?: T;
-  author?: T;
-  editorPreset?: T;
-  editorialNotes?:
-    | T
-    | {
-        noteType?: T;
-        note?: T;
-        author?: T;
-        createdAt?: T;
-        id?: T;
-      };
   excerpt?: T;
-  sources?:
-    | T
-    | {
-        sourceType?: T;
-        title?: T;
-        publication?: T;
-        url?: T;
-        author?: T;
-        publishedDate?: T;
-        isPrimary?: T;
-        notes?: T;
-        id?: T;
-      };
-  references?:
-    | T
-    | {
-        label?: T;
-        referenceType?: T;
-        url?: T;
-        notes?: T;
-        id?: T;
-      };
-  series?: T;
-  relatedShow?: T;
-  relatedPosdcast?: T;
-  relatedVOD?: T;
-  relatedAlbum?: T;
-  relatedPolls?: T;
-  menuFeature?: T;
-  menuContext?: T;
-  menuEyebrow?: T;
-  menuDescription?: T;
-  readingTime?: T;
   hero?:
     | T
     | {
@@ -2002,6 +2785,122 @@ export interface ArticlesSelect<T extends boolean = true> {
           | T
           | {
               content?: T;
+              dropCap?: T;
+              id?: T;
+              blockName?: T;
+            };
+        image?:
+          | T
+          | {
+              image?: T;
+              caption?: T;
+              credit?: T;
+              layout?: T;
+              id?: T;
+              blockName?: T;
+            };
+        gallery?:
+          | T
+          | {
+              layout?: T;
+              images?:
+                | T
+                | {
+                    image?: T;
+                    caption?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        pullQuote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              style?: T;
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              sourceType?: T;
+              provider?: T;
+              url?: T;
+              file?: T;
+              vodItem?: T;
+              caption?: T;
+              autoplay?: T;
+              loop?: T;
+              id?: T;
+              blockName?: T;
+            };
+        audio?:
+          | T
+          | {
+              sourceType?: T;
+              track?: T;
+              episode?: T;
+              manualAudio?:
+                | T
+                | {
+                    title?: T;
+                    audioFile?: T;
+                    showName?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        embed?:
+          | T
+          | {
+              provider?: T;
+              embedUrl?: T;
+              id?: T;
+              blockName?: T;
+            };
+        artistSpotlight?:
+          | T
+          | {
+              linkedTalent?: T;
+              artistName?: T;
+              image?: T;
+              description?: T;
+              links?:
+                | T
+                | {
+                    label?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        relatedArticles?:
+          | T
+          | {
+              title?: T;
+              layout?: T;
+              articles?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cta?:
+          | T
+          | {
+              headline?: T;
+              body?: T;
+              buttonLabel?: T;
+              buttonUrl?: T;
+              variant?: T;
+              id?: T;
+              blockName?: T;
+            };
+        divider?:
+          | T
+          | {
+              style?: T;
               id?: T;
               blockName?: T;
             };
@@ -2022,108 +2921,11 @@ export interface ArticlesSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        image?:
-          | T
-          | {
-              image?: T;
-              caption?: T;
-              credit?: T;
-              fullWidth?: T;
-              id?: T;
-              blockName?: T;
-            };
-        gallery?:
-          | T
-          | {
-              images?:
-                | T
-                | {
-                    image?: T;
-                    caption?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        pullQuote?:
-          | T
-          | {
-              quote?: T;
-              attribution?: T;
-              id?: T;
-              blockName?: T;
-            };
-        video?:
-          | T
-          | {
-              provider?: T;
-              url?: T;
-              file?: T;
-              caption?: T;
-              id?: T;
-              blockName?: T;
-            };
-        audio?:
-          | T
-          | {
-              title?: T;
-              audioFile?: T;
-              showName?: T;
-              id?: T;
-              blockName?: T;
-            };
-        embed?:
-          | T
-          | {
-              provider?: T;
-              embedUrl?: T;
-              id?: T;
-              blockName?: T;
-            };
-        artistSpotlight?:
-          | T
-          | {
-              artistName?: T;
-              image?: T;
-              description?: T;
-              links?:
-                | T
-                | {
-                    label?: T;
-                    url?: T;
-                    id?: T;
-                  };
-              id?: T;
-              blockName?: T;
-            };
-        relatedArticles?:
-          | T
-          | {
-              articles?: T;
-              id?: T;
-              blockName?: T;
-            };
-        cta?:
-          | T
-          | {
-              headline?: T;
-              body?: T;
-              buttonLabel?: T;
-              buttonUrl?: T;
-              variant?: T;
-              id?: T;
-              blockName?: T;
-            };
-        divider?:
-          | T
-          | {
-              id?: T;
-              blockName?: T;
-            };
         timeline?:
           | T
           | {
               title?: T;
+              style?: T;
               items?:
                 | T
                 | {
@@ -2135,19 +2937,67 @@ export interface ArticlesSelect<T extends boolean = true> {
                     highlight?: T;
                     id?: T;
                   };
-              style?: T;
               id?: T;
               blockName?: T;
             };
       };
+  author?: T;
+  editorialNotes?:
+    | T
+    | {
+        noteType?: T;
+        note?: T;
+        author?: T;
+        createdAt?: T;
+        id?: T;
+      };
+  sources?:
+    | T
+    | {
+        sourceType?: T;
+        title?: T;
+        url?: T;
+        isPrimary?: T;
+        id?: T;
+      };
+  categories?: T;
+  subcategories?: T;
+  tags?: T;
+  series?: T;
+  sponsor?: T;
+  relatedShow?: T;
+  relatedPosdcast?: T;
+  relatedVOD?: T;
+  relatedAlbum?: T;
+  relatedPolls?: T;
+  menuFeature?: T;
+  menuContext?: T;
+  menuDescription?: T;
   aiRanking?:
     | T
     | {
         boost?: T;
         decay?: T;
         freshness?: T;
+        engagementPotential?: T;
+        contentDensity?: T;
         aiNotes?: T;
       };
+  aiMetadata?:
+    | T
+    | {
+        autoSummary?: T;
+        suggestedKeywords?: T;
+      };
+  slug?: T;
+  status?: T;
+  publishDate?: T;
+  scheduledPublishAt?: T;
+  reviewTier?: T;
+  isBreaking?: T;
+  isFeatured?: T;
+  editorPreset?: T;
+  readingTime?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2159,15 +3009,15 @@ export interface ArticlesSelect<T extends boolean = true> {
 export interface ArticleSeriesSelect<T extends boolean = true> {
   title?: T;
   subtitle?: T;
-  slug?: T;
   description?: T;
-  status?: T;
-  isFeatured?: T;
-  hero?:
+  sponsor?: T;
+  leadEditor?: T;
+  branding?:
     | T
     | {
         image?: T;
-        alt?: T;
+        seriesLogo?: T;
+        themeColor?: T;
         credit?: T;
       };
   articles?:
@@ -2178,7 +3028,8 @@ export interface ArticleSeriesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
-  totalArticles?: T;
+  categories?: T;
+  tags?: T;
   editorialNotes?:
     | T
     | {
@@ -2186,6 +3037,10 @@ export interface ArticleSeriesSelect<T extends boolean = true> {
         createdAt?: T;
         id?: T;
       };
+  slug?: T;
+  status?: T;
+  isFeatured?: T;
+  totalArticles?: T;
   seo?:
     | T
     | {
@@ -2198,13 +3053,63 @@ export interface ArticleSeriesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "authors_select".
+ */
+export interface AuthorsSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  fullName?: T;
+  email?: T;
+  bio?: T;
+  avatar?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  beats?: T;
+  aiAuthorityScore?: T;
+  slug?: T;
+  status?: T;
+  role?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "curators_select".
+ */
+export interface CuratorsSelect<T extends boolean = true> {
+  name?: T;
+  curatorType?: T;
+  bio?: T;
+  avatar?: T;
+  links?:
+    | T
+    | {
+        linkedUser?: T;
+        linkedTalent?: T;
+      };
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
   description?: T;
   parent?: T;
+  themeColor?: T;
+  icon?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  slug?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2215,8 +3120,10 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface SubcategoriesSelect<T extends boolean = true> {
   name?: T;
-  slug?: T;
+  description?: T;
   category?: T;
+  themeColorOverride?: T;
+  slug?: T;
   status?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2227,9 +3134,30 @@ export interface SubcategoriesSelect<T extends boolean = true> {
  */
 export interface TagsSelect<T extends boolean = true> {
   label?: T;
+  tagType?: T;
+  description?: T;
+  synonyms?:
+    | T
+    | {
+        term?: T;
+        id?: T;
+      };
+  slug?: T;
+  isFeatured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moods_select".
+ */
+export interface MoodsSelect<T extends boolean = true> {
+  name?: T;
   slug?: T;
   description?: T;
-  isFeatured?: T;
+  themeColor?: T;
+  icon?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2241,6 +3169,13 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   credit?: T;
+  mediaType?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
   prefix?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2304,7 +3239,6 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface MediaTracksSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
   primaryArtist?: T;
   featuredArtists?:
     | T
@@ -2312,14 +3246,37 @@ export interface MediaTracksSelect<T extends boolean = true> {
         name?: T;
         id?: T;
       };
+  isrc?: T;
   releaseDate?: T;
   label?: T;
-  isrc?: T;
   explicit?: T;
+  coverArt?: T;
+  audioFile?: T;
+  previewUrl?: T;
+  bpm?: T;
+  musicalKey?: T;
+  isIndie?: T;
+  isRadioApproved?: T;
+  isChartEligible?: T;
+  dspLinks?:
+    | T
+    | {
+        provider?: T;
+        platformId?: T;
+        url?: T;
+        id?: T;
+      };
   genres?: T;
   moods?: T;
-  audioFile?: T;
-  coverArt?: T;
+  metrics?:
+    | T
+    | {
+        radioPlays?: T;
+        streams?: T;
+        listenerVotes?: T;
+      };
+  source?: T;
+  creator?: T;
   rights?:
     | T
     | {
@@ -2328,21 +3285,10 @@ export interface MediaTracksSelect<T extends boolean = true> {
         territories?: T;
         expiryDate?: T;
       };
-  source?: T;
-  creator?: T;
-  isIndie?: T;
-  isRadioApproved?: T;
-  isChartEligible?: T;
+  slug?: T;
   status?: T;
-  editorialNotes?: T;
-  metrics?:
-    | T
-    | {
-        radioPlays?: T;
-        streams?: T;
-        listenerVotes?: T;
-      };
   album?: T;
+  editorialNotes?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2353,8 +3299,9 @@ export interface MediaTracksSelect<T extends boolean = true> {
  */
 export interface AlbumsSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
+  albumType?: T;
   primaryArtist?: T;
+  label?: T;
   featuredArtists?:
     | T
     | {
@@ -2362,7 +3309,7 @@ export interface AlbumsSelect<T extends boolean = true> {
         id?: T;
       };
   releaseDate?: T;
-  label?: T;
+  upc?: T;
   coverArt?: T;
   tracks?: T;
   manualTracks?:
@@ -2374,9 +3321,386 @@ export interface AlbumsSelect<T extends boolean = true> {
         isExplicit?: T;
         id?: T;
       };
-  status?: T;
+  dspLinks?:
+    | T
+    | {
+        provider?: T;
+        platformId?: T;
+        url?: T;
+        id?: T;
+      };
   editorialNotes?: T;
+  slug?: T;
+  status?: T;
   isFeaturedRelease?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playlists_select".
+ */
+export interface PlaylistsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  playlistType?: T;
+  description?: T;
+  shortDescription?: T;
+  coverImage?: T;
+  featured?: T;
+  publishDate?: T;
+  curator?: T;
+  genres?: T;
+  moods?: T;
+  platformTags?: T;
+  playlistNotes?: T;
+  sponsor?: T;
+  editorialApprovalStatus?: T;
+  tracks?:
+    | T
+    | {
+        track?: T;
+        order?: T;
+        isFeatured?: T;
+        editorNote?: T;
+        id?: T;
+      };
+  dspIntegrations?:
+    | T
+    | {
+        provider?: T;
+        platformId?: T;
+        publicUrl?: T;
+        syncStatus?: T;
+        lastSyncedAt?: T;
+        autoSync?: T;
+        id?: T;
+      };
+  distributionStatus?: T;
+  seoTitle?: T;
+  seoDescription?: T;
+  socialImage?: T;
+  totalTracks?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "podcasts_select".
+ */
+export interface PodcastsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  podcastFormat?: T;
+  hosts?: T;
+  seasons?: T;
+  coverArt?: T;
+  trailer?:
+    | T
+    | {
+        audioFile?: T;
+        duration?: T;
+      };
+  author?: T;
+  language?: T;
+  copyright?: T;
+  isExplicit?: T;
+  categories?: T;
+  distribution?:
+    | T
+    | {
+        applePodcasts?: T;
+        spotify?: T;
+        youtube?: T;
+        wavenation?: T;
+      };
+  ads?:
+    | T
+    | {
+        adsEnabled?: T;
+        disableForPremium?: T;
+        sponsorBrand?: T;
+      };
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "episodes_select".
+ */
+export interface EpisodesSelect<T extends boolean = true> {
+  title?: T;
+  showNotes?: T;
+  episodeType?: T;
+  format?: T;
+  context?:
+    | T
+    | {
+        podcast?: T;
+        radioShow?: T;
+        seasonNumber?: T;
+        episodeNumber?: T;
+      };
+  hosts?: T;
+  audioSource?: T;
+  audioFile?: T;
+  externalAudioUrl?: T;
+  duration?: T;
+  videoContext?:
+    | T
+    | {
+        hasVideo?: T;
+        vodLink?: T;
+      };
+  transcript?: T;
+  chapters?:
+    | T
+    | {
+        timestamp?: T;
+        title?: T;
+        id?: T;
+      };
+  ads?:
+    | T
+    | {
+        overrideSeriesDefaults?: T;
+        preRoll?: T;
+        midRolls?:
+          | T
+          | {
+              offsetSeconds?: T;
+              vastUrl?: T;
+              id?: T;
+            };
+        postRoll?: T;
+      };
+  slug?: T;
+  isExplicit?: T;
+  isFeatured?: T;
+  status?: T;
+  publishDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vod_select".
+ */
+export interface VodSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  vodType?: T;
+  source?: T;
+  tvShowContext?:
+    | T
+    | {
+        series?: T;
+        season?: T;
+        episodeNumber?: T;
+      };
+  streaming?:
+    | T
+    | {
+        hlsUrl?: T;
+        providerAssetId?: T;
+        runtimeSeconds?: T;
+      };
+  fallbackMp4?: T;
+  poster?: T;
+  captions?:
+    | T
+    | {
+        language?: T;
+        vttFile?: T;
+        id?: T;
+      };
+  chapters?:
+    | T
+    | {
+        title?: T;
+        timestampSeconds?: T;
+        id?: T;
+      };
+  visibility?: T;
+  releaseDate?: T;
+  pricing?:
+    | T
+    | {
+        price?: T;
+        currency?: T;
+      };
+  rights?:
+    | T
+    | {
+        rightsHolder?: T;
+        territories?: T;
+        expiryDate?: T;
+      };
+  sponsor?: T;
+  ads?:
+    | T
+    | {
+        adsEnabled?: T;
+        disableForPremium?: T;
+        preRoll?: T;
+        midRoll?: T;
+        midRollOffset?: T;
+        postRoll?: T;
+      };
+  slug?: T;
+  status?: T;
+  publishDate?: T;
+  isFeatured?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "seasons_select".
+ */
+export interface SeasonsSelect<T extends boolean = true> {
+  title?: T;
+  seasonNumber?: T;
+  parentProgram?: T;
+  description?: T;
+  coverArt?: T;
+  trailer?: T;
+  releaseDate?: T;
+  newTalent?: T;
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tvShows_select".
+ */
+export interface TvShowsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  format?: T;
+  network?: T;
+  sponsors?: T;
+  posterArt?: T;
+  heroBanner?: T;
+  trailer?: T;
+  seasons?: T;
+  ageRating?: T;
+  talent?: T;
+  genres?: T;
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tvSchedule_select".
+ */
+export interface TvScheduleSelect<T extends boolean = true> {
+  label?: T;
+  tvShow?: T;
+  vodEpisode?: T;
+  programmingType?: T;
+  liveStream?:
+    | T
+    | {
+        hlsUrl?: T;
+      };
+  scheduleType?: T;
+  timezone?: T;
+  recurringRules?:
+    | T
+    | {
+        daysOfWeek?: T;
+        startTime?: T;
+        endTime?: T;
+        effectiveStartDate?: T;
+        effectiveEndDate?: T;
+      };
+  absoluteTime?:
+    | T
+    | {
+        startDateTime?: T;
+        endDateTime?: T;
+      };
+  conflictPriority?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "radioShows_select".
+ */
+export interface RadioShowsSelect<T extends boolean = true> {
+  title?: T;
+  showType?: T;
+  sponsors?: T;
+  description?: T;
+  hosts?: T;
+  coverArt?: T;
+  logo?: T;
+  themeColor?: T;
+  standardSchedule?:
+    | T
+    | {
+        days?: T;
+        startTime?: T;
+        endTime?: T;
+        timezone?: T;
+      };
+  genres?: T;
+  chart?: T;
+  slug?: T;
+  status?: T;
+  isFeatured?: T;
+  isPodcast?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "radioSchedule_select".
+ */
+export interface RadioScheduleSelect<T extends boolean = true> {
+  label?: T;
+  radioShow?: T;
+  programmingType?: T;
+  liveStream?:
+    | T
+    | {
+        streamUrl?: T;
+      };
+  scheduleType?: T;
+  timezone?: T;
+  recurringRules?:
+    | T
+    | {
+        daysOfWeek?: T;
+        startTime?: T;
+        endTime?: T;
+        effectiveStartDate?: T;
+        effectiveEndDate?: T;
+      };
+  absoluteTime?:
+    | T
+    | {
+        startDateTime?: T;
+        endDateTime?: T;
+      };
+  conflictPriority?: T;
+  status?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2387,12 +3711,9 @@ export interface AlbumsSelect<T extends boolean = true> {
 export interface ChartsSelect<T extends boolean = true> {
   title?: T;
   chartKey?: T;
-  chartMode?: T;
+  description?: T;
+  coverImage?: T;
   playlist?: T;
-  slug?: T;
-  status?: T;
-  publishDate?: T;
-  week?: T;
   weekRange?:
     | T
     | {
@@ -2403,35 +3724,34 @@ export interface ChartsSelect<T extends boolean = true> {
     | T
     | {
         rank?: T;
+        previousRank?: T;
+        peakRank?: T;
+        weeksOnChart?: T;
         movement?: T;
+        accolade?: T;
         manualTrack?:
           | T
           | {
               title?: T;
               artist?: T;
-              isrc?: T;
+              featuredArtists?: T;
               label?: T;
-              releaseDate?: T;
+              isrc?: T;
+              artwork?: T;
+              previewUrl?: T;
             };
+        editorialNote?: T;
         trackTitle?: T;
         artist?: T;
         score?: T;
         id?: T;
       };
-  snapshots?:
-    | T
-    | {
-        week?: T;
-        weekRange?:
-          | T
-          | {
-              startDate?: T;
-              endDate?: T;
-            };
-        entries?: T;
-        createdAt?: T;
-        id?: T;
-      };
+  slug?: T;
+  status?: T;
+  publishDate?: T;
+  week?: T;
+  previousChart?: T;
+  chartMode?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2455,306 +3775,6 @@ export interface ChartSnapshotsSelect<T extends boolean = true> {
         finalScore?: T;
         id?: T;
       };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "vod_select".
- */
-export interface VodSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  vodType?: T;
-  series?: T;
-  season?: T;
-  episodeNumber?: T;
-  status?: T;
-  visibility?: T;
-  video?: T;
-  poster?: T;
-  trailer?: T;
-  description?: T;
-  runtime?: T;
-  releaseDate?: T;
-  genres?: T;
-  tags?:
-    | T
-    | {
-        tag?: T;
-        id?: T;
-      };
-  source?: T;
-  creator?: T;
-  rights?:
-    | T
-    | {
-        rightsHolder?: T;
-        territories?: T;
-        expiryDate?: T;
-      };
-  pricing?:
-    | T
-    | {
-        price?: T;
-        currency?: T;
-      };
-  isFeatured?: T;
-  isTVEligible?: T;
-  distribution?:
-    | T
-    | {
-        web?: T;
-        mobile?: T;
-        tv?: T;
-      };
-  metrics?:
-    | T
-    | {
-        views?: T;
-        watchTime?: T;
-        completionRate?: T;
-      };
-  publishDate?: T;
-  ads?:
-    | T
-    | {
-        adsEnabled?: T;
-        disableForPremium?: T;
-        placements?:
-          | T
-          | {
-              preRoll?: T;
-              midRoll?: T;
-              midRollOffset?: T;
-              postRoll?: T;
-            };
-      };
-  relatedShows?: T;
-  relatedTalent?: T;
-  talentRoles?:
-    | T
-    | {
-        talent?: T;
-        role?: T;
-        id?: T;
-      };
-  release?:
-    | T
-    | {
-        premiereDate?: T;
-        availableDate?: T;
-        timezone?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "radioShows_select".
- */
-export interface RadioShowsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  showType?: T;
-  hosts?: T;
-  schedule?:
-    | T
-    | {
-        days?: T;
-        startTime?: T;
-        endTime?: T;
-      };
-  description?: T;
-  genres?: T;
-  chart?: T;
-  coverArt?: T;
-  isFeatured?: T;
-  isPodcast?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "radioSchedule_select".
- */
-export interface RadioScheduleSelect<T extends boolean = true> {
-  label?: T;
-  scheduleType?: T;
-  radioShow?: T;
-  episode?: T;
-  chart?: T;
-  daysOfWeek?: T;
-  startDate?: T;
-  endDate?: T;
-  startTime?: T;
-  endTime?: T;
-  priority?: T;
-  overrideReason?: T;
-  isLive?: T;
-  isReplay?: T;
-  isAutomation?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "podcasts_select".
- */
-export interface PodcastsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  description?: T;
-  hosts?: T;
-  coverArt?: T;
-  distribution?:
-    | T
-    | {
-        applePodcasts?: T;
-        spotify?: T;
-        youtube?: T;
-        wavenation?: T;
-      };
-  status?: T;
-  audio?:
-    | T
-    | {
-        audioSource?: T;
-        audioFile?: T;
-        audioUrl?: T;
-        duration?: T;
-      };
-  ads?:
-    | T
-    | {
-        adsEnabled?: T;
-        disableForPremium?: T;
-        placements?:
-          | T
-          | {
-              preRoll?: T;
-              midRoll?:
-                | T
-                | {
-                    offset?: T;
-                    vastUrl?: T;
-                    id?: T;
-                  };
-              postRoll?: T;
-            };
-      };
-  sponsor?:
-    | T
-    | {
-        brandName?: T;
-        disclosure?: T;
-        audioClip?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "episodes_select".
- */
-export interface EpisodesSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  episodeType?: T;
-  podcast?: T;
-  radioShow?: T;
-  audio?: T;
-  hasVideo?: T;
-  vod?: T;
-  description?: T;
-  duration?: T;
-  hosts?: T;
-  isExplicit?: T;
-  isFeatured?: T;
-  distribution?:
-    | T
-    | {
-        podcastPlatforms?: T;
-        radioReplay?: T;
-        web?: T;
-        mobile?: T;
-        tv?: T;
-      };
-  status?: T;
-  publishDate?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playlists_select".
- */
-export interface PlaylistsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  playlistType?: T;
-  description?: T;
-  shortDescription?: T;
-  coverImage?: T;
-  featured?: T;
-  publishDate?: T;
-  curator?: T;
-  genres?: T;
-  moods?: T;
-  platformTags?: T;
-  playlistNotes?: T;
-  sponsorName?: T;
-  editorialApprovalStatus?: T;
-  tracks?:
-    | T
-    | {
-        track?: T;
-        order?: T;
-        isFeatured?: T;
-        editorNote?: T;
-        id?: T;
-      };
-  externalLinks?:
-    | T
-    | {
-        spotify?: T;
-        appleMusic?: T;
-        youtubeMusic?: T;
-        audiomack?: T;
-        tidal?: T;
-      };
-  distributionStatus?: T;
-  seoTitle?: T;
-  seoDescription?: T;
-  socialImage?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "talent_select".
- */
-export interface TalentSelect<T extends boolean = true> {
-  displayName?: T;
-  slug?: T;
-  role?: T;
-  bio?: T;
-  photo?: T;
-  socials?:
-    | T
-    | {
-        instagram?: T;
-        twitter?: T;
-        youtube?: T;
-        tiktok?: T;
-      };
-  user?: T;
-  isFeatured?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2800,19 +3820,15 @@ export interface PollVotesSelect<T extends boolean = true> {
  */
 export interface EventsSelect<T extends boolean = true> {
   title?: T;
-  slug?: T;
   excerpt?: T;
   description?: T;
   eventType?: T;
-  status?: T;
+  contentVertical?: T;
   startDate?: T;
   endDate?: T;
   timezone?: T;
   heroImage?: T;
   thumbnail?: T;
-  hostName?: T;
-  guestName?: T;
-  sponsorNames?: T;
   agenda?:
     | T
     | {
@@ -2828,74 +3844,178 @@ export interface EventsSelect<T extends boolean = true> {
         answer?: T;
         id?: T;
       };
-  virtualEventLabel?: T;
+  venue?: T;
+  hosts?: T;
+  guests?: T;
+  sponsors?: T;
+  watchPageEnabled?: T;
+  watchPagePath?: T;
   livestreamPlatform?: T;
-  replayUrl?: T;
-  livestreamAccessInstructions?: T;
+  streamHealthStatus?: T;
+  cloudflarePlaybackId?: T;
   streamEmbedUrl?: T;
-  eventbriteEventId?: T;
-  eventbriteUrl?: T;
-  eventbriteSyncEnabled?: T;
-  eventbriteLastSyncedAt?: T;
+  messaging?:
+    | T
+    | {
+        preLiveMessage?: T;
+        postEventMessage?: T;
+        livestreamAccessInstructions?: T;
+      };
+  replay?:
+    | T
+    | {
+        replayEnabled?: T;
+        replayAvailableImmediately?: T;
+        replayAvailableAt?: T;
+        replayExpiresAt?: T;
+        cloudflareReplayPlaybackId?: T;
+        replayUrl?: T;
+      };
   visibility?: T;
   accessType?: T;
   registrationRequired?: T;
+  loginRequired?: T;
+  ticketVerificationRequired?: T;
   capacity?: T;
+  requiredSubscriptionTier?: T;
+  accessDeniedMessage?: T;
+  eventbrite?:
+    | T
+    | {
+        eventbriteEventId?: T;
+        eventbriteUrl?: T;
+        eventbriteSyncEnabled?: T;
+        eventbriteLastSyncedAt?: T;
+      };
   ctaLabel?: T;
   ctaUrl?: T;
-  relatedArticles?: T;
-  relatedRadioShows?: T;
-  relatedVOD?: T;
-  relatedPlaylists?: T;
-  contentVertical?: T;
-  promotionTier?: T;
-  isFeatured?: T;
-  onAirMention?: T;
-  homepagePlacement?: T;
-  homepagePriority?: T;
-  watchPageEnabled?: T;
-  watchPagePath?: T;
-  cloudflarePlaybackId?: T;
-  cloudflareReplayPlaybackId?: T;
-  streamProviderLabel?: T;
-  streamHealthStatus?: T;
-  preLiveMessage?: T;
-  postEventMessage?: T;
-  streamTestingNotes?: T;
   chatEnabled?: T;
   qaEnabled?: T;
   reactionsEnabled?: T;
   chatMode?: T;
   chatEmbedUrl?: T;
+  moderators?: T;
   qaPrompt?: T;
   viewerNotice?: T;
   audienceGuidelines?: T;
-  replayEnabled?: T;
-  replayAvailableImmediately?: T;
-  replayAvailableAt?: T;
-  replayExpiresAt?: T;
-  replayLabel?: T;
-  replayThumbnailOverride?: T;
-  loginRequired?: T;
-  ticketVerificationRequired?: T;
-  memberTierRequired?: T;
-  accessCodeLabel?: T;
-  accessDeniedMessage?: T;
-  producerName?: T;
-  moderatorName?: T;
-  technicalDirectorName?: T;
-  runOfShowUrl?: T;
-  greenRoomUrl?: T;
-  productionNotes?: T;
+  productionTeam?:
+    | T
+    | {
+        producerName?: T;
+        technicalDirectorName?: T;
+        runOfShowUrl?: T;
+        greenRoomUrl?: T;
+        productionNotes?: T;
+        streamTestingNotes?: T;
+      };
+  relatedContent?:
+    | T
+    | {
+        relatedArticles?: T;
+        relatedRadioShows?: T;
+        relatedVOD?: T;
+        relatedPlaylists?: T;
+      };
+  seo?:
+    | T
+    | {
+        seoTitle?: T;
+        seoDescription?: T;
+        seoImage?: T;
+      };
+  slug?: T;
+  status?: T;
+  promotionTier?: T;
+  isFeatured?: T;
+  homepagePlacement?: T;
+  homepagePriority?: T;
+  onAirMention?: T;
   internalNotes?: T;
-  seoTitle?: T;
-  seoDescription?: T;
-  seoImage?: T;
-  socialShareTitle?: T;
-  socialShareDescription?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "venues_select".
+ */
+export interface VenuesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  venueType?: T;
+  capacity?: T;
+  photos?: T;
+  address?: T;
+  city?: T;
+  state?: T;
+  country?: T;
+  timezone?: T;
+  lat?: T;
+  lng?: T;
+  internetSpeed?: T;
+  defaultRtmpIngest?: T;
+  muxLiveStreamId?: T;
+  cloudflareLiveInputId?: T;
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "talent_select".
+ */
+export interface TalentSelect<T extends boolean = true> {
+  firstName?: T;
+  lastName?: T;
+  displayName?: T;
+  shortBio?: T;
+  fullBio?: T;
+  mediaAssets?:
+    | T
+    | {
+        headshot?: T;
+        heroBanner?: T;
+        pressKit?: T;
+      };
+  associatedShows?: T;
+  associatedPodcasts?: T;
+  curatedPlaylists?: T;
+  socials?:
+    | T
+    | {
+        instagram?: T;
+        twitter?: T;
+        youtube?: T;
+        tiktok?: T;
+      };
+  bookingInfo?:
+    | T
+    | {
+        managerName?: T;
+        bookingEmail?: T;
+        isPublic?: T;
+      };
+  slug?: T;
+  status?: T;
+  role?: T;
+  isFeatured?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "moderators_select".
+ */
+export interface ModeratorsSelect<T extends boolean = true> {
+  displayName?: T;
+  user?: T;
+  permissions?: T;
+  assignedEvents?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2933,6 +4053,163 @@ export interface EventChatMessagesSelect<T extends boolean = true> {
   viewerSessionId?: T;
   ipAddress?: T;
   moderatorNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sponsors_select".
+ */
+export interface SponsorsSelect<T extends boolean = true> {
+  name?: T;
+  website?: T;
+  description?: T;
+  logoDark?: T;
+  logoLight?: T;
+  tier?: T;
+  activeCampaigns?: T;
+  contactInfo?:
+    | T
+    | {
+        contactName?: T;
+        email?: T;
+      };
+  slug?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ads_select".
+ */
+export interface AdsSelect<T extends boolean = true> {
+  campaignName?: T;
+  sponsor?: T;
+  adType?: T;
+  destinationUrl?: T;
+  vastUrl?: T;
+  ssaiFallbackVideo?: T;
+  muxAssetId?: T;
+  desktopImage?: T;
+  mobileImage?: T;
+  headline?: T;
+  ctaText?: T;
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adZones_select".
+ */
+export interface AdZonesSelect<T extends boolean = true> {
+  zoneId?: T;
+  description?: T;
+  activeFill?:
+    | T
+    | {
+        fillType?: T;
+        adCampaign?: T;
+        sponsorFill?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "promoBanners_select".
+ */
+export interface PromoBannersSelect<T extends boolean = true> {
+  internalName?: T;
+  placement?: T;
+  headline?: T;
+  subheadline?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  desktopAsset?: T;
+  mobileAsset?: T;
+  videoBackground?:
+    | T
+    | {
+        cloudflarePlaybackId?: T;
+      };
+  targeting?:
+    | T
+    | {
+        audience?: T;
+      };
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "alerts_select".
+ */
+export interface AlertsSelect<T extends boolean = true> {
+  internalName?: T;
+  alertType?: T;
+  theme?: T;
+  headline?: T;
+  message?: T;
+  ctaLabel?: T;
+  ctaUrl?: T;
+  targeting?:
+    | T
+    | {
+        showOnPaths?: T;
+        dismissible?: T;
+      };
+  status?: T;
+  startDate?: T;
+  endDate?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sidebars_select".
+ */
+export interface SidebarsSelect<T extends boolean = true> {
+  internalName?: T;
+  widgets?:
+    | T
+    | {
+        newsletter?:
+          | T
+          | {
+              headline?: T;
+              hubspotFormId?: T;
+              id?: T;
+              blockName?: T;
+            };
+        trendingArticles?:
+          | T
+          | {
+              limit?: T;
+              id?: T;
+              blockName?: T;
+            };
+        adZone?:
+          | T
+          | {
+              zone?: T;
+              id?: T;
+              blockName?: T;
+            };
+        promoBanner?:
+          | T
+          | {
+              banner?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2998,6 +4275,181 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  siteTitle: string;
+  tagline?: string | null;
+  defaultSeoDescription?: string | null;
+  /**
+   * Fallback image for social sharing (1200x630).
+   */
+  defaultShareImage?: (number | null) | Media;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
+  youtubeUrl?: string | null;
+  tiktokUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Manage the main mega-menu navigation.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-config".
+ */
+export interface NavConfig {
+  id: number;
+  mainNav?:
+    | {
+        label: string;
+        href: string;
+        /**
+         * The highlighted card on the left side of the mega menu.
+         */
+        featured?: {
+          eyebrow?: string | null;
+          title?: string | null;
+          description?: string | null;
+          href?: string | null;
+          accent?: ('blue' | 'magenta' | 'news' | 'brand') | null;
+        };
+        /**
+         * Link columns displayed in the mega menu.
+         */
+        columns?:
+          | {
+              label: string;
+              /**
+               * Lucide Icon name (e.g. "Music4")
+               */
+              icon?: string | null;
+              links?:
+                | {
+                    label: string;
+                    href: string;
+                    badge?: ('none' | 'new' | 'live' | 'trending' | 'editor-pick') | null;
+                    id?: string | null;
+                  }[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer-config".
+ */
+export interface FooterConfig {
+  id: number;
+  columns?:
+    | {
+        label: string;
+        links?:
+          | {
+              label: string;
+              href: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  legalLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Controls the global news ticker behavior.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news-ticker-settings".
+ */
+export interface NewsTickerSetting {
+  id: number;
+  defaultLabel?: string | null;
+  /**
+   * DANGER: Overrides the ticker red for emergencies.
+   */
+  isCrisisMode?: boolean | null;
+  /**
+   * Force specific links/text into the ticker rotation alongside API data.
+   */
+  manualInjects?:
+    | {
+        label: string;
+        href?: string | null;
+        isBreaking?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Construct the dynamic homepage layout.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage".
+ */
+export interface Homepage {
+  id: number;
+  modules?:
+    | (
+        | {
+            featuredArticle?: (number | null) | Article;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'featuredHero';
+          }
+        | {
+            title?: string | null;
+            type?: ('Articles' | 'VOD' | 'Events') | null;
+            manualItems?:
+              | (
+                  | {
+                      relationTo: 'articles';
+                      value: number | Article;
+                    }
+                  | {
+                      relationTo: 'vod';
+                      value: number | Vod;
+                    }
+                  | {
+                      relationTo: 'events';
+                      value: number | Event;
+                    }
+                )[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'contentGrid';
+          }
+        | {
+            adZone: number | AdZone;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'adZoneInsert';
+          }
+      )[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "event-settings".
  */
 export interface EventSetting {
@@ -3013,6 +4465,147 @@ export interface EventSetting {
   eventbriteOrganizationId?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteTitle?: T;
+  tagline?: T;
+  defaultSeoDescription?: T;
+  defaultShareImage?: T;
+  instagramUrl?: T;
+  twitterUrl?: T;
+  youtubeUrl?: T;
+  tiktokUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "nav-config_select".
+ */
+export interface NavConfigSelect<T extends boolean = true> {
+  mainNav?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        featured?:
+          | T
+          | {
+              eyebrow?: T;
+              title?: T;
+              description?: T;
+              href?: T;
+              accent?: T;
+            };
+        columns?:
+          | T
+          | {
+              label?: T;
+              icon?: T;
+              links?:
+                | T
+                | {
+                    label?: T;
+                    href?: T;
+                    badge?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "footer-config_select".
+ */
+export interface FooterConfigSelect<T extends boolean = true> {
+  columns?:
+    | T
+    | {
+        label?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  legalLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "news-ticker-settings_select".
+ */
+export interface NewsTickerSettingsSelect<T extends boolean = true> {
+  defaultLabel?: T;
+  isCrisisMode?: T;
+  manualInjects?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        isBreaking?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage_select".
+ */
+export interface HomepageSelect<T extends boolean = true> {
+  modules?:
+    | T
+    | {
+        featuredHero?:
+          | T
+          | {
+              featuredArticle?: T;
+              id?: T;
+              blockName?: T;
+            };
+        contentGrid?:
+          | T
+          | {
+              title?: T;
+              type?: T;
+              manualItems?: T;
+              id?: T;
+              blockName?: T;
+            };
+        adZoneInsert?:
+          | T
+          | {
+              adZone?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -1,5 +1,5 @@
 // src/collections/Playlists.ts
-import type { CollectionConfig, FieldHook } from 'payload'
+import type { CollectionConfig, FieldHook, CollectionBeforeChangeHook } from 'payload'
 
 const slugify = (value: string): string =>
   value
@@ -15,64 +15,57 @@ const hasEditorAccess = (req: any): boolean =>
 const hasAdminAccess = (req: any): boolean => Boolean(req.user?.roles?.includes('admin'))
 
 const autoSlug: FieldHook = ({ data, operation, value }) => {
-  if (typeof value === 'string' && value.trim()) {
-    return slugify(value)
-  }
-
-  if (data?.title && (operation === 'create' || !value)) {
-    return slugify(data.title)
-  }
-
+  if (typeof value === 'string' && value.trim()) return slugify(value)
+  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
   return value
+}
+
+// Auto-calculate track count before saving
+const calculatePlaylistMetrics: CollectionBeforeChangeHook = ({ data }) => {
+  if (Array.isArray(data.tracks)) {
+    data.totalTracks = data.tracks.length
+  } else {
+    data.totalTracks = 0
+  }
+  return data
 }
 
 export const Playlists: CollectionConfig = {
   slug: 'playlists',
-
   labels: {
     singular: 'Playlist',
     plural: 'Playlists',
   },
-
   admin: {
     useAsTitle: 'title',
     group: 'Music & Programming',
-    defaultColumns: ['title', 'playlistType', 'featured', 'publishDate', 'updatedAt'],
+    defaultColumns: ['title', 'playlistType', 'featured', 'totalTracks', 'publishDate'],
     description:
       'Editorial, chart, creator, and sponsored playlists used across WaveNation surfaces.',
   },
-
   access: {
     read: () => true,
     create: ({ req }) => hasEditorAccess(req),
     update: ({ req }) => hasEditorAccess(req),
     delete: ({ req }) => hasAdminAccess(req),
   },
-
   versions: {
     drafts: {
-      autosave: {
-        interval: 300,
-      },
+      autosave: { interval: 300 },
       schedulePublish: true,
     },
     maxPerDoc: 50,
   },
-
   timestamps: true,
-
   hooks: {
     beforeChange: [
+      calculatePlaylistMetrics,
       ({ data }) => {
-        if (!data?.publishDate) {
-          return data
-        }
-
+        if (!data?.publishDate) return data
         return data
       },
     ],
   },
-
   fields: [
     {
       type: 'tabs',
@@ -84,21 +77,15 @@ export const Playlists: CollectionConfig = {
               name: 'title',
               type: 'text',
               required: true,
-              admin: {
-                description: 'Public-facing playlist title.',
-              },
+              admin: { description: 'Public-facing playlist title.' },
             },
             {
               name: 'slug',
               type: 'text',
               unique: true,
               index: true,
-              hooks: {
-                beforeValidate: [autoSlug],
-              },
-              admin: {
-                description: 'URL-safe slug. Auto-generated from title if left blank.',
-              },
+              hooks: { beforeValidate: [autoSlug] },
+              admin: { description: 'URL-safe slug. Auto-generated from title if left blank.' },
             },
             {
               name: 'playlistType',
@@ -110,32 +97,24 @@ export const Playlists: CollectionConfig = {
                 { label: 'Creator Curated', value: 'creator' },
                 { label: 'Sponsored', value: 'sponsored' },
               ],
-              admin: {
-                description: 'Determines playlist ownership and workflow.',
-              },
+              admin: { description: 'Determines playlist ownership and workflow.' },
             },
             {
               name: 'description',
               type: 'textarea',
-              admin: {
-                description: 'Public description used on playlist pages and embeds.',
-              },
+              admin: { description: 'Public description used on playlist pages and embeds.' },
             },
             {
               name: 'shortDescription',
               type: 'text',
               maxLength: 180,
-              admin: {
-                description: 'Short summary for cards, previews, and app surfaces.',
-              },
+              admin: { description: 'Short summary for cards, previews, and app surfaces.' },
             },
             {
               name: 'coverImage',
               type: 'upload',
               relationTo: 'media',
-              admin: {
-                description: 'Primary artwork for the playlist.',
-              },
+              admin: { description: 'Primary artwork for the playlist.' },
             },
             {
               name: 'featured',
@@ -150,9 +129,7 @@ export const Playlists: CollectionConfig = {
               type: 'date',
               admin: {
                 position: 'sidebar',
-                date: {
-                  pickerAppearance: 'dayAndTime',
-                },
+                date: { pickerAppearance: 'dayAndTime' },
                 description: 'Used for scheduling and sorting published playlists.',
               },
             },
@@ -189,20 +166,10 @@ export const Playlists: CollectionConfig = {
             },
             {
               name: 'moods',
-              type: 'select',
+              type: 'relationship',
+              relationTo: 'moods',
               hasMany: true,
-              options: [
-                { label: 'Late Night', value: 'late-night' },
-                { label: 'Uplifting', value: 'uplifting' },
-                { label: 'Chill', value: 'chill' },
-                { label: 'Workout', value: 'workout' },
-                { label: 'Romantic', value: 'romantic' },
-                { label: 'Party', value: 'party' },
-                { label: 'Inspirational', value: 'inspirational' },
-                { label: 'Throwback', value: 'throwback' },
-                { label: 'Current', value: 'current' },
-                { label: 'Sunday', value: 'sunday' },
-              ],
+              admin: { description: 'Link to defined Mood taxonomies.' },
             },
             {
               name: 'platformTags',
@@ -215,20 +182,19 @@ export const Playlists: CollectionConfig = {
             {
               name: 'playlistNotes',
               type: 'textarea',
-              admin: {
-                description: 'Internal curation rationale, notes, or governance comments.',
-              },
+              admin: { description: 'Internal curation rationale, notes, or governance comments.' },
               access: {
                 read: ({ req }) => hasEditorAccess(req),
                 update: ({ req }) => hasEditorAccess(req),
               },
             },
             {
-              name: 'sponsorName',
-              type: 'text',
+              name: 'sponsor',
+              type: 'relationship',
+              relationTo: 'sponsors',
               admin: {
                 condition: (_, siblingData) => siblingData?.playlistType === 'sponsored',
-                description: 'Sponsor name for sponsored playlists.',
+                description: 'Official sponsor for this branded playlist.',
               },
             },
             {
@@ -244,9 +210,7 @@ export const Playlists: CollectionConfig = {
                 read: ({ req }) => hasEditorAccess(req),
                 update: ({ req }) => hasEditorAccess(req),
               },
-              admin: {
-                description: 'Internal review workflow status.',
-              },
+              admin: { description: 'Internal review workflow status.' },
             },
           ],
         },
@@ -258,40 +222,19 @@ export const Playlists: CollectionConfig = {
               name: 'tracks',
               type: 'array',
               minRows: 1,
-              admin: {
-                description: 'Ordered list of tracks included in this playlist.',
-              },
+              admin: { description: 'Ordered list of tracks included in this playlist.' },
               validate: (value: unknown) => {
                 if (!Array.isArray(value)) return true
-
                 const orders = value
                   .map((item: { order?: number | null }) => item?.order)
                   .filter((order): order is number => typeof order === 'number')
-
                 const hasDuplicates = new Set(orders).size !== orders.length
-
-                if (hasDuplicates) {
-                  return 'Track order values must be unique.'
-                }
-
+                if (hasDuplicates) return 'Track order values must be unique.'
                 return true
               },
               fields: [
-                {
-                  name: 'track',
-                  type: 'relationship',
-                  relationTo: 'mediaTracks',
-                  required: true,
-                },
-                {
-                  name: 'order',
-                  type: 'number',
-                  required: true,
-                  admin: {
-                    width: '50%',
-                    step: 1,
-                  },
-                },
+                { name: 'track', type: 'relationship', relationTo: 'mediaTracks', required: true },
+                { name: 'order', type: 'number', required: true, admin: { width: '50%', step: 1 } },
                 {
                   name: 'isFeatured',
                   type: 'checkbox',
@@ -318,31 +261,70 @@ export const Playlists: CollectionConfig = {
         },
 
         {
-          label: 'Links & Distribution',
+          label: 'DSP & API Sync',
           fields: [
             {
-              name: 'externalLinks',
-              type: 'group',
+              name: 'dspIntegrations',
+              type: 'array',
+              admin: {
+                description:
+                  'Manage API IDs and Sync Statuses for external platforms like Spotify and Apple Music.',
+              },
               fields: [
                 {
-                  name: 'spotify',
-                  type: 'text',
+                  name: 'provider',
+                  type: 'select',
+                  required: true,
+                  options: [
+                    { label: 'Spotify', value: 'spotify' },
+                    { label: 'Apple Music', value: 'appleMusic' },
+                    { label: 'YouTube Music', value: 'youtubeMusic' },
+                    { label: 'Audiomack', value: 'audiomack' },
+                    { label: 'Tidal', value: 'tidal' },
+                  ],
+                  admin: { width: '50%' },
                 },
                 {
-                  name: 'appleMusic',
+                  name: 'platformId',
                   type: 'text',
+                  admin: {
+                    width: '50%',
+                    description:
+                      'The official Playlist ID from the DSP (e.g., 37i9dQZF1DXcBWIGoYBM5M).',
+                  },
                 },
                 {
-                  name: 'youtubeMusic',
+                  name: 'publicUrl',
                   type: 'text',
+                  admin: {
+                    description: 'The public sharable link (e.g., open.spotify.com/playlist/...)',
+                  },
                 },
                 {
-                  name: 'audiomack',
-                  type: 'text',
-                },
-                {
-                  name: 'tidal',
-                  type: 'text',
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'syncStatus',
+                      type: 'select',
+                      defaultValue: 'pending',
+                      options: [
+                        { label: 'Pending / Out of Sync', value: 'pending' },
+                        { label: 'Synced', value: 'synced' },
+                        { label: 'Failed', value: 'failed' },
+                      ],
+                      admin: { width: '33%', readOnly: true }, // Usually updated by your backend API webhook
+                    },
+                    { name: 'lastSyncedAt', type: 'date', admin: { width: '33%', readOnly: true } },
+                    {
+                      name: 'autoSync',
+                      type: 'checkbox',
+                      defaultValue: true,
+                      admin: {
+                        width: '33%',
+                        description: 'Enable automatic push to this DSP via API.',
+                      },
+                    },
+                  ],
                 },
               ],
             },
@@ -354,15 +336,8 @@ export const Playlists: CollectionConfig = {
                 { label: 'Website', value: 'website' },
                 { label: 'Mobile App', value: 'mobile-app' },
                 { label: 'TV App', value: 'tv-app' },
-                { label: 'Spotify', value: 'spotify' },
-                { label: 'Apple Music', value: 'apple-music' },
-                { label: 'YouTube Music', value: 'youtube-music' },
-                { label: 'Audiomack', value: 'audiomack' },
-                { label: 'Tidal', value: 'tidal' },
               ],
-              admin: {
-                description: 'Surfaces where the playlist has already been published or synced.',
-              },
+              admin: { description: 'Internal surfaces where the playlist is visible.' },
             },
           ],
         },
@@ -370,24 +345,22 @@ export const Playlists: CollectionConfig = {
         {
           label: 'SEO',
           fields: [
-            {
-              name: 'seoTitle',
-              type: 'text',
-              maxLength: 60,
-            },
-            {
-              name: 'seoDescription',
-              type: 'textarea',
-              maxLength: 160,
-            },
-            {
-              name: 'socialImage',
-              type: 'upload',
-              relationTo: 'media',
-            },
+            { name: 'seoTitle', type: 'text', maxLength: 60 },
+            { name: 'seoDescription', type: 'textarea', maxLength: 160 },
+            { name: 'socialImage', type: 'upload', relationTo: 'media' },
           ],
         },
       ],
     },
+    /* ===============================
+       Sidebar Fields (Auto-Calculated)
+    =============================== */
+    {
+      name: 'totalTracks',
+      type: 'number',
+      admin: { position: 'sidebar', readOnly: true, description: 'Auto-calculated sum of tracks.' },
+    },
   ],
 }
+
+export default Playlists

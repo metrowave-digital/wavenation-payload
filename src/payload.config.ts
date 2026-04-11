@@ -10,44 +10,72 @@ import sharp from 'sharp'
    COLLECTION IMPORTS
 ====================================================== */
 
+// System & Users
 import { Users } from './collections/Users'
 import { PayloadPreferences } from './collections/PayloadPreferences'
+import { Subscriptions } from './collections/Subscriptions'
 
+// Editorial & Content
 import { Articles } from './collections/Articles'
 import { ArticleSeries } from './collections/ArticleSeries'
-import { Media } from './collections/Media'
+import { Authors } from './collections/Authors'
+import { Curators } from './collections/Curators'
+
+// Taxonomy
 import { Categories } from './collections/Categories'
 import { Subcategories } from './collections/Subcategories'
 import { Tags } from './collections/Tags'
+import { Moods } from './collections/Moods'
 
+// Media & Audio
+import { Media } from './collections/Media'
 import { MediaTracks } from './collections/MediaTracks'
 import { Albums } from './collections/Albums'
+import { Playlists } from './collections/Playlists'
+import { Podcasts } from './collections/Podcasts'
+import { Episodes } from './collections/Episodes'
 
-import { Charts } from './collections/Charts'
-import { ChartSnapshots } from './collections/ChartSnapshots'
-
+// Video, TV & Radio
 import { VOD } from './collections/VOD'
-
+import { Seasons } from './collections/Seasons'
+import { TVShows } from './collections/TVShows'
+import { TVSchedule } from './collections/TVSchedule'
 import { RadioShows } from './collections/RadioShows'
 import { RadioSchedule } from './collections/RadioSchedule'
 
-import { Podcasts } from './collections/Podcasts'
-import { Episodes } from './collections/Episodes'
-import { Playlists } from './collections/Playlists'
-
+// Charts & Engagement
+import { Charts } from './collections/Charts'
+import { ChartSnapshots } from './collections/ChartSnapshots'
 import { Polls } from './collections/Polls'
 import { PollVotes } from './collections/PollVotes'
 
-import { Talent } from './collections/Talent'
-
+// Events & Talent
 import { Events } from './collections/Events'
+import { Venues } from './collections/Venues'
+import { Talent } from './collections/Talent'
+import { Moderators } from './collections/Moderators'
 import { EventQuestions } from './collections/EventQuestions'
 import { EventChatMessages } from './collections/EventChatMessages'
+
+// Monetization, Ads & Marketing
+import { Sponsors } from './collections/Sponsors'
+import { Ads } from './collections/Ads'
+import { AdZones } from './collections/AdZones'
+import { PromoBanners } from './collections/PromoBanners'
+import { Alerts } from './collections/Alerts'
+
+// UI & Layouts
+import { Sidebars } from './collections/Sidebars'
 
 /* ======================================================
    GLOBAL IMPORTS
 ====================================================== */
 
+import { SiteSettings } from './globals/SiteSettings'
+import { NavConfig } from './globals/NavConfig'
+import { FooterConfig } from './globals/FooterConfig'
+import { NewsTickerSettings } from './globals/NewsTickerSettings'
+import { Homepage } from './globals/Homepage'
 import { EventSettings } from './globals/EventSettings'
 
 /* ======================================================
@@ -78,54 +106,65 @@ export default buildConfig({
   },
 
   collections: [
-    /* ===== AUTH & USERS ===== */
+    /* ===== SYSTEM & USERS ===== */
     Users,
     PayloadPreferences,
+    Subscriptions,
 
     /* ===== EDITORIAL ===== */
     Articles,
     ArticleSeries,
+    Authors,
+    Curators,
+
+    /* ===== TAXONOMY ===== */
     Categories,
     Subcategories,
     Tags,
+    Moods,
 
-    /* ===== MEDIA ===== */
+    /* ===== MEDIA & AUDIO ===== */
     Media,
     MediaTracks,
     Albums,
-
-    /* ===== CHARTS ===== */
-    Charts,
-    ChartSnapshots,
-
-    /* ===== VIDEO ===== */
-    VOD,
-
-    /* ===== RADIO ===== */
-    RadioShows,
-    RadioSchedule,
-
-    /* ===== PODCASTS / EPISODES ===== */
+    Playlists,
     Podcasts,
     Episodes,
 
-    /* ===== PLAYLISTS ===== */
-    Playlists,
+    /* ===== VIDEO & BROADCAST ===== */
+    VOD,
+    Seasons,
+    TVShows,
+    TVSchedule,
+    RadioShows,
+    RadioSchedule,
 
-    /* ===== PEOPLE ===== */
-    Talent,
-
-    /* ===== POLLS ===== */
+    /* ===== CHARTS & ENGAGEMENT ===== */
+    Charts,
+    ChartSnapshots,
     Polls,
     PollVotes,
 
-    /* ===== EVENTS ===== */
+    /* ===== EVENTS & TALENT ===== */
     Events,
+    Venues,
+    Talent,
+    Moderators,
     EventQuestions,
     EventChatMessages,
+
+    /* ===== MONETIZATION & ADS ===== */
+    Sponsors,
+    Ads,
+    AdZones,
+
+    /* ===== UI & MARKETING ===== */
+    PromoBanners,
+    Alerts,
+    Sidebars,
   ],
 
-  globals: [EventSettings],
+  globals: [SiteSettings, NavConfig, FooterConfig, NewsTickerSettings, Homepage, EventSettings],
 
   editor: lexicalEditor(),
 

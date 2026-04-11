@@ -1,69 +1,228 @@
-import type { CollectionConfig } from 'payload'
+// src/collections/VOD.ts
+import type { CollectionConfig, FieldHook } from 'payload'
+
+const slugify = (value: string): string =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/['’]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+const autoSlug: FieldHook = ({ data, operation, value }) => {
+  if (typeof value === 'string' && value.trim()) return slugify(value)
+  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
+  return value
+}
 
 export const VOD: CollectionConfig = {
   slug: 'vod',
-  labels: {
-    singular: 'VOD Item',
-    plural: 'VOD Library',
-  },
-
+  labels: { singular: 'VOD Item', plural: 'VOD Library' },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'vodType', 'visibility', 'status', 'publishDate', 'updatedAt'],
+    defaultColumns: ['title', 'vodType', 'visibility', 'status', 'publishDate'],
     group: 'Video & TV',
   },
-
-  versions: {
-    drafts: true,
-    maxPerDoc: 25,
-  },
-
-  access: {
-    read: () => true,
-
-    create: ({ req }) =>
-      Boolean(
-        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
-      ),
-
-    update: ({ req }) =>
-      Boolean(
-        req.user && (req.user.roles?.includes('editor') || req.user.roles?.includes('admin')),
-      ),
-
-    delete: ({ req }) => Boolean(req.user && req.user.roles?.includes('admin')),
-  },
-
+  versions: { drafts: true, maxPerDoc: 25 },
+  access: { read: () => true },
   fields: [
-    { name: 'title', type: 'text', required: true },
-    { name: 'slug', type: 'text', unique: true, admin: { position: 'sidebar' } },
-
     {
-      name: 'vodType',
-      type: 'select',
-      required: true,
-      options: [
-        { label: 'Episode', value: 'episode' },
-        { label: 'Series', value: 'series' },
-        { label: 'Film', value: 'film' },
-        { label: 'Documentary', value: 'documentary' },
-        { label: 'Clip', value: 'clip' },
-        { label: 'Live Replay', value: 'liveReplay' },
-        { label: 'Special', value: 'special' },
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Core Info',
+          fields: [
+            { name: 'title', type: 'text', required: true },
+            { name: 'description', type: 'textarea' },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'vodType',
+                  type: 'select',
+                  required: true,
+                  admin: { width: '50%' },
+                  options: [
+                    { label: 'Episode', value: 'episode' },
+                    { label: 'Film', value: 'film' },
+                    { label: 'Documentary', value: 'documentary' },
+                    { label: 'Clip', value: 'clip' },
+                    { label: 'Live Replay', value: 'liveReplay' },
+                  ],
+                },
+                {
+                  name: 'source',
+                  type: 'select',
+                  admin: { width: '50%' },
+                  options: [
+                    { label: 'WaveNation Original', value: 'original' },
+                    { label: 'Creator Hub', value: 'creator' },
+                    { label: 'Partner', value: 'partner' },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'tvShowContext',
+              type: 'group',
+              admin: { condition: (_, data) => ['episode', 'clip'].includes(data?.vodType) },
+              fields: [
+                { name: 'series', type: 'relationship', relationTo: 'tvShows' },
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'season', type: 'number', admin: { width: '50%' } },
+                    { name: 'episodeNumber', type: 'number', admin: { width: '50%' } },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Video & Playback Assets',
+          fields: [
+            {
+              name: 'streaming',
+              type: 'group',
+              admin: { description: 'Enterprise streaming delivery (Mux, AWS MediaConvert, etc.)' },
+              fields: [
+                { name: 'hlsUrl', type: 'text', admin: { description: 'The .m3u8 playback URL.' } },
+                {
+                  name: 'providerAssetId',
+                  type: 'text',
+                  admin: { description: 'Asset ID from your encoding provider.' },
+                },
+                {
+                  name: 'runtimeSeconds',
+                  type: 'number',
+                  admin: { description: 'Total runtime in seconds.' },
+                },
+              ],
+            },
+            {
+              name: 'fallbackMp4',
+              type: 'upload',
+              relationTo: 'media',
+              admin: { description: 'Raw fallback MP4.' },
+            },
+            {
+              name: 'poster',
+              type: 'upload',
+              relationTo: 'media',
+              admin: { description: '16:9 Thumbnail' },
+            },
+            {
+              name: 'captions',
+              type: 'array',
+              fields: [
+                { name: 'language', type: 'text', defaultValue: 'en' },
+                { name: 'vttFile', type: 'upload', relationTo: 'media' },
+              ],
+            },
+            {
+              name: 'chapters',
+              type: 'array',
+              admin: { description: 'Player seek-bar markers.' },
+              fields: [
+                { name: 'title', type: 'text' },
+                { name: 'timestampSeconds', type: 'number' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Access & Monetization',
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'visibility',
+                  type: 'select',
+                  defaultValue: 'free',
+                  admin: { width: '50%' },
+                  options: [
+                    { label: 'Free', value: 'free' },
+                    { label: 'WaveNation+ (Premium)', value: 'premium' },
+                    { label: 'Pay Per View', value: 'ppv' },
+                    { label: 'Unlisted', value: 'unlisted' },
+                  ],
+                },
+                { name: 'releaseDate', type: 'date', admin: { width: '50%' } },
+              ],
+            },
+            {
+              name: 'pricing',
+              type: 'group',
+              admin: { condition: (_, data) => data?.visibility === 'ppv' },
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'price', type: 'number', admin: { width: '50%' } },
+                    {
+                      name: 'currency',
+                      type: 'text',
+                      defaultValue: 'USD',
+                      admin: { width: '50%' },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              name: 'rights',
+              type: 'group',
+              fields: [
+                { name: 'rightsHolder', type: 'text' },
+                { name: 'territories', type: 'text' },
+                { name: 'expiryDate', type: 'date' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'AdOps & Sponsorship',
+          fields: [
+            {
+              name: 'sponsor',
+              type: 'relationship',
+              relationTo: 'sponsors',
+              admin: { description: 'Title or presenting sponsor for this VOD.' },
+            },
+            {
+              name: 'ads',
+              type: 'group',
+              fields: [
+                {
+                  type: 'row',
+                  fields: [
+                    { name: 'adsEnabled', type: 'checkbox', defaultValue: true },
+                    { name: 'disableForPremium', type: 'checkbox', defaultValue: true },
+                  ],
+                },
+                { name: 'preRoll', type: 'text', admin: { placeholder: 'VAST Tag URL' } },
+                { name: 'midRoll', type: 'text', admin: { placeholder: 'VAST Tag URL' } },
+                {
+                  name: 'midRollOffset',
+                  type: 'number',
+                  admin: { description: 'Seconds into video to trigger mid-roll' },
+                },
+                { name: 'postRoll', type: 'text', admin: { placeholder: 'VAST Tag URL' } },
+              ],
+            },
+          ],
+        },
       ],
     },
-
+    /* Sidebar */
     {
-      name: 'series',
-      type: 'relationship',
-      relationTo: 'vod',
-      admin: {
-        condition: (_, data) => ['episode', 'clip'].includes(data?.vodType),
-      },
+      name: 'slug',
+      type: 'text',
+      unique: true,
+      hooks: { beforeValidate: [autoSlug] },
+      admin: { position: 'sidebar' },
     },
-    { name: 'season', type: 'number' },
-    { name: 'episodeNumber', type: 'number' },
-
     {
       name: 'status',
       type: 'select',
@@ -76,259 +235,7 @@ export const VOD: CollectionConfig = {
       ],
       admin: { position: 'sidebar' },
     },
-
-    {
-      name: 'visibility',
-      type: 'select',
-      defaultValue: 'free',
-      options: [
-        { label: 'Free', value: 'free' },
-        { label: 'WaveNation+ (Premium)', value: 'premium' },
-        { label: 'Pay Per View', value: 'ppv' },
-        { label: 'Unlisted', value: 'unlisted' },
-      ],
-    },
-
-    {
-      name: 'video',
-      type: 'upload',
-      relationTo: 'media',
-      required: true,
-    },
-    {
-      name: 'poster',
-      type: 'upload',
-      relationTo: 'media',
-    },
-    {
-      name: 'trailer',
-      type: 'upload',
-      relationTo: 'media',
-    },
-
-    { name: 'description', type: 'textarea' },
-    { name: 'runtime', type: 'number' },
-    { name: 'releaseDate', type: 'date' },
-
-    {
-      name: 'genres',
-      type: 'select',
-      hasMany: true,
-      options: [
-        'Music',
-        'Talk',
-        'Documentary',
-        'Film',
-        'Faith',
-        'Culture',
-        'News',
-        'Lifestyle',
-        'Comedy',
-        'Southern',
-      ],
-    },
-    {
-      name: 'tags',
-      type: 'array',
-      fields: [{ name: 'tag', type: 'text' }],
-    },
-
-    {
-      name: 'source',
-      type: 'select',
-      options: [
-        { label: 'WaveNation Original', value: 'original' },
-        { label: 'Creator Hub', value: 'creator' },
-        { label: 'Partner', value: 'partner' },
-        { label: 'Event Capture', value: 'event' },
-      ],
-    },
-    {
-      name: 'creator',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: {
-        condition: (_, data) => data?.source === 'creator',
-      },
-    },
-
-    {
-      name: 'rights',
-      type: 'group',
-      fields: [
-        { name: 'rightsHolder', type: 'text' },
-        { name: 'territories', type: 'text' },
-        { name: 'expiryDate', type: 'date' },
-      ],
-    },
-
-    {
-      name: 'pricing',
-      type: 'group',
-      admin: {
-        condition: (_, data) => data?.visibility === 'ppv',
-      },
-      fields: [
-        { name: 'price', type: 'number' },
-        { name: 'currency', type: 'text', defaultValue: 'USD' },
-      ],
-    },
-
-    { name: 'isFeatured', type: 'checkbox', defaultValue: false },
-    { name: 'isTVEligible', type: 'checkbox', defaultValue: true },
-
-    {
-      name: 'distribution',
-      type: 'group',
-      fields: [
-        { name: 'web', type: 'checkbox', defaultValue: true },
-        { name: 'mobile', type: 'checkbox', defaultValue: true },
-        { name: 'tv', type: 'checkbox', defaultValue: true },
-      ],
-    },
-
-    {
-      name: 'metrics',
-      type: 'group',
-      fields: [
-        { name: 'views', type: 'number' },
-        { name: 'watchTime', type: 'number' },
-        { name: 'completionRate', type: 'number' },
-      ],
-    },
-
-    {
-      name: 'publishDate',
-      type: 'date',
-      admin: { position: 'sidebar' },
-    },
-
-    {
-      name: 'ads',
-      type: 'group',
-      admin: {
-        description: 'Google Ad Manager (VAST) settings',
-      },
-      fields: [
-        {
-          name: 'adsEnabled',
-          type: 'checkbox',
-          defaultValue: true,
-        },
-
-        {
-          name: 'disableForPremium',
-          type: 'checkbox',
-          defaultValue: true,
-          admin: {
-            description: 'Disable ads for WaveNation+ users',
-          },
-        },
-
-        {
-          name: 'placements',
-          type: 'group',
-          fields: [
-            {
-              name: 'preRoll',
-              type: 'text',
-              admin: {
-                placeholder: 'GAM VAST URL – Pre-roll',
-              },
-            },
-            {
-              name: 'midRoll',
-              type: 'text',
-              admin: {
-                placeholder: 'GAM VAST URL – Mid-roll',
-              },
-            },
-            {
-              name: 'midRollOffset',
-              type: 'number',
-              admin: {
-                description: 'Seconds into video',
-              },
-            },
-            {
-              name: 'postRoll',
-              type: 'text',
-              admin: {
-                placeholder: 'GAM VAST URL – Post-roll',
-              },
-            },
-          ],
-        },
-      ],
-    },
-
-    {
-      name: 'relatedShows',
-      label: 'Related Shows / Videos',
-      type: 'relationship',
-      relationTo: 'vod',
-      hasMany: true,
-      admin: {
-        description: 'Manually curated related shows, episodes, or specials',
-      },
-    },
-
-    {
-      name: 'relatedTalent',
-      label: 'Related Talent',
-      type: 'relationship',
-      relationTo: 'users',
-      hasMany: true,
-      admin: {
-        description: 'Hosts, guests, creators, or on-screen talent',
-      },
-    },
-    {
-      name: 'talentRoles',
-      type: 'array',
-      admin: {
-        description: 'Optional role labels for talent',
-      },
-      fields: [
-        {
-          name: 'talent',
-          type: 'relationship',
-          relationTo: 'talent',
-        },
-        {
-          name: 'role',
-          type: 'select',
-          options: ['Host', 'Co-Host', 'Guest', 'Performer', 'Director', 'Producer'],
-        },
-      ],
-    },
-    {
-      name: 'release',
-      type: 'group',
-      admin: {
-        description: 'Premiere and availability scheduling',
-      },
-      fields: [
-        {
-          name: 'premiereDate',
-          type: 'date',
-          admin: {
-            description: 'Public premiere date (countdown, marketing)',
-          },
-        },
-        {
-          name: 'availableDate',
-          type: 'date',
-          admin: {
-            description: 'When the video becomes playable',
-          },
-        },
-        {
-          name: 'timezone',
-          type: 'text',
-          defaultValue: 'America/New_York',
-        },
-      ],
-    },
+    { name: 'publishDate', type: 'date', admin: { position: 'sidebar' } },
+    { name: 'isFeatured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
   ],
 }

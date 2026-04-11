@@ -1,3 +1,4 @@
+// src/collections/Articles.ts
 import type { CollectionConfig, FieldHook, CollectionBeforeChangeHook } from 'payload'
 
 import {
@@ -18,7 +19,19 @@ import {
 } from '../blocks/ArticleBlocks'
 
 /* ======================================================
-   Slug Helpers
+   Constants & Configuration
+====================================================== */
+
+const WORDS_PER_MINUTE = 225
+const REVIEW_TIERS = [
+  { label: 'Tier 1 — High-Risk & High-Visibility', value: 'tier1' },
+  { label: 'Tier 2 — Standard Published Content', value: 'tier2' },
+  { label: 'Tier 3 — Rapid Editorial / Social', value: 'tier3' },
+  { label: 'Tier 4 — Creator Hub Content', value: 'tier4' },
+] as const
+
+/* ======================================================
+   Slug & Logic Helpers
 ====================================================== */
 
 function slugify(input: string): string {
@@ -31,29 +44,14 @@ function slugify(input: string): string {
     .slice(0, 120)
 }
 
-/**
- * Auto slug (SEO-safe)
- * - Generate on create
- * - Respect manual overrides
- * - Never change after publish
- */
 const autoSlug: FieldHook = ({ value, data, originalDoc, operation }) => {
-  if (typeof value === 'string' && value.trim()) {
-    return value
-  }
-
+  if (typeof value === 'string' && value.trim()) return value
   if (operation === 'update' && originalDoc?.slug && originalDoc?.status === 'published') {
     return originalDoc.slug
   }
-
   const title = typeof data?.title === 'string' ? data.title : null
-
   return title ? slugify(title) : value
 }
-
-/* ======================================================
-   Publish Logic
-====================================================== */
 
 const autoPublishHook: FieldHook = ({ value, siblingData }) => {
   if (siblingData?.scheduledPublishAt && new Date(siblingData.scheduledPublishAt) <= new Date()) {
@@ -63,152 +61,46 @@ const autoPublishHook: FieldHook = ({ value, siblingData }) => {
 }
 
 /* ======================================================
-   Editor Presets
+   Enhanced Reading Time (Text + Media)
 ====================================================== */
 
-const ARTICLE_PRESETS = {
-  interview: [
-    {
-      blockType: 'richText',
-      content: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              text: 'Introduce the artist, creator, or subject of this interview.',
-            },
-          ],
-        },
-      ],
-    },
-    {
-      blockType: 'interviewQuestion',
-      question: 'How did this project come together?',
-    },
-    {
-      blockType: 'interviewAnswer',
-      highlight: true,
-      answer: [
-        {
-          type: 'paragraph',
-          children: [
-            {
-              text: 'It really started as a personal idea before it became something bigger…',
-            },
-          ],
-        },
-      ],
-    },
-  ],
+function extractTextFromNode(node: any): string {
+  if (!node) return ''
+  if (typeof node === 'string') return node + ' '
 
-  review: [
-    {
-      blockType: 'richText',
-      content: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'Overview and verdict…' }],
-        },
-      ],
-    },
-    {
-      blockType: 'cta',
-      headline: 'Listen / Watch Now',
-      buttonLabel: 'Check it out',
-      buttonUrl: '',
-    },
-  ],
-
-  news: [
-    {
-      blockType: 'richText',
-      content: [
-        {
-          type: 'paragraph',
-          children: [{ text: 'Lead paragraph summarizing key facts.' }],
-        },
-      ],
-    },
-  ],
-} as const
-
-const applyEditorPresetHook: FieldHook = ({ value, siblingData }) => {
-  if (Array.isArray(value) && value.length > 0) return value
-
-  const presetKey = siblingData?.editorPreset as keyof typeof ARTICLE_PRESETS | undefined
-
-  return presetKey ? [...ARTICLE_PRESETS[presetKey]] : value
-}
-
-/* ======================================================
-   Reading Time & Content Extraction Helpers
-====================================================== */
-
-const WORDS_PER_MINUTE = 200
-
-// Deeply recursive text extractor for rich text structures (Lexical or Slate)
-function extractTextFromNode(node: unknown): string {
-  if (!node || typeof node !== 'object') return ''
-
-  const record = node as Record<string, unknown>
   let extracted = ''
-
-  if (typeof record.text === 'string') {
-    extracted += record.text + ' '
+  if (typeof node === 'object' && !Array.isArray(node)) {
+    if (typeof node.text === 'string') extracted += node.text + ' '
+    if (typeof node.value === 'string') extracted += node.value + ' '
+    for (const key in node) {
+      if (Array.isArray(node[key]) || typeof node[key] === 'object') {
+        extracted += extractTextFromNode(node[key])
+      }
+    }
+  } else if (Array.isArray(node)) {
+    extracted += node.map(extractTextFromNode).join(' ')
   }
-
-  if (Array.isArray(record.children)) {
-    extracted += record.children.map(extractTextFromNode).join(' ') + ' '
-  }
-
   return extracted
 }
 
-function extractTextFromBlocks(blocks: Array<Record<string, unknown>> | undefined): string {
-  if (!Array.isArray(blocks)) return ''
-
-  return blocks
-    .map((block) => {
-      let blockText = ''
-
-      // RichText blocks
-      if (Array.isArray(block.content)) {
-        blockText += block.content.map(extractTextFromNode).join(' ')
-      }
-
-      // Interview blocks
-      if (Array.isArray(block.answer)) {
-        blockText += block.answer.map(extractTextFromNode).join(' ')
-      }
-      if (typeof block.question === 'string') {
-        blockText += ' ' + block.question
-      }
-
-      // Pull Quotes
-      if (typeof block.quote === 'string') {
-        blockText += ' ' + block.quote
-      }
-
-      return blockText
-    })
-    .join(' ')
-    .trim()
-}
-
-/**
- * FIX: Moved Reading Time to a `beforeChange` hook.
- * `afterChange` triggers a secondary database save, which impacts performance
- * and can mess up document version histories. `beforeChange` safely mutates
- * the data payload right before it writes to the DB in one action.
- */
 const calculateReadingTimeBeforeChange: CollectionBeforeChangeHook = ({ data, originalDoc }) => {
-  // Use incoming data if present, otherwise fallback to existing document
   const blocksRaw = data.contentBlocks || originalDoc?.contentBlocks
+  let wordCount = 0
+  let mediaSeconds = 0
 
   if (Array.isArray(blocksRaw)) {
-    const text = extractTextFromBlocks(blocksRaw as Array<Record<string, unknown>>)
-    const wordCount = text.split(/\s+/).filter(Boolean).length
-    data.readingTime = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE))
+    const rawText = extractTextFromNode(blocksRaw)
+    const words = rawText.match(/\b\w+\b/g)
+    wordCount = words ? words.length : 0
+
+    blocksRaw.forEach((block: any) => {
+      if (['image', 'embed'].includes(block.blockType)) mediaSeconds += 12
+      if (block.blockType === 'gallery') mediaSeconds += 25
+      if (['video', 'audio'].includes(block.blockType)) mediaSeconds += 45
+    })
+
+    const totalMinutes = wordCount / WORDS_PER_MINUTE + mediaSeconds / 60
+    data.readingTime = Math.max(1, Math.ceil(totalMinutes))
   } else if (!data.readingTime) {
     data.readingTime = 1
   }
@@ -217,226 +109,316 @@ const calculateReadingTimeBeforeChange: CollectionBeforeChangeHook = ({ data, or
 }
 
 /* ======================================================
-   Enhanced AI Ranking Logic
+   Enhanced AI Ranking (Exponential Decay)
 ====================================================== */
 
-const enhancedAIRankingHook: FieldHook = ({ value, siblingData }) => {
-  const existing = value && typeof value === 'object' ? (value as Record<string, unknown>) : {}
-
+const enhancedAIRankingHook: FieldHook = ({ value, data }) => {
   const now = Date.now()
-  const isBreaking = Boolean(siblingData?.isBreaking)
-  const isFeatured = Boolean(siblingData?.isFeatured)
-  const reviewTier = siblingData?.reviewTier
-  const readingTime = (siblingData?.readingTime as number) || 1
+  const isBreaking = Boolean(data?.isBreaking)
+  const isFeatured = Boolean(data?.isFeatured)
+  const reviewTier = data?.reviewTier || 'tier2'
+  const readingTime = (data?.readingTime as number) || 1
 
-  // Calculate content density based on block types
-  const blocks = Array.isArray(siblingData?.contentBlocks) ? siblingData.contentBlocks : []
-  const mediaBlockCount = blocks.filter((b: any) =>
+  const blocks = Array.isArray(data?.contentBlocks) ? data.contentBlocks : []
+  const mediaCount = blocks.filter((b: any) =>
     ['image', 'gallery', 'video', 'audio', 'embed'].includes(b.blockType),
   ).length
+  const densityScore = Math.min(10, Math.ceil(Math.log2(mediaCount + 1) * 2 + readingTime * 0.3))
 
-  // Content Density: Ratio of media to text (Scale 1-10)
-  // Higher score = highly rich multimedia article
-  const densityScore = Math.min(10, Math.max(1, Math.ceil(mediaBlockCount * 2 + readingTime * 0.5)))
-
-  const publishDateMs = siblingData?.publishDate
-    ? new Date(siblingData.publishDate as string).getTime()
-    : now
-  const hoursSincePublish = Math.max(0, (now - publishDateMs) / (1000 * 60 * 60))
-
-  // Boost (0–10)
-  let boost = 3
-  if (isBreaking) boost += 5
+  let boost = 2
+  if (isBreaking) boost += 6
   if (isFeatured) boost += 2
-  if (reviewTier === 'tier1') boost += 3
-  if (reviewTier === 'tier2') boost += 1
-  if (readingTime >= 5) boost += 1
+  if (reviewTier === 'tier1') boost += 2
   boost = Math.min(10, boost)
 
-  // Freshness (0–10)
-  let freshness = 10
-  if (hoursSincePublish > 6) freshness -= 2
-  if (hoursSincePublish > 24) freshness -= 3
-  if (hoursSincePublish > 72) freshness -= 4
-  freshness = Math.max(0, freshness)
+  const publishDateMs = data?.publishDate ? new Date(data.publishDate as string).getTime() : now
+  const hoursSincePublish = Math.max(0, (now - publishDateMs) / (1000 * 60 * 60))
 
-  // Decay (0–10) - How fast it should fall off the feed
-  let decay = 5
-  if (isBreaking) decay = 9 // Breaking news decays rapidly
-  if (reviewTier === 'tier1') decay = 6
-  if (reviewTier === 'tier4') decay = 3 // Evergreen creator content decays slowly
+  let decayRate = 0.05
+  if (isBreaking) decayRate = 0.18
+  if (reviewTier === 'tier4') decayRate = 0.01
 
-  // Engagement Potential (0-10) - AI estimated virality based on density + breaking status
-  const engagementPotential = Math.min(10, Math.ceil((boost + densityScore) / 2))
+  const freshness = Math.max(0, Number((10 * Math.exp(-decayRate * hoursSincePublish)).toFixed(2)))
+  const engagementPotential = Math.min(
+    10,
+    Math.ceil(boost * 0.4 + densityScore * 0.4 + freshness * 0.2),
+  )
 
   return {
     boost,
     freshness,
-    decay,
+    decay: Math.ceil(decayRate * 100),
     contentDensity: densityScore,
     engagementPotential,
-    aiNotes:
-      (existing.aiNotes as string | undefined) ??
-      `Auto-scored. Detected ${mediaBlockCount} media blocks and ${readingTime} min read.`,
+    aiNotes: `Analyzed ${blocks.length} blocks. Decay λ=${decayRate}. Calculated ${Math.floor(hoursSincePublish)}h since publish.`,
   }
 }
 
 /* ======================================================
-   Review Tiers
+   Editor Presets
 ====================================================== */
 
-const REVIEW_TIERS = [
-  { label: 'Tier 1 — High-Risk & High-Visibility', value: 'tier1' },
-  { label: 'Tier 2 — Standard Published Content', value: 'tier2' },
-  { label: 'Tier 3 — Rapid Editorial / Social', value: 'tier3' },
-  { label: 'Tier 4 — Creator Hub Content', value: 'tier4' },
-] as const
+const ARTICLE_PRESETS = {
+  interview: [
+    { blockType: 'richText', content: [{ type: 'paragraph', children: [{ text: 'Intro...' }] }] },
+    { blockType: 'interviewQuestion', question: 'How did this project come together?' },
+    {
+      blockType: 'interviewAnswer',
+      highlight: true,
+      answer: [{ type: 'paragraph', children: [{ text: 'Response...' }] }],
+    },
+  ],
+  review: [
+    { blockType: 'richText', content: [{ type: 'paragraph', children: [{ text: 'Verdict...' }] }] },
+    { blockType: 'cta', headline: 'Listen Now', buttonLabel: 'Check it out' },
+  ],
+  news: [
+    {
+      blockType: 'richText',
+      content: [{ type: 'paragraph', children: [{ text: 'Lead summary...' }] }],
+    },
+  ],
+} as const
+
+const applyEditorPresetHook: FieldHook = ({ value, siblingData }) => {
+  if (Array.isArray(value) && value.length > 0) return value
+  const presetKey = siblingData?.editorPreset as keyof typeof ARTICLE_PRESETS | undefined
+  return presetKey ? [...ARTICLE_PRESETS[presetKey]] : value
+}
 
 /* ======================================================
-   Collection
+   Collection Config
 ====================================================== */
 
 export const Articles: CollectionConfig = {
   slug: 'articles',
   labels: { singular: 'Article', plural: 'Articles' },
-
   hooks: {
     beforeChange: [calculateReadingTimeBeforeChange],
   },
-
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'status', 'readingTime', 'reviewTier', 'publishDate', 'updatedAt'],
+    defaultColumns: ['title', 'status', 'readingTime', 'reviewTier', 'publishDate'],
     group: 'Editorial',
   },
-
-  versions: {
-    drafts: true,
-    maxPerDoc: 50,
-  },
-
+  versions: { drafts: true, maxPerDoc: 50 },
   timestamps: true,
-
   access: {
     read: () => true,
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
   },
-
   fields: [
+    {
+      type: 'tabs',
+      tabs: [
+        {
+          label: 'Content',
+          fields: [
+            { name: 'title', type: 'text', required: true },
+            { name: 'subtitle', type: 'text' },
+            { name: 'excerpt', type: 'textarea', maxLength: 400 },
+            {
+              name: 'hero',
+              type: 'group',
+              fields: [
+                { name: 'image', type: 'relationship', relationTo: 'media' },
+                { name: 'caption', type: 'textarea' },
+                { name: 'credit', type: 'text' },
+              ],
+            },
+            {
+              name: 'contentBlocks',
+              type: 'blocks',
+              required: true,
+              hooks: { beforeChange: [applyEditorPresetHook] },
+              blocks: [
+                RichTextBlock,
+                ImageBlock,
+                GalleryBlock,
+                PullQuoteBlock,
+                VideoBlock,
+                AudioBlock,
+                EmbedBlock,
+                ArtistSpotlightBlock,
+                RelatedArticlesBlock,
+                CTABlock,
+                DividerBlock,
+                InterviewQuestionBlock,
+                InterviewAnswerBlock,
+                TimelineBlock,
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Editorial & Sources',
+          fields: [
+            {
+              name: 'author',
+              type: 'relationship',
+              relationTo: 'authors',
+              required: true,
+              admin: { position: 'sidebar' },
+            },
+            {
+              name: 'editorialNotes',
+              type: 'array',
+              fields: [
+                {
+                  name: 'noteType',
+                  type: 'select',
+                  options: [
+                    { label: 'Correction', value: 'correction' },
+                    { label: 'Update', value: 'update' },
+                    { label: 'Internal Note', value: 'internal' },
+                  ],
+                },
+                { name: 'note', type: 'textarea', required: true },
+                {
+                  name: 'author',
+                  type: 'relationship',
+                  relationTo: 'users',
+                  admin: { readOnly: true },
+                },
+                { name: 'createdAt', type: 'date', admin: { readOnly: true } },
+              ],
+            },
+            {
+              name: 'sources',
+              type: 'array',
+              fields: [
+                {
+                  name: 'sourceType',
+                  type: 'select',
+                  options: [
+                    { label: 'Interview', value: 'interview' },
+                    { label: 'News', value: 'news' },
+                  ],
+                },
+                { name: 'title', type: 'text', required: true },
+                { name: 'url', type: 'text' },
+                { name: 'isPrimary', type: 'checkbox', defaultValue: false },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Taxonomy',
+          fields: [
+            { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true },
+            {
+              name: 'subcategories',
+              type: 'relationship',
+              relationTo: 'subcategories',
+              hasMany: true,
+            },
+            { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true },
+            { name: 'series', type: 'relationship', relationTo: 'article-series' },
+          ],
+        },
+        {
+          label: 'Relations',
+          fields: [
+            {
+              name: 'sponsor',
+              type: 'relationship',
+              relationTo: 'sponsors',
+              admin: {
+                description: 'If this is a sponsored or branded article, link the sponsor here.',
+              },
+            },
+            { name: 'relatedShow', type: 'relationship', relationTo: 'radioShows' },
+            { name: 'relatedPosdcast', type: 'relationship', relationTo: 'podcasts' },
+            { name: 'relatedVOD', type: 'relationship', relationTo: 'vod' },
+            { name: 'relatedAlbum', type: 'relationship', relationTo: 'albums' },
+            { name: 'relatedPolls', type: 'relationship', relationTo: 'polls', hasMany: true },
+          ],
+        },
+        {
+          label: 'Mega Menu',
+          fields: [
+            { name: 'menuFeature', type: 'checkbox', defaultValue: false },
+            {
+              name: 'menuContext',
+              type: 'select',
+              admin: { condition: (_, sibling) => sibling.menuFeature },
+              options: [
+                { label: 'News', value: 'news' },
+                { label: 'Watch', value: 'watch' },
+              ],
+            },
+            { name: 'menuDescription', type: 'textarea', maxLength: 120 },
+          ],
+        },
+        {
+          label: 'AI & Metrics',
+          fields: [
+            {
+              name: 'aiRanking',
+              type: 'group',
+              hooks: { beforeChange: [enhancedAIRankingHook] },
+              fields: [
+                { name: 'boost', type: 'number' },
+                { name: 'decay', type: 'number' },
+                { name: 'freshness', type: 'number' },
+                { name: 'engagementPotential', type: 'number' },
+                { name: 'contentDensity', type: 'number' },
+                { name: 'aiNotes', type: 'textarea' },
+              ],
+            },
+            {
+              name: 'aiMetadata',
+              type: 'group',
+              fields: [
+                { name: 'autoSummary', type: 'textarea' },
+                { name: 'suggestedKeywords', type: 'text' },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     /* ===============================
-       Identity
+       Sidebar Fields
     =============================== */
-
-    { name: 'title', type: 'text', required: true },
-    { name: 'subtitle', type: 'text' },
-
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
       hooks: { beforeValidate: [autoSlug] },
-      admin: {
-        position: 'sidebar',
-        description: 'Auto-generated from title. Do not change after publish.',
-      },
+      admin: { position: 'sidebar' },
     },
-
-    /* ===============================
-       Taxonomy
-    =============================== */
-
-    {
-      name: 'categories',
-      type: 'relationship',
-      relationTo: 'categories',
-      hasMany: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Primary editorial categories for this article.',
-      },
-    },
-
-    {
-      name: 'subcategories',
-      type: 'relationship',
-      relationTo: 'subcategories',
-      hasMany: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Related subcategories for secondary classification and discovery.',
-      },
-    },
-
-    {
-      name: 'tags',
-      type: 'relationship',
-      relationTo: 'tags',
-      hasMany: true,
-      admin: {
-        position: 'sidebar',
-        description: 'Keywords for SEO, discovery, playlists, and recommendations.',
-      },
-    },
-
-    /* ===============================
-       Publishing
-    =============================== */
-
-    {
-      name: 'publishDate',
-      type: 'date',
-      admin: {
-        position: 'sidebar',
-        description:
-          'Public publish date. Can be manually overridden. Auto-set on first publish if empty.',
-      },
-      hooks: {
-        beforeChange: [
-          ({ value, siblingData, originalDoc }) => {
-            if (value) return value
-            if (siblingData?.status === 'published' && !originalDoc?.publishDate) {
-              return new Date().toISOString()
-            }
-            return value
-          },
-        ],
-      },
-    },
-
-    {
-      name: 'scheduledPublishAt',
-      type: 'date',
-      admin: {
-        position: 'sidebar',
-        description: 'Automatically publishes this article at the scheduled time.',
-      },
-    },
-
-    /* ===============================
-       Editorial Workflow
-    =============================== */
-
     {
       name: 'status',
       type: 'select',
       defaultValue: 'draft',
       options: [
         { label: 'Draft', value: 'draft' },
-        { label: 'In Review', value: 'in-review' },
-        { label: 'Approved', value: 'approved' },
         { label: 'Published', value: 'published' },
-        { label: 'Unpublished', value: 'unpublished' },
         { label: 'Archived', value: 'archived' },
       ],
-      hooks: {
-        beforeChange: [autoPublishHook],
-      },
+      hooks: { beforeChange: [autoPublishHook] },
       admin: { position: 'sidebar' },
     },
-
+    {
+      name: 'publishDate',
+      type: 'date',
+      admin: { position: 'sidebar' },
+      hooks: {
+        beforeChange: [
+          ({ value, siblingData, originalDoc }) => {
+            if (value) return value
+            if (siblingData?.status === 'published' && !originalDoc?.publishDate)
+              return new Date().toISOString()
+            return value
+          },
+        ],
+      },
+    },
+    { name: 'scheduledPublishAt', type: 'date', admin: { position: 'sidebar' } },
     {
       name: 'reviewTier',
       type: 'select',
@@ -444,39 +426,8 @@ export const Articles: CollectionConfig = {
       options: [...REVIEW_TIERS],
       admin: { position: 'sidebar' },
     },
-
-    /* ===============================
-       Editorial Flags
-    =============================== */
-
-    {
-      name: 'isBreaking',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        position: 'sidebar',
-        description:
-          'Marks this article as breaking news. Triggers AI ranking boosts and high-priority placement.',
-      },
-    },
-
-    {
-      name: 'isFeatured',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        position: 'sidebar',
-        description: 'Displays this article in the Spotlight section below the homepage hero.',
-      },
-    },
-
-    {
-      name: 'author',
-      type: 'relationship',
-      relationTo: 'users',
-      required: true,
-    },
-
+    { name: 'isBreaking', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
+    { name: 'isFeatured', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
     {
       name: 'editorPreset',
       type: 'select',
@@ -487,333 +438,8 @@ export const Articles: CollectionConfig = {
       ],
       admin: { position: 'sidebar' },
     },
-
-    /* ===============================
-       Editorial Notes
-    =============================== */
-
-    {
-      name: 'editorialNotes',
-      type: 'array',
-      admin: {
-        description: 'Internal notes explaining significant editorial changes. Not public.',
-      },
-      fields: [
-        {
-          name: 'noteType',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'Correction', value: 'correction' },
-            { label: 'Update', value: 'update' },
-            { label: 'Breaking Update', value: 'breaking-update' },
-            { label: 'SEO Adjustment', value: 'seo' },
-            { label: 'Legal / Compliance', value: 'legal' },
-            { label: 'Editorial Review', value: 'review' },
-            { label: 'Internal Note', value: 'internal' },
-          ],
-        },
-        {
-          name: 'note',
-          type: 'textarea',
-          required: true,
-        },
-        {
-          name: 'author',
-          type: 'relationship',
-          relationTo: 'users',
-          admin: { readOnly: true },
-        },
-        {
-          name: 'createdAt',
-          type: 'date',
-          admin: { readOnly: true },
-        },
-      ],
-    },
-
-    /* ===============================
-       Content
-    =============================== */
-
-    {
-      name: 'excerpt',
-      type: 'textarea',
-      maxLength: 400,
-    },
-
-    /* ===============================
-       Sources
-    =============================== */
-
-    {
-      name: 'sources',
-      type: 'array',
-      admin: {
-        description:
-          'Primary sources used in reporting this article. Required for news, investigations, and fact-based reporting.',
-      },
-      fields: [
-        {
-          name: 'sourceType',
-          type: 'select',
-          required: true,
-          options: [
-            { label: 'News Article', value: 'news' },
-            { label: 'Interview', value: 'interview' },
-            { label: 'Press Release', value: 'press' },
-            { label: 'Government / Legal', value: 'government' },
-            { label: 'Research / Study', value: 'research' },
-            { label: 'Official Statement', value: 'statement' },
-            { label: 'Other', value: 'other' },
-          ],
-        },
-        { name: 'title', type: 'text', required: true },
-        {
-          name: 'publication',
-          type: 'text',
-          admin: { description: 'Outlet, organization, or institution name.' },
-        },
-        { name: 'url', type: 'text', admin: { description: 'Link to the original source.' } },
-        { name: 'author', type: 'text' },
-        { name: 'publishedDate', type: 'date' },
-        {
-          name: 'isPrimary',
-          type: 'checkbox',
-          defaultValue: false,
-          admin: { description: 'Marks this as a primary source for the article.' },
-        },
-        {
-          name: 'notes',
-          type: 'textarea',
-          admin: { description: 'Internal notes about how this source was used.' },
-        },
-      ],
-    },
-
-    /* ===============================
-       References
-    =============================== */
-
-    {
-      name: 'references',
-      type: 'array',
-      admin: {
-        description: 'Supporting references, documents, archives, or background materials.',
-      },
-      fields: [
-        { name: 'label', type: 'text', required: true },
-        {
-          name: 'referenceType',
-          type: 'select',
-          options: [
-            { label: 'Law / Statute', value: 'law' },
-            { label: 'Court Case', value: 'court' },
-            { label: 'Academic Paper', value: 'academic' },
-            { label: 'Book', value: 'book' },
-            { label: 'Archive / Historical', value: 'archive' },
-            { label: 'Video / Audio', value: 'media' },
-            { label: 'Website', value: 'web' },
-            { label: 'Other', value: 'other' },
-          ],
-        },
-        { name: 'url', type: 'text' },
-        {
-          name: 'notes',
-          type: 'textarea',
-          admin: { description: 'Optional context for editors or AI.' },
-        },
-      ],
-    },
-
-    {
-      name: 'series',
-      type: 'relationship',
-      relationTo: 'article-series',
-      admin: { position: 'sidebar', description: 'Optional series this article belongs to.' },
-    },
-
-    /* ===============================
-       Related Shows & Media
-    =============================== */
-
-    {
-      name: 'relatedShow',
-      type: 'relationship',
-      relationTo: 'radioShows',
-      admin: {
-        position: 'sidebar',
-        description: 'Link this article to a WaveNation radio, TV, or podcast show.',
-      },
-    },
-    {
-      name: 'relatedPosdcast',
-      type: 'relationship',
-      relationTo: 'podcasts',
-      admin: { position: 'sidebar', description: 'Link this article to a podcast show.' },
-    },
-    {
-      name: 'relatedVOD',
-      type: 'relationship',
-      relationTo: 'vod',
-      admin: { position: 'sidebar', description: 'Link this article to a Video on Demand.' },
-    },
-    {
-      name: 'relatedAlbum',
-      type: 'relationship',
-      relationTo: 'albums',
-      admin: { position: 'sidebar', description: 'Optional album related to this article.' },
-    },
-    {
-      name: 'relatedPolls',
-      label: 'Related Polls',
-      type: 'relationship',
-      relationTo: 'polls',
-      hasMany: true,
-      admin: { description: 'Attach relevant polls to this article' },
-    },
-
-    /* ===============================
-       Menu Feature
-    =============================== */
-
-    { name: 'menuFeature', label: 'Feature in Mega Menu', type: 'checkbox', defaultValue: false },
-    {
-      name: 'menuContext',
-      label: 'Mega Menu Section',
-      type: 'select',
-      required: false,
-      admin: { condition: (_, siblingData) => siblingData.menuFeature },
-      options: [
-        { label: 'Discover', value: 'discover' },
-        { label: 'On-Air', value: 'on-air' },
-        { label: 'News', value: 'news' },
-        { label: 'Watch', value: 'watch' },
-        { label: 'Merch', value: 'merch' },
-        { label: 'Connect', value: 'connect' },
-      ],
-    },
-    {
-      name: 'menuEyebrow',
-      label: 'Menu Eyebrow (optional)',
-      type: 'text',
-      admin: { condition: (_, siblingData) => siblingData.menuFeature },
-    },
-    {
-      name: 'menuDescription',
-      label: 'Menu Description (short)',
-      type: 'textarea',
-      maxLength: 120,
-      admin: { condition: (_, siblingData) => siblingData.menuFeature },
-    },
-
-    {
-      name: 'readingTime',
-      type: 'number',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description: 'Estimated reading time in minutes (auto-calculated from rich text blocks).',
-      },
-    },
-
-    {
-      name: 'hero',
-      type: 'group',
-      fields: [
-        {
-          name: 'image',
-          type: 'relationship',
-          relationTo: 'media',
-          access: { read: () => true },
-        },
-        { name: 'caption', type: 'textarea' },
-        { name: 'credit', type: 'text' },
-      ],
-    },
-
-    {
-      name: 'contentBlocks',
-      type: 'blocks',
-      required: true,
-      hooks: { beforeChange: [applyEditorPresetHook] },
-      blocks: [
-        RichTextBlock,
-        InterviewQuestionBlock,
-        InterviewAnswerBlock,
-        ImageBlock,
-        GalleryBlock,
-        PullQuoteBlock,
-        VideoBlock,
-        AudioBlock,
-        EmbedBlock,
-        ArtistSpotlightBlock,
-        RelatedArticlesBlock,
-        CTABlock,
-        DividerBlock,
-        TimelineBlock,
-      ],
-    },
-
-    /* ===============================
-       Enhanced AI & Automation
-    =============================== */
-
-    {
-      name: 'aiRanking',
-      type: 'group',
-      admin: {
-        description: 'Algorithmic ranking parameters determined dynamically based on content.',
-      },
-      hooks: {
-        beforeChange: [enhancedAIRankingHook],
-      },
-      fields: [
-        { name: 'boost', type: 'number', min: 0, max: 10 },
-        { name: 'decay', type: 'number', min: 0, max: 10 },
-        { name: 'freshness', type: 'number', min: 0, max: 10 },
-        {
-          name: 'engagementPotential',
-          type: 'number',
-          min: 0,
-          max: 10,
-          admin: { description: 'Predictive virality/engagement metric.' },
-        },
-        {
-          name: 'contentDensity',
-          type: 'number',
-          min: 0,
-          max: 10,
-          admin: { description: 'Media vs Text ratio score.' },
-        },
-        { name: 'aiNotes', type: 'textarea' },
-      ],
-    },
-
-    {
-      name: 'aiMetadata',
-      type: 'group',
-      admin: {
-        position: 'sidebar',
-        description: 'Auto-generated context used for SEO and internal feed recommendations.',
-      },
-      fields: [
-        {
-          name: 'autoSummary',
-          type: 'textarea',
-          admin: {
-            description: 'AI-generated quick summary for preview cards if excerpt is omitted.',
-            rows: 3,
-          },
-        },
-        {
-          name: 'suggestedKeywords',
-          type: 'text',
-          admin: {
-            description: 'Comma separated keywords extracted from the text by AI engine.',
-          },
-        },
-      ],
-    },
+    { name: 'readingTime', type: 'number', admin: { position: 'sidebar', readOnly: true } },
   ],
 }
+
+export default Articles

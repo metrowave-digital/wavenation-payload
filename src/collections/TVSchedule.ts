@@ -1,15 +1,29 @@
-// src/collections/RadioSchedule.ts
+// src/collections/TVSchedule.ts
 import type { CollectionConfig } from 'payload'
 
-export const RadioSchedule: CollectionConfig = {
-  slug: 'radioSchedule',
-  labels: { singular: 'Radio Schedule Entry', plural: 'Radio Schedule' },
+export const TVSchedule: CollectionConfig = {
+  slug: 'tvSchedule',
+  labels: {
+    singular: 'TV Schedule Entry',
+    plural: 'TV Schedule',
+  },
+
   admin: {
     useAsTitle: 'label',
-    group: 'Radio & Programming',
-    defaultColumns: ['label', 'radioShow', 'scheduleType', 'status'],
+    group: 'Video & TV',
+    defaultColumns: ['label', 'tvShow', 'scheduleType', 'status'],
+    description: 'Manages the linear broadcast schedule for WaveNation TV.',
   },
-  access: { read: () => true },
+
+  access: {
+    read: () => true,
+    create: ({ req }) =>
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+    update: ({ req }) =>
+      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+    delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')),
+  },
+
   fields: [
     {
       type: 'tabs',
@@ -21,16 +35,37 @@ export const RadioSchedule: CollectionConfig = {
               name: 'label',
               type: 'text',
               required: true,
-              admin: { description: 'Internal reference (e.g. "Morning Drive - Fall 2026")' },
+              admin: { description: 'Internal reference (e.g. "Morning News - Weekdays")' },
             },
-            { name: 'radioShow', type: 'relationship', relationTo: 'radioShows', required: true },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'tvShow',
+                  type: 'relationship',
+                  relationTo: 'tvShows',
+                  required: true,
+                  admin: { width: '50%' },
+                },
+                {
+                  name: 'vodEpisode',
+                  type: 'relationship',
+                  relationTo: 'vod',
+                  admin: {
+                    width: '50%',
+                    description:
+                      'Optional: Link the specific episode being aired to populate the TV Guide with accurate metadata.',
+                  },
+                },
+              ],
+            },
             {
               name: 'programmingType',
               type: 'select',
               required: true,
               options: [
-                { label: 'Live Broadcast', value: 'live' },
-                { label: 'Automated / Playout', value: 'automation' },
+                { label: 'Live Broadcast / Event', value: 'live' },
+                { label: 'Linear Playout (Automated)', value: 'automation' },
                 { label: 'Encore / Replay', value: 'replay' },
               ],
             },
@@ -40,9 +75,12 @@ export const RadioSchedule: CollectionConfig = {
               admin: { condition: (_, data) => data?.programmingType === 'live' },
               fields: [
                 {
-                  name: 'streamUrl',
+                  name: 'hlsUrl',
                   type: 'text',
-                  admin: { description: 'Icecast/Shoutcast or HLS Audio URL' },
+                  admin: {
+                    description:
+                      'The .m3u8 HLS manifest URL for overriding the default 24/7 channel stream during live events.',
+                  },
                 },
               ],
             },
@@ -61,7 +99,12 @@ export const RadioSchedule: CollectionConfig = {
                 { label: 'Special / Override', value: 'special' },
               ],
             },
-            { name: 'timezone', type: 'text', defaultValue: 'America/New_York', required: true },
+            {
+              name: 'timezone',
+              type: 'text',
+              defaultValue: 'America/New_York',
+              required: true,
+            },
             {
               name: 'recurringRules',
               type: 'group',
@@ -84,12 +127,30 @@ export const RadioSchedule: CollectionConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'startTime', type: 'text', required: true, admin: { width: '50%' } },
-                    { name: 'endTime', type: 'text', required: true, admin: { width: '50%' } },
+                    {
+                      name: 'startTime',
+                      type: 'text',
+                      required: true,
+                      admin: { width: '50%', placeholder: 'e.g. 20:00' },
+                    },
+                    {
+                      name: 'endTime',
+                      type: 'text',
+                      required: true,
+                      admin: { width: '50%', placeholder: 'e.g. 21:00' },
+                    },
                   ],
                 },
-                { name: 'effectiveStartDate', type: 'date' },
-                { name: 'effectiveEndDate', type: 'date' },
+                {
+                  name: 'effectiveStartDate',
+                  type: 'date',
+                  admin: { description: 'When this block starts applying to the calendar.' },
+                },
+                {
+                  name: 'effectiveEndDate',
+                  type: 'date',
+                  admin: { description: 'When this block stops applying to the calendar.' },
+                },
               ],
             },
             {
@@ -117,13 +178,16 @@ export const RadioSchedule: CollectionConfig = {
               defaultValue: 1,
               admin: {
                 description:
-                  'Higher numbers override lower numbers during conflicts (e.g., Breaking News = 100)',
+                  'Higher numbers override lower numbers. (e.g., Breaking News = 100, Standard Programming = 1)',
               },
             },
           ],
         },
       ],
     },
+    /* ===============================
+       Sidebar Fields
+    =============================== */
     {
       name: 'status',
       type: 'select',
@@ -136,3 +200,5 @@ export const RadioSchedule: CollectionConfig = {
     },
   ],
 }
+
+export default TVSchedule
