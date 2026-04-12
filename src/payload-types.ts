@@ -4399,7 +4399,7 @@ export interface FooterConfig {
   createdAt?: string | null;
 }
 /**
- * Controls the global news ticker behavior.
+ * Controls the global news ticker behavior and emergency overrides.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "news-ticker-settings".
@@ -4408,17 +4408,22 @@ export interface NewsTickerSetting {
   id: number;
   defaultLabel?: string | null;
   /**
-   * DANGER: Overrides the ticker red for emergencies.
+   * Duration in seconds for a full loop.
    */
+  scrollSpeed?: number | null;
   isCrisisMode?: boolean | null;
-  /**
-   * Force specific links/text into the ticker rotation alongside API data.
-   */
+  crisisPrimaryColor?: string | null;
+  crisisTextColor?: string | null;
   manualInjects?:
     | {
         label: string;
         href?: string | null;
+        accentOverride?: string | null;
         isBreaking?: boolean | null;
+        /**
+         * Auto-hide after this time.
+         */
+        validUntil?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -4440,6 +4445,34 @@ export interface Homepage {
             id?: string | null;
             blockName?: string | null;
             blockType: 'featuredHero';
+          }
+        | {
+            /**
+             * Leave blank to use default "LIVE FROM THE STATION"
+             */
+            title?: string | null;
+            /**
+             * Optional: Manually pin a specific event. Otherwise, the latest live/upcoming event shows automatically.
+             */
+            manualEvent?: (number | null) | Event;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'eventSpotlight';
+          }
+        | {
+            spotlightArticle: number | Article;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'artistSpotlightFeature';
+          }
+        | {
+            /**
+             * Select up to 2 featured articles to display side-by-side under the main slider.
+             */
+            articles?: (number | Article)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'spotlightArticles';
           }
         | {
             title?: string | null;
@@ -4494,25 +4527,35 @@ export interface EventSetting {
   createdAt?: string | null;
 }
 /**
- * Manages the scrolling live data items in the site header.
+ * Live broadcast data with transition and scheduling logic.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dynamic-ticker".
  */
 export interface DynamicTicker {
   id: number;
-  items: {
-    medium: 'FM' | 'ONE' | 'PLUS';
-    status: string;
-    isLive?: boolean | null;
-    title: string;
-    subtext?: string | null;
-    /**
-     * Hex color for the badge and pulse icon.
-     */
-    accent: string;
-    id?: string | null;
-  }[];
+  /**
+   * MS per slide.
+   */
+  displayDuration?: number | null;
+  /**
+   * Animation speed in MS.
+   */
+  transitionSpeed?: number | null;
+  showVisualizer?: boolean | null;
+  items?:
+    | {
+        medium?: ('FM' | 'ONE' | 'PLUS') | null;
+        status?: string | null;
+        isLive?: boolean | null;
+        title: string;
+        subtext?: string | null;
+        accent?: string | null;
+        scheduledStart?: string | null;
+        scheduledEnd?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -4616,13 +4659,18 @@ export interface FooterConfigSelect<T extends boolean = true> {
  */
 export interface NewsTickerSettingsSelect<T extends boolean = true> {
   defaultLabel?: T;
+  scrollSpeed?: T;
   isCrisisMode?: T;
+  crisisPrimaryColor?: T;
+  crisisTextColor?: T;
   manualInjects?:
     | T
     | {
         label?: T;
         href?: T;
+        accentOverride?: T;
         isBreaking?: T;
+        validUntil?: T;
         id?: T;
       };
   updatedAt?: T;
@@ -4641,6 +4689,28 @@ export interface HomepageSelect<T extends boolean = true> {
           | T
           | {
               featuredArticle?: T;
+              id?: T;
+              blockName?: T;
+            };
+        eventSpotlight?:
+          | T
+          | {
+              title?: T;
+              manualEvent?: T;
+              id?: T;
+              blockName?: T;
+            };
+        artistSpotlightFeature?:
+          | T
+          | {
+              spotlightArticle?: T;
+              id?: T;
+              blockName?: T;
+            };
+        spotlightArticles?:
+          | T
+          | {
+              articles?: T;
               id?: T;
               blockName?: T;
             };
@@ -4686,6 +4756,9 @@ export interface EventSettingsSelect<T extends boolean = true> {
  * via the `definition` "dynamic-ticker_select".
  */
 export interface DynamicTickerSelect<T extends boolean = true> {
+  displayDuration?: T;
+  transitionSpeed?: T;
+  showVisualizer?: T;
   items?:
     | T
     | {
@@ -4695,6 +4768,8 @@ export interface DynamicTickerSelect<T extends boolean = true> {
         title?: T;
         subtext?: T;
         accent?: T;
+        scheduledStart?: T;
+        scheduledEnd?: T;
         id?: T;
       };
   updatedAt?: T;
