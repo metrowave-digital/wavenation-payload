@@ -45,7 +45,6 @@ function getISOWeek(date: Date): string {
   return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`
 }
 
-// Helper to match tracks reliably
 function generateTrackId(title: string, artist: string, isrc?: string) {
   if (isrc) return isrc.trim().toLowerCase()
   return `${title}-${artist}`.trim().toLowerCase().replace(/\s+/g, '')
@@ -58,20 +57,23 @@ function generateTrackId(title: string, artist: string, isrc?: string) {
 const processChartMetrics: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
   if (!data) return data
 
-  // 1. Auto-generate week & slug
+  // 1. Handle Week & Slug (Allowing manual override or duplication)
+  // If no week is provided manually, generate from publishDate
   if (!data.week && data.publishDate) {
     data.week = getISOWeek(new Date(data.publishDate))
   }
+
+  // Re-generate slug to ensure it matches the current chartKey and week
+  // This allows duplication because changing the week will automatically fix the slug conflict
   if (data.chartKey && data.week) {
     data.slug = `${data.chartKey}-${data.week}`
   }
 
-  // 2. Auto-calculate Billboard-style metrics if linked to a previous chart
+  // 2. Auto-calculate Billboard-style metrics
   let previousEntries: ChartEntry[] = []
 
   if (data.previousChart) {
     try {
-      // Fetch the previous chart to compare against
       const prevChartDoc = await req.payload.findByID({
         collection: 'charts',
         id: data.previousChart,
@@ -85,13 +87,12 @@ const processChartMetrics: CollectionBeforeChangeHook = async ({ data, req, oper
     }
   }
 
-  // 3. Process entries based on drag-and-drop order
+  // 3. Process entries
   if (Array.isArray(data.entries)) {
     data.entries.forEach((entry: ChartEntry, index: number) => {
       const currentRank = index + 1
       entry.rank = currentRank
 
-      // Sync duplicate fields for top-level readability/searching
       entry.trackTitle = entry.manualTrack?.title
       entry.artist = entry.manualTrack?.artist
 
@@ -110,12 +111,10 @@ const processChartMetrics: CollectionBeforeChangeHook = async ({ data, req, oper
       )
 
       if (prevEntry) {
-        // Track was on the chart last week
         entry.previousRank = prevEntry.rank || null
         entry.weeksOnChart = (prevEntry.weeksOnChart || 1) + 1
         entry.peakRank = Math.min(currentRank, prevEntry.peakRank || currentRank)
 
-        // Calculate Movement
         if (entry.previousRank && currentRank < entry.previousRank) {
           entry.movement = 'up'
         } else if (entry.previousRank && currentRank > entry.previousRank) {
@@ -124,7 +123,6 @@ const processChartMetrics: CollectionBeforeChangeHook = async ({ data, req, oper
           entry.movement = 'same'
         }
       } else {
-        // New Track or Re-entry
         if (operation === 'create' || !entry.previousRank) {
           entry.previousRank = null
           entry.weeksOnChart = 1
@@ -143,7 +141,6 @@ export const createChartSnapshotHook: CollectionAfterChangeHook = async ({
   previousDoc,
   req,
 }) => {
-  // Only trigger when the chart is transitioned to "published"
   const isPublishing = doc.status === 'published' && previousDoc?.status !== 'published'
 
   if (!isPublishing || !doc.week) {
@@ -151,7 +148,6 @@ export const createChartSnapshotHook: CollectionAfterChangeHook = async ({
   }
 
   try {
-    // 1. Check if a snapshot for this Chart + Week already exists
     const existingSnapshot = await req.payload.find({
       collection: 'chart-snapshots',
       where: {
@@ -165,7 +161,6 @@ export const createChartSnapshotHook: CollectionAfterChangeHook = async ({
       return doc
     }
 
-    // 2. Format the entries for the Snapshot schema
     const snapshotEntries = (doc.entries || []).map((entry: any) => ({
       rank: entry.rank,
       previousRank: entry.previousRank || null,
@@ -179,7 +174,6 @@ export const createChartSnapshotHook: CollectionAfterChangeHook = async ({
       finalScore: entry.score || 0,
     }))
 
-    // 3. Deposit the immutable record into ChartSnapshots
     await req.payload.create({
       collection: 'chart-snapshots',
       data: {
@@ -420,7 +414,6 @@ export const Charts: CollectionConfig = {
                       'Public-facing note (e.g. "Jumping 15 spots after their viral TV performance...")',
                   },
                 },
-                // Hidden fields for top-level array indexing/display
                 { name: 'trackTitle', type: 'text', admin: { hidden: true } },
                 { name: 'artist', type: 'text', admin: { hidden: true } },
                 { name: 'score', type: 'number', admin: { hidden: true } },
@@ -439,7 +432,8 @@ export const Charts: CollectionConfig = {
       unique: true,
       admin: {
         position: 'sidebar',
-        readOnly: true,
+        // Changed to readOnly: false to allow manual fixing during duplication
+        readOnly: false,
         description: 'Auto-generated chart identifier',
       },
     },
@@ -464,7 +458,12 @@ export const Charts: CollectionConfig = {
     {
       name: 'week',
       type: 'text',
-      admin: { position: 'sidebar', description: 'ISO week (e.g. 2026-W05)', readOnly: true },
+      admin: {
+        position: 'sidebar',
+        description: 'ISO week (e.g. 2026-W05)',
+        // Changed to readOnly: false for manual input
+        readOnly: false,
+      },
     },
     {
       name: 'previousChart',
