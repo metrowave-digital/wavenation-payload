@@ -6,8 +6,7 @@ WORKDIR /app
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-# Enable corepack and force it to use v10 globally in this image
-RUN corepack enable && corepack prepare pnpm@10.15.2 --activate
+RUN corepack enable
 
 # ----------------------------------------
 # Install deps
