@@ -6,7 +6,8 @@ WORKDIR /app
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# Enable corepack and force it to use v10 globally in this image
+RUN corepack enable && corepack prepare pnpm@10.15.2 --activate
 
 # ----------------------------------------
 # Install deps
@@ -21,9 +22,6 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 COPY . .
 COPY --from=deps /app/node_modules ./node_modules
-
-# Re-enable pnpm (important for multi-stage)
-RUN corepack enable
 
 # Build Next.js (standalone output)
 RUN pnpm build
