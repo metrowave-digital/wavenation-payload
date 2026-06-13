@@ -1,34 +1,14 @@
-// src/collections/Playlists.ts
-import type { CollectionConfig, FieldHook, CollectionBeforeChangeHook } from 'payload'
+import type { CollectionConfig } from 'payload'
 
-const slugify = (value: string): string =>
+const MUSIC_GROUP = 'Music & Playlists'
+
+const formatSlug = (value: string) =>
   value
     .toLowerCase()
     .trim()
-    .replace(/['’]/g, '')
+    .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-
-const hasEditorAccess = (req: any): boolean =>
-  Boolean(req.user?.roles?.some((role: string) => ['editor', 'admin'].includes(role)))
-
-const hasAdminAccess = (req: any): boolean => Boolean(req.user?.roles?.includes('admin'))
-
-const autoSlug: FieldHook = ({ data, operation, value }) => {
-  if (typeof value === 'string' && value.trim()) return slugify(value)
-  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
-  return value
-}
-
-// Auto-calculate track count before saving
-const calculatePlaylistMetrics: CollectionBeforeChangeHook = ({ data }) => {
-  if (Array.isArray(data.tracks)) {
-    data.totalTracks = data.tracks.length
-  } else {
-    data.totalTracks = 0
-  }
-  return data
-}
 
 export const Playlists: CollectionConfig = {
   slug: 'playlists',
@@ -37,31 +17,30 @@ export const Playlists: CollectionConfig = {
     plural: 'Playlists',
   },
   admin: {
+    group: MUSIC_GROUP,
     useAsTitle: 'title',
-    group: 'Music & Programming',
-    defaultColumns: ['title', 'playlistType', 'featured', 'totalTracks', 'publishDate'],
-    description:
-      'Editorial, chart, creator, and sponsored playlists used across WaveNation surfaces.',
-  },
-  access: {
-    read: () => true,
-    create: ({ req }) => hasEditorAccess(req),
-    update: ({ req }) => hasEditorAccess(req),
-    delete: ({ req }) => hasAdminAccess(req),
+    defaultColumns: [
+      'title',
+      'playlistType',
+      'updateCadence',
+      'isSponsored',
+      'isFeatured',
+      'updatedAt',
+    ],
   },
   versions: {
-    drafts: {
-      autosave: { interval: 300 },
-      schedulePublish: true,
-    },
-    maxPerDoc: 50,
+    drafts: true,
+    maxPerDoc: 75,
   },
-  timestamps: true,
   hooks: {
-    beforeChange: [
-      calculatePlaylistMetrics,
+    beforeValidate: [
       ({ data }) => {
-        if (!data?.publishDate) return data
+        if (!data) return data
+
+        if (data.title && !data.slug) {
+          data.slug = formatSlug(data.title)
+        }
+
         return data
       },
     ],
@@ -71,296 +50,444 @@ export const Playlists: CollectionConfig = {
       type: 'tabs',
       tabs: [
         {
-          label: 'Core Info',
+          label: 'Basics',
           fields: [
             {
               name: 'title',
               type: 'text',
               required: true,
-              admin: { description: 'Public-facing playlist title.' },
+              index: true,
             },
             {
               name: 'slug',
               type: 'text',
               unique: true,
               index: true,
-              hooks: { beforeValidate: [autoSlug] },
-              admin: { description: 'URL-safe slug. Auto-generated from title if left blank.' },
+              admin: {
+                description: 'Auto-generated from the playlist title if left blank.',
+              },
             },
             {
               name: 'playlistType',
               type: 'select',
-              required: true,
+              defaultValue: 'core-editorial',
+              index: true,
               options: [
-                { label: 'Chart Playlist', value: 'chart' },
-                { label: 'Editorial', value: 'editorial' },
-                { label: 'Creator Curated', value: 'creator' },
+                { label: 'Core Editorial', value: 'core-editorial' },
+                { label: 'Category / Genre', value: 'category' },
+                { label: 'Mood-Based', value: 'mood' },
+                { label: 'Seasonal', value: 'seasonal' },
+                { label: 'Event / Festival', value: 'event' },
+                { label: 'Creator-Curated', value: 'creator-curated' },
                 { label: 'Sponsored', value: 'sponsored' },
+                { label: 'Show Companion', value: 'show-companion' },
+                { label: 'Archive / Catalog', value: 'archive' },
               ],
-              admin: { description: 'Determines playlist ownership and workflow.' },
-            },
-            {
-              name: 'description',
-              type: 'textarea',
-              admin: { description: 'Public description used on playlist pages and embeds.' },
             },
             {
               name: 'shortDescription',
               type: 'text',
-              maxLength: 180,
-              admin: { description: 'Short summary for cards, previews, and app surfaces.' },
-            },
-            {
-              name: 'coverImage',
-              type: 'upload',
-              relationTo: 'media',
-              admin: { description: 'Primary artwork for the playlist.' },
-            },
-            {
-              name: 'featured',
-              type: 'checkbox',
-              defaultValue: false,
               admin: {
-                description: 'Marks the playlist for homepage or editorial spotlight placement.',
+                description: 'Short line for playlist cards.',
               },
             },
             {
-              name: 'publishDate',
-              type: 'date',
+              name: 'description',
+              type: 'textarea',
               admin: {
-                position: 'sidebar',
-                date: { pickerAppearance: 'dayAndTime' },
-                description: 'Used for scheduling and sorting published playlists.',
+                description: 'Full public playlist description.',
+              },
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'curatorName',
+                  type: 'text',
+                  admin: {
+                    width: '50%',
+                    description: 'Example: WaveNation FM, DJ name, editor name.',
+                  },
+                },
+                {
+                  name: 'curatorRole',
+                  type: 'text',
+                  admin: {
+                    width: '50%',
+                    description: 'Example: Music Director, Guest Curator.',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Branding',
+          fields: [
+            {
+              name: 'coverArt',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description: 'Square cover art for Spotify, Apple Music, cards, and app UI.',
+              },
+            },
+            {
+              name: 'heroImage',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description: 'Optional 16:9 or wide hero image.',
+              },
+            },
+            {
+              name: 'accentColor',
+              type: 'select',
+              defaultValue: 'electric-blue',
+              options: [
+                { label: 'Electric Blue', value: 'electric-blue' },
+                { label: 'Neon Green', value: 'neon-green' },
+                { label: 'Magenta Pulse', value: 'magenta-pulse' },
+                { label: 'Signal Teal', value: 'signal-teal' },
+                { label: 'Southern Heat', value: 'southern-heat' },
+                { label: 'Custom', value: 'custom' },
+              ],
+            },
+            {
+              name: 'customAccentColor',
+              type: 'text',
+              admin: {
+                description: 'Optional hex value.',
+                condition: (_, siblingData) => siblingData?.accentColor === 'custom',
               },
             },
           ],
         },
-
         {
-          label: 'Curation & Metadata',
+          label: 'Taxonomy',
           fields: [
             {
-              name: 'curator',
-              type: 'relationship',
-              relationTo: 'users',
-              admin: {
-                description: 'Primary editor, DJ, or curator responsible for the playlist.',
-              },
-            },
-            {
               name: 'genres',
-              type: 'select',
+              type: 'relationship',
+              relationTo: 'genres',
               hasMany: true,
-              options: [
-                { label: 'R&B', value: 'rnb' },
-                { label: 'Hip-Hop', value: 'hiphop' },
-                { label: 'Southern Soul', value: 'southern-soul' },
-                { label: 'Gospel', value: 'gospel' },
-                { label: 'Jazz', value: 'jazz' },
-                { label: 'House', value: 'house' },
-                { label: 'Club', value: 'club' },
-                { label: 'Afrobeats', value: 'afrobeats' },
-                { label: 'Soul', value: 'soul' },
-                { label: 'Mixed', value: 'mixed' },
-              ],
             },
             {
               name: 'moods',
               type: 'relationship',
               relationTo: 'moods',
               hasMany: true,
-              admin: { description: 'Link to defined Mood taxonomies.' },
             },
             {
-              name: 'platformTags',
-              type: 'text',
-              hasMany: true,
-              admin: {
-                description: 'Freeform tags for internal discovery and editorial organization.',
+              name: 'tags',
+              type: 'array',
+              labels: {
+                singular: 'Tag',
+                plural: 'Tags',
               },
-            },
-            {
-              name: 'playlistNotes',
-              type: 'textarea',
-              admin: { description: 'Internal curation rationale, notes, or governance comments.' },
-              access: {
-                read: ({ req }) => hasEditorAccess(req),
-                update: ({ req }) => hasEditorAccess(req),
-              },
-            },
-            {
-              name: 'sponsor',
-              type: 'relationship',
-              relationTo: 'sponsors',
-              admin: {
-                condition: (_, siblingData) => siblingData?.playlistType === 'sponsored',
-                description: 'Official sponsor for this branded playlist.',
-              },
-            },
-            {
-              name: 'editorialApprovalStatus',
-              type: 'select',
-              defaultValue: 'pending',
-              options: [
-                { label: 'Pending', value: 'pending' },
-                { label: 'Approved', value: 'approved' },
-                { label: 'Needs Revision', value: 'needs-revision' },
+              fields: [
+                {
+                  name: 'label',
+                  type: 'text',
+                },
               ],
-              access: {
-                read: ({ req }) => hasEditorAccess(req),
-                update: ({ req }) => hasEditorAccess(req),
-              },
-              admin: { description: 'Internal review workflow status.' },
+            },
+            {
+              name: 'targetAudience',
+              type: 'select',
+              defaultValue: 'all',
+              options: [
+                { label: 'All Audiences', value: 'all' },
+                { label: 'Culture Consumer 25-45', value: 'culture-consumer' },
+                { label: 'Multigenerational 45+', value: 'multigenerational' },
+                { label: 'Creator Audience', value: 'creator-audience' },
+                { label: 'Community Audience', value: 'community-audience' },
+              ],
             },
           ],
         },
-
         {
-          label: 'Tracks',
+          label: 'Tracklist',
           fields: [
             {
               name: 'tracks',
               type: 'array',
-              minRows: 1,
-              admin: { description: 'Ordered list of tracks included in this playlist.' },
-              validate: (value: unknown) => {
-                if (!Array.isArray(value)) return true
-                const orders = value
-                  .map((item: { order?: number | null }) => item?.order)
-                  .filter((order): order is number => typeof order === 'number')
-                const hasDuplicates = new Set(orders).size !== orders.length
-                if (hasDuplicates) return 'Track order values must be unique.'
-                return true
+              labels: {
+                singular: 'Playlist Track',
+                plural: 'Playlist Tracks',
               },
-              fields: [
-                { name: 'track', type: 'relationship', relationTo: 'mediaTracks', required: true },
-                { name: 'order', type: 'number', required: true, admin: { width: '50%', step: 1 } },
-                {
-                  name: 'isFeatured',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: {
-                    width: '50%',
-                    description: 'Highlights a priority or spotlight track within the playlist.',
-                  },
-                },
-                {
-                  name: 'editorNote',
-                  type: 'text',
-                  admin: {
-                    description: 'Optional internal note about why this track is included.',
-                  },
-                  access: {
-                    read: ({ req }) => hasEditorAccess(req),
-                    update: ({ req }) => hasEditorAccess(req),
-                  },
-                },
-              ],
-            },
-          ],
-        },
-
-        {
-          label: 'DSP & API Sync',
-          fields: [
-            {
-              name: 'dspIntegrations',
-              type: 'array',
               admin: {
                 description:
-                  'Manage API IDs and Sync Statuses for external platforms like Spotify and Apple Music.',
+                  'Manual order is controlled by the order of these rows. Drag rows to reorder.',
               },
               fields: [
                 {
-                  name: 'provider',
-                  type: 'select',
-                  required: true,
-                  options: [
-                    { label: 'Spotify', value: 'spotify' },
-                    { label: 'Apple Music', value: 'appleMusic' },
-                    { label: 'YouTube Music', value: 'youtubeMusic' },
-                    { label: 'Audiomack', value: 'audiomack' },
-                    { label: 'Tidal', value: 'tidal' },
-                  ],
-                  admin: { width: '50%' },
-                },
-                {
-                  name: 'platformId',
-                  type: 'text',
-                  admin: {
-                    width: '50%',
-                    description:
-                      'The official Playlist ID from the DSP (e.g., 37i9dQZF1DXcBWIGoYBM5M).',
-                  },
-                },
-                {
-                  name: 'publicUrl',
-                  type: 'text',
-                  admin: {
-                    description: 'The public sharable link (e.g., open.spotify.com/playlist/...)',
-                  },
+                  name: 'track',
+                  type: 'relationship',
+                  relationTo: 'tracks',
                 },
                 {
                   type: 'row',
                   fields: [
                     {
-                      name: 'syncStatus',
-                      type: 'select',
-                      defaultValue: 'pending',
-                      options: [
-                        { label: 'Pending / Out of Sync', value: 'pending' },
-                        { label: 'Synced', value: 'synced' },
-                        { label: 'Failed', value: 'failed' },
-                      ],
-                      admin: { width: '33%', readOnly: true }, // Usually updated by your backend API webhook
-                    },
-                    { name: 'lastSyncedAt', type: 'date', admin: { width: '33%', readOnly: true } },
-                    {
-                      name: 'autoSync',
-                      type: 'checkbox',
-                      defaultValue: true,
+                      name: 'position',
+                      type: 'number',
                       admin: {
-                        width: '33%',
-                        description: 'Enable automatic push to this DSP via API.',
+                        width: '25%',
+                        description: 'Optional display number.',
+                      },
+                    },
+                    {
+                      name: 'isNewThisWeek',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: {
+                        width: '25%',
+                      },
+                    },
+                    {
+                      name: 'isFeaturedPlacement',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: {
+                        width: '25%',
+                      },
+                    },
+                    {
+                      name: 'isIndieSpotlight',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: {
+                        width: '25%',
                       },
                     },
                   ],
                 },
+                {
+                  name: 'customTitle',
+                  type: 'text',
+                  admin: {
+                    description:
+                      'Use only if the track is not yet entered in the Tracks collection.',
+                  },
+                },
+                {
+                  name: 'customArtistName',
+                  type: 'text',
+                },
+                {
+                  name: 'editorialNote',
+                  type: 'textarea',
+                  admin: {
+                    description: 'Optional note for website/app tracklist or internal curation.',
+                  },
+                },
               ],
-            },
-            {
-              name: 'distributionStatus',
-              type: 'select',
-              hasMany: true,
-              options: [
-                { label: 'Website', value: 'website' },
-                { label: 'Mobile App', value: 'mobile-app' },
-                { label: 'TV App', value: 'tv-app' },
-              ],
-              admin: { description: 'Internal surfaces where the playlist is visible.' },
             },
           ],
         },
-
+        {
+          label: 'Platform Links',
+          fields: [
+            {
+              name: 'primaryPlatform',
+              type: 'select',
+              defaultValue: 'spotify',
+              options: [
+                { label: 'Spotify', value: 'spotify' },
+                { label: 'Apple Music', value: 'apple-music' },
+                { label: 'YouTube Music', value: 'youtube-music' },
+                { label: 'YouTube', value: 'youtube' },
+                { label: 'Audiomack', value: 'audiomack' },
+                { label: 'Tidal', value: 'tidal' },
+                { label: 'Pandora', value: 'pandora' },
+                { label: 'SoundCloud', value: 'soundcloud' },
+                { label: 'Bandcamp', value: 'bandcamp' },
+                { label: 'WaveNation', value: 'wavenation' },
+              ],
+            },
+            {
+              name: 'platformLinks',
+              type: 'group',
+              fields: [
+                { name: 'spotify', type: 'text' },
+                { name: 'appleMusic', type: 'text' },
+                { name: 'youtubeMusic', type: 'text' },
+                { name: 'youtube', type: 'text' },
+                { name: 'audiomack', type: 'text' },
+                { name: 'tidal', type: 'text' },
+                { name: 'pandora', type: 'text' },
+                { name: 'soundCloud', type: 'text' },
+                { name: 'bandcamp', type: 'text' },
+                { name: 'wavenationEmbedUrl', type: 'text' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Sponsored',
+          fields: [
+            {
+              name: 'isSponsored',
+              type: 'checkbox',
+              defaultValue: false,
+            },
+            {
+              name: 'sponsorName',
+              type: 'text',
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+              },
+            },
+            {
+              name: 'sponsorLogo',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+              },
+            },
+            {
+              name: 'sponsorUrl',
+              type: 'text',
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+              },
+            },
+            {
+              name: 'sponsorDisclosure',
+              type: 'textarea',
+              defaultValue:
+                'Sponsored Playlist. Final playlist selection remains editorially independent.',
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+              },
+            },
+            {
+              name: 'editorialIndependenceConfirmed',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+                description: 'Confirms sponsor suggestions did not override editorial selection.',
+              },
+            },
+            {
+              name: 'sponsorApprovalStatus',
+              type: 'select',
+              defaultValue: 'not-needed',
+              options: [
+                { label: 'Not Needed', value: 'not-needed' },
+                { label: 'Pending', value: 'pending' },
+                { label: 'Approved', value: 'approved' },
+                { label: 'Needs Revision', value: 'needs-revision' },
+              ],
+              admin: {
+                condition: (_, siblingData) => Boolean(siblingData?.isSponsored),
+              },
+            },
+          ],
+        },
+        {
+          label: 'Publishing',
+          fields: [
+            {
+              name: 'publishedAt',
+              type: 'date',
+              index: true,
+            },
+            {
+              name: 'updateCadence',
+              type: 'select',
+              defaultValue: 'weekly',
+              options: [
+                { label: 'Weekly', value: 'weekly' },
+                { label: 'Biweekly', value: 'biweekly' },
+                { label: 'Monthly', value: 'monthly' },
+                { label: 'Seasonal', value: 'seasonal' },
+                { label: 'As Needed', value: 'as-needed' },
+                { label: 'Archived', value: 'archived' },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'lastUpdated',
+                  type: 'date',
+                  admin: {
+                    width: '50%',
+                  },
+                },
+                {
+                  name: 'nextUpdateDue',
+                  type: 'date',
+                  admin: {
+                    width: '50%',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'rotationTurnoverTarget',
+              type: 'select',
+              defaultValue: '20-40',
+              options: [
+                { label: 'No Set Target', value: 'none' },
+                { label: '10-20%', value: '10-20' },
+                { label: '20-40%', value: '20-40' },
+                { label: '40%+', value: '40-plus' },
+              ],
+            },
+            {
+              name: 'isFeatured',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true,
+            },
+            {
+              name: 'homepagePlacement',
+              type: 'checkbox',
+              defaultValue: false,
+            },
+            {
+              name: 'displayOrder',
+              type: 'number',
+              defaultValue: 100,
+              index: true,
+            },
+            {
+              name: 'relatedEditorialUrl',
+              type: 'text',
+              admin: {
+                description: 'Optional link to a playlist article or weekly write-up.',
+              },
+            },
+            {
+              name: 'internalNotes',
+              type: 'textarea',
+            },
+          ],
+        },
         {
           label: 'SEO',
           fields: [
-            { name: 'seoTitle', type: 'text', maxLength: 60 },
-            { name: 'seoDescription', type: 'textarea', maxLength: 160 },
-            { name: 'socialImage', type: 'upload', relationTo: 'media' },
+            {
+              name: 'seoTitle',
+              type: 'text',
+            },
+            {
+              name: 'seoDescription',
+              type: 'textarea',
+            },
+            {
+              name: 'socialCard',
+              type: 'upload',
+              relationTo: 'media',
+            },
           ],
         },
       ],
     },
-    /* ===============================
-       Sidebar Fields (Auto-Calculated)
-    =============================== */
-    {
-      name: 'totalTracks',
-      type: 'number',
-      admin: { position: 'sidebar', readOnly: true, description: 'Auto-calculated sum of tracks.' },
-    },
   ],
 }
-
-export default Playlists

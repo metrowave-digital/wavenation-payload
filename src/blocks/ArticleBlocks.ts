@@ -350,9 +350,9 @@ export const AdInsertBlock: Block = {
   labels: { singular: 'Ad Zone Insert', plural: 'Ad Zones' },
   fields: [
     {
-      name: 'adZone',
+      name: 'adPlacement',
       type: 'relationship',
-      relationTo: 'adZones',
+      relationTo: 'ad-placements',
       required: true,
       admin: {
         description:

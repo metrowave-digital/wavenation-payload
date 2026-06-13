@@ -20,10 +20,13 @@ export const Sidebars: CollectionConfig = {
           ],
         },
         { slug: 'trendingArticles', fields: [{ name: 'limit', type: 'number', defaultValue: 5 }] },
-        { slug: 'adZone', fields: [{ name: 'zone', type: 'relationship', relationTo: 'adZones' }] },
+        {
+          slug: 'adPlacements',
+          fields: [{ name: 'zone', type: 'relationship', relationTo: 'ad-placements' }],
+        },
         {
           slug: 'promoBanner',
-          fields: [{ name: 'banner', type: 'relationship', relationTo: 'promoBanners' }],
+          fields: [{ name: 'banner', type: 'relationship', relationTo: 'promo-banners' }],
         },
       ],
     },

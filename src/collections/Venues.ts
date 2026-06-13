@@ -1,109 +1,302 @@
-import type { CollectionConfig, FieldHook } from 'payload'
+import type { Access, CollectionConfig } from 'payload'
 
-const slugify = (val: string) =>
-  val
-    .toLowerCase()
+type PayloadUser = {
+  role?: string | string[] | null
+  roles?: string[] | null
+}
+
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000'
+
+const formatSlug = (value?: string | null) =>
+  String(value || '')
     .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-const autoSlug: FieldHook = ({ data, operation, value }) => {
-  if (value) return slugify(value)
-  if (data?.name && operation === 'create') return slugify(data.name)
-  return value
+
+const getRoles = (user: unknown): string[] => {
+  const typedUser = user as PayloadUser | null | undefined
+  const role = typedUser?.role
+  const roles = typedUser?.roles
+
+  return [
+    ...(Array.isArray(role) ? role : role ? [role] : []),
+    ...(Array.isArray(roles) ? roles : []),
+  ]
+}
+
+const hasRole = (user: unknown, allowed: string[]) =>
+  getRoles(user).some((role) => allowed.includes(role))
+
+const isStaffUser = (user: unknown) =>
+  hasRole(user, ['admin', 'super-admin', 'editor', 'producer', 'events-manager'])
+
+const staffOnly: Access = ({ req: { user } }) => isStaffUser(user)
+
+const publicOrStaff: Access = ({ req: { user } }) => {
+  if (isStaffUser(user)) return true
+
+  return {
+    isActive: {
+      equals: true,
+    },
+  }
 }
 
 export const Venues: CollectionConfig = {
   slug: 'venues',
-  labels: { singular: 'Venue', plural: 'Venues' },
-  admin: {
-    useAsTitle: 'name',
-    group: 'Programming',
-    defaultColumns: ['name', 'venueType', 'city', 'capacity'],
+  labels: {
+    singular: 'Venue',
+    plural: 'Venues',
   },
+  admin: {
+    group: 'Events & Live Activations',
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'city', 'state', 'venueType', 'capacity', 'isActive'],
+    listSearchableFields: ['name', 'city', 'state', 'description'],
+    preview: ({ slug }) => `${FRONTEND_URL}/venues/${slug}`,
+  },
+  access: {
+    create: staffOnly,
+    read: publicOrStaff,
+    update: staffOnly,
+    delete: staffOnly,
+  },
+  timestamps: true,
   fields: [
     {
       type: 'tabs',
       tabs: [
         {
-          label: 'Core Details',
+          label: 'Overview',
           fields: [
-            { name: 'name', type: 'text', required: true },
-            { name: 'description', type: 'textarea' },
             {
-              type: 'row',
-              fields: [
-                {
-                  name: 'venueType',
-                  type: 'select',
-                  options: ['Physical', 'Virtual', 'Hybrid', 'Studio'],
-                  admin: { width: '50%' },
-                },
-                { name: 'capacity', type: 'number', admin: { width: '50%' } },
+              name: 'name',
+              type: 'text',
+              required: true,
+              index: true,
+            },
+            {
+              name: 'slug',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                position: 'sidebar',
+              },
+              hooks: {
+                beforeValidate: [({ value, data }) => value || formatSlug(data?.name)],
+              },
+            },
+            {
+              name: 'description',
+              type: 'richText',
+            },
+            {
+              name: 'venueType',
+              type: 'select',
+              defaultValue: 'event-space',
+              options: [
+                { label: 'Event Space', value: 'event-space' },
+                { label: 'Theater', value: 'theater' },
+                { label: 'Club', value: 'club' },
+                { label: 'Arena', value: 'arena' },
+                { label: 'Church / Faith Venue', value: 'faith-venue' },
+                { label: 'Outdoor Venue', value: 'outdoor' },
+                { label: 'Restaurant / Lounge', value: 'restaurant-lounge' },
+                { label: 'Studio', value: 'studio' },
+                { label: 'Virtual', value: 'virtual' },
+                { label: 'Other', value: 'other' },
               ],
             },
-            { name: 'photos', type: 'upload', relationTo: 'media', hasMany: true },
+            {
+              name: 'capacity',
+              type: 'number',
+            },
+            {
+              name: 'isActive',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                position: 'sidebar',
+              },
+            },
           ],
         },
         {
           label: 'Location',
           fields: [
-            { name: 'address', type: 'text' },
             {
-              type: 'row',
-              fields: [
-                { name: 'city', type: 'text', admin: { width: '33%' } },
-                { name: 'state', type: 'text', admin: { width: '33%' } },
-                { name: 'country', type: 'text', admin: { width: '34%' } },
-              ],
+              name: 'addressLine1',
+              type: 'text',
             },
-            { name: 'timezone', type: 'text', defaultValue: 'America/New_York', required: true },
             {
-              type: 'row',
+              name: 'addressLine2',
+              type: 'text',
+            },
+            {
+              name: 'city',
+              type: 'text',
+              index: true,
+            },
+            {
+              name: 'state',
+              type: 'text',
+              index: true,
+            },
+            {
+              name: 'postalCode',
+              type: 'text',
+            },
+            {
+              name: 'country',
+              type: 'text',
+              defaultValue: 'United States',
+            },
+            {
+              name: 'neighborhood',
+              type: 'text',
+            },
+            {
+              name: 'timezone',
+              type: 'text',
+              defaultValue: 'America/New_York',
+            },
+            {
+              name: 'mapUrl',
+              type: 'text',
+            },
+            {
+              name: 'latitude',
+              type: 'number',
+            },
+            {
+              name: 'longitude',
+              type: 'number',
+            },
+          ],
+        },
+        {
+          label: 'Guest Info',
+          fields: [
+            {
+              name: 'parkingInfo',
+              type: 'textarea',
+            },
+            {
+              name: 'publicTransitInfo',
+              type: 'textarea',
+            },
+            {
+              name: 'accessibilityInfo',
+              type: 'textarea',
+            },
+            {
+              name: 'entryInstructions',
+              type: 'textarea',
+            },
+            {
+              name: 'ageRestriction',
+              type: 'text',
+              admin: {
+                description: 'Example: All ages, 18+, 21+.',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Contact',
+          fields: [
+            {
+              name: 'website',
+              type: 'text',
+            },
+            {
+              name: 'phone',
+              type: 'text',
+            },
+            {
+              name: 'email',
+              type: 'email',
+            },
+            {
+              name: 'contacts',
+              type: 'array',
               fields: [
-                { name: 'lat', type: 'number', admin: { width: '50%' } },
-                { name: 'lng', type: 'number', admin: { width: '50%' } },
+                {
+                  name: 'name',
+                  type: 'text',
+                },
+                {
+                  name: 'role',
+                  type: 'text',
+                },
+                {
+                  name: 'email',
+                  type: 'email',
+                },
+                {
+                  name: 'phone',
+                  type: 'text',
+                },
               ],
             },
           ],
         },
         {
-          label: 'Broadcast Tech Specs',
-          admin: { description: 'Default streaming configurations for events hosted here.' },
+          label: 'Media',
           fields: [
             {
-              name: 'internetSpeed',
-              type: 'text',
-              admin: { placeholder: 'e.g., 1Gbps Up / 1Gbps Down' },
+              name: 'heroImage',
+              type: 'upload',
+              relationTo: 'media',
             },
             {
-              name: 'defaultRtmpIngest',
-              type: 'text',
-              admin: { description: 'Standard RTMP URL for this venue’s hardware encoder.' },
+              name: 'thumbnail',
+              type: 'upload',
+              relationTo: 'media',
             },
             {
-              type: 'row',
-              fields: [
-                { name: 'muxLiveStreamId', type: 'text', admin: { width: '50%' } },
-                { name: 'cloudflareLiveInputId', type: 'text', admin: { width: '50%' } },
-              ],
+              name: 'gallery',
+              type: 'upload',
+              relationTo: 'media',
+              hasMany: true,
+            },
+          ],
+        },
+        {
+          label: 'SEO',
+          fields: [
+            {
+              name: 'seoTitle',
+              type: 'text',
+              maxLength: 70,
+            },
+            {
+              name: 'seoDescription',
+              type: 'textarea',
+              maxLength: 160,
+            },
+            {
+              name: 'seoImage',
+              type: 'upload',
+              relationTo: 'media',
+            },
+          ],
+        },
+        {
+          label: 'Admin',
+          fields: [
+            {
+              name: 'internalNotes',
+              type: 'textarea',
             },
           ],
         },
       ],
-    },
-    {
-      name: 'slug',
-      type: 'text',
-      unique: true,
-      hooks: { beforeValidate: [autoSlug] },
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'status',
-      type: 'select',
-      defaultValue: 'active',
-      options: ['active', 'inactive'],
-      admin: { position: 'sidebar' },
     },
   ],
 }

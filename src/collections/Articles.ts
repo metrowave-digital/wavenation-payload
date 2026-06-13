@@ -307,15 +307,44 @@ export const Articles: CollectionConfig = {
         {
           label: 'Taxonomy',
           fields: [
-            { name: 'categories', type: 'relationship', relationTo: 'categories', hasMany: true },
+            {
+              name: 'categories',
+              type: 'relationship',
+              relationTo: 'categories',
+              hasMany: true,
+            },
             {
               name: 'subcategories',
               type: 'relationship',
               relationTo: 'subcategories',
               hasMany: true,
             },
-            { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true },
-            { name: 'series', type: 'relationship', relationTo: 'article-series' },
+            {
+              name: 'topics',
+              type: 'relationship',
+              relationTo: 'topics',
+              hasMany: true,
+              admin: {
+                description:
+                  'Cross-category editorial topics. Use these for story subjects like R&B, Southern Soul, HBCU Culture, Black Film, Creator Economy, Gospel, or Local Politics.',
+              },
+              filterOptions: {
+                status: {
+                  equals: 'active',
+                },
+              },
+            },
+            {
+              name: 'tags',
+              type: 'relationship',
+              relationTo: 'tags',
+              hasMany: true,
+            },
+            {
+              name: 'series',
+              type: 'relationship',
+              relationTo: 'article-series',
+            },
           ],
         },
         {

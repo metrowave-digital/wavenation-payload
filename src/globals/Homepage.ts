@@ -80,8 +80,15 @@ export const Homepage: GlobalConfig = {
           ],
         },
         {
-          slug: 'adZoneInsert',
-          fields: [{ name: 'adZone', type: 'relationship', relationTo: 'adZones', required: true }],
+          slug: 'adPlacementInsert',
+          fields: [
+            {
+              name: 'adPlacement',
+              type: 'relationship',
+              relationTo: 'ad-placements',
+              required: true,
+            },
+          ],
         },
       ],
     },

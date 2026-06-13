@@ -10,21 +10,40 @@ const slugify = (value: string): string =>
     .replace(/^-+|-+$/g, '')
 
 const autoSlug: FieldHook = ({ data, operation, value }) => {
-  if (typeof value === 'string' && value.trim()) return slugify(value)
-  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
+  if (typeof value === 'string' && value.trim()) {
+    return slugify(value)
+  }
+
+  if (data?.title && (operation === 'create' || !value)) {
+    return slugify(data.title)
+  }
+
   return value
 }
 
 export const TVShows: CollectionConfig = {
   slug: 'tvShows',
-  labels: { singular: 'TV Show', plural: 'TV Shows' },
+
+  labels: {
+    singular: 'TV Show',
+    plural: 'TV Shows',
+  },
+
   admin: {
     useAsTitle: 'title',
     group: 'Video & TV',
-    defaultColumns: ['title', 'network', 'status'],
+    defaultColumns: ['title', 'network', 'format', 'showStatus'],
+    description: 'Manages WaveNation TV shows, series, specials, and original video programming.',
   },
-  versions: { drafts: true },
-  access: { read: () => true },
+
+  versions: {
+    drafts: true,
+  },
+
+  access: {
+    read: () => true,
+  },
+
   fields: [
     {
       type: 'tabs',
@@ -32,30 +51,88 @@ export const TVShows: CollectionConfig = {
         {
           label: 'Core Info',
           fields: [
-            { name: 'title', type: 'text', required: true },
-            { name: 'description', type: 'textarea' },
+            {
+              name: 'title',
+              type: 'text',
+              required: true,
+              admin: {
+                description: 'The public title of the TV show or series.',
+              },
+            },
+            {
+              name: 'description',
+              type: 'textarea',
+              admin: {
+                description: 'A short synopsis or editorial description for this show.',
+              },
+            },
             {
               type: 'row',
               fields: [
                 {
                   name: 'format',
                   type: 'select',
-                  admin: { width: '50%' },
+                  admin: {
+                    width: '50%',
+                  },
                   options: [
-                    { label: 'Reality / Docuseries', value: 'reality' },
-                    { label: 'Talk Show', value: 'talk' },
-                    { label: 'Scripted Drama', value: 'drama' },
-                    { label: 'Scripted Comedy', value: 'comedy' },
-                    { label: 'Live Event / Award', value: 'event' },
+                    {
+                      label: 'Reality / Docuseries',
+                      value: 'reality',
+                    },
+                    {
+                      label: 'Talk Show',
+                      value: 'talk',
+                    },
+                    {
+                      label: 'Scripted Drama',
+                      value: 'drama',
+                    },
+                    {
+                      label: 'Scripted Comedy',
+                      value: 'comedy',
+                    },
+                    {
+                      label: 'Live Event / Award',
+                      value: 'event',
+                    },
+                    {
+                      label: 'Documentary',
+                      value: 'documentary',
+                    },
+                    {
+                      label: 'Music Video Block',
+                      value: 'music-video-block',
+                    },
+                    {
+                      label: 'Special Presentation',
+                      value: 'special',
+                    },
                   ],
                 },
                 {
                   name: 'network',
                   type: 'select',
-                  admin: { width: '50%' },
+                  admin: {
+                    width: '50%',
+                  },
                   options: [
-                    { label: 'WaveNation TV', value: 'wavenation' },
-                    { label: 'Syndicated', value: 'syndicated' },
+                    {
+                      label: 'WaveNation TV',
+                      value: 'wavenation',
+                    },
+                    {
+                      label: 'WaveNation One',
+                      value: 'wavenation-one',
+                    },
+                    {
+                      label: 'WaveNation+',
+                      value: 'wavenation-plus',
+                    },
+                    {
+                      label: 'Syndicated',
+                      value: 'syndicated',
+                    },
                   ],
                 },
               ],
@@ -65,7 +142,9 @@ export const TVShows: CollectionConfig = {
               type: 'relationship',
               relationTo: 'sponsors',
               hasMany: true,
-              admin: { description: 'Brands officially sponsoring or presenting this TV Show.' },
+              admin: {
+                description: 'Brands officially sponsoring or presenting this TV show.',
+              },
             },
           ],
         },
@@ -76,15 +155,26 @@ export const TVShows: CollectionConfig = {
               name: 'posterArt',
               type: 'upload',
               relationTo: 'media',
-              admin: { description: 'Vertical 2:3 Poster' },
+              admin: {
+                description: 'Vertical poster art. Recommended ratio: 2:3.',
+              },
             },
             {
               name: 'heroBanner',
               type: 'upload',
               relationTo: 'media',
-              admin: { description: '16:9 Landscape Banner' },
+              admin: {
+                description: 'Landscape hero image or banner. Recommended ratio: 16:9.',
+              },
             },
-            { name: 'trailer', type: 'upload', relationTo: 'media' },
+            {
+              name: 'trailer',
+              type: 'upload',
+              relationTo: 'media',
+              admin: {
+                description: 'Trailer or promotional video for this show.',
+              },
+            },
           ],
         },
         {
@@ -95,32 +185,102 @@ export const TVShows: CollectionConfig = {
               type: 'relationship',
               relationTo: 'seasons',
               hasMany: true,
-              admin: { description: 'The seasons belonging to this TV Show.' },
+              admin: {
+                description: 'The seasons belonging to this TV show.',
+              },
             },
-            { name: 'ageRating', type: 'select', options: ['TV-G', 'TV-PG', 'TV-14', 'TV-MA'] },
-            { name: 'talent', type: 'relationship', relationTo: 'talent', hasMany: true },
-            { name: 'genres', type: 'relationship', relationTo: 'categories', hasMany: true },
+            {
+              name: 'ageRating',
+              type: 'select',
+              options: [
+                {
+                  label: 'TV-G',
+                  value: 'TV-G',
+                },
+                {
+                  label: 'TV-PG',
+                  value: 'TV-PG',
+                },
+                {
+                  label: 'TV-14',
+                  value: 'TV-14',
+                },
+                {
+                  label: 'TV-MA',
+                  value: 'TV-MA',
+                },
+              ],
+              admin: {
+                description: 'Audience rating for this show.',
+              },
+            },
+            {
+              name: 'talent',
+              type: 'relationship',
+              relationTo: 'talent',
+              hasMany: true,
+              admin: {
+                description:
+                  'Hosts, cast members, guests, or recurring talent attached to this show.',
+              },
+            },
+            {
+              name: 'genres',
+              type: 'relationship',
+              relationTo: 'categories',
+              hasMany: true,
+              admin: {
+                description: 'Genre or editorial categories connected to this show.',
+              },
+            },
           ],
         },
       ],
     },
+
     {
       name: 'slug',
       type: 'text',
       unique: true,
-      hooks: { beforeValidate: [autoSlug] },
-      admin: { position: 'sidebar' },
+      hooks: {
+        beforeValidate: [autoSlug],
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-generated from the title.',
+      },
     },
     {
-      name: 'status',
+      name: 'showStatus',
       type: 'select',
-      defaultValue: 'active',
+      enumName: 'tv_show_status',
+      label: 'Show Status',
+      defaultValue: 'production',
       options: [
-        { label: 'In Production', value: 'production' },
-        { label: 'Airing', value: 'airing' },
-        { label: 'Ended', value: 'ended' },
+        {
+          label: 'In Production',
+          value: 'production',
+        },
+        {
+          label: 'Coming Soon',
+          value: 'coming-soon',
+        },
+        {
+          label: 'Airing',
+          value: 'airing',
+        },
+        {
+          label: 'Ended',
+          value: 'ended',
+        },
+        {
+          label: 'Archived',
+          value: 'archived',
+        },
       ],
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+      },
     },
   ],
 }

@@ -1,176 +1,416 @@
-import type { CollectionConfig } from 'payload'
+import type { Access, CollectionConfig } from 'payload'
 
-import { publicRead } from '../access/publicRead'
-import { formatSlug } from '../hooks/formatSlug'
-import { setEventStatus } from '../hooks/setEventStatus'
-import { populateEventbriteData } from '../hooks/populateEventbriteData'
-import { setHomepagePriority } from '../hooks/setHomepagePriority'
+type PayloadUser = {
+  id?: string | number
+  role?: string | string[] | null
+  roles?: string[] | null
+}
+
+const FRONTEND_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.FRONTEND_URL || 'http://localhost:3000'
+
+const formatSlug = (value?: string | null) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+const getRoles = (user: unknown): string[] => {
+  const typedUser = user as PayloadUser | null | undefined
+  const role = typedUser?.role
+  const roles = typedUser?.roles
+
+  return [
+    ...(Array.isArray(role) ? role : role ? [role] : []),
+    ...(Array.isArray(roles) ? roles : []),
+  ]
+}
+
+const hasRole = (user: unknown, allowed: string[]) =>
+  getRoles(user).some((role) => allowed.includes(role))
+
+const isStaffUser = (user: unknown) =>
+  hasRole(user, ['admin', 'super-admin', 'editor', 'producer', 'events-manager', 'creator-manager'])
+
+const staffOnly: Access = ({ req: { user } }) => isStaffUser(user)
+
+const publicOrStaff: Access = ({ req: { user } }) => {
+  if (isStaffUser(user)) return true
+
+  return {
+    isActive: {
+      equals: true,
+    },
+    eventStatus: {
+      in: ['published', 'open-registration', 'sold-out'],
+    },
+  }
+}
 
 export const Events: CollectionConfig = {
   slug: 'events',
-  labels: { singular: 'Event', plural: 'Events' },
+  labels: {
+    singular: 'Event',
+    plural: 'Events',
+  },
   admin: {
+    group: 'Events & Live Activations',
     useAsTitle: 'title',
-    group: 'Programming',
-    defaultColumns: ['title', 'status', 'eventType', 'startDate', 'promotionTier'],
-    description:
-      'Manages physical, virtual, and hybrid live events, including streaming and ticketing integrations.',
+    defaultColumns: ['title', 'eventStatus', 'eventType', 'startDate', 'venue', 'featured'],
+    listSearchableFields: ['title', 'subtitle', 'summary'],
+    preview: ({ slug }) => `${FRONTEND_URL}/events/${slug}`,
   },
   access: {
-    read: publicRead,
+    create: staffOnly,
+    read: publicOrStaff,
+    update: staffOnly,
+    delete: staffOnly,
+    readVersions: staffOnly,
   },
   versions: {
     drafts: true,
+    maxPerDoc: 25,
   },
-  hooks: {
-    // formatSlug is correctly applied at the collection level here
-    beforeValidate: [formatSlug],
-    beforeChange: [setEventStatus, populateEventbriteData, setHomepagePriority],
-  },
+  timestamps: true,
   fields: [
     {
       type: 'tabs',
       tabs: [
-        /* =======================================
-           TAB 1: Core Info & Content
-        ======================================= */
         {
-          label: 'Core Info',
+          label: 'Overview',
           fields: [
-            { name: 'title', type: 'text', required: true },
             {
-              name: 'excerpt',
-              type: 'textarea',
+              name: 'title',
+              type: 'text',
               required: true,
-              maxLength: 280,
-              admin: { description: 'Short summary for event cards.' },
+              index: true,
             },
-            { name: 'description', type: 'richText', required: true },
             {
-              type: 'row',
-              fields: [
-                {
-                  name: 'eventType',
-                  type: 'select',
-                  required: true,
-                  defaultValue: 'virtual',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Virtual', value: 'virtual' },
-                    { label: 'In-Person', value: 'in-person' },
-                    { label: 'Hybrid', value: 'hybrid' },
-                  ],
-                },
-                {
-                  name: 'contentVertical',
-                  type: 'select',
-                  required: true,
-                  defaultValue: 'culture',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Music', value: 'music' },
-                    { label: 'Culture', value: 'culture' },
-                    { label: 'Faith', value: 'faith' },
-                    { label: 'Creator', value: 'creator' },
-                    { label: 'Radio', value: 'radio' },
-                    { label: 'TV', value: 'tv' },
-                  ],
-                },
+              name: 'slug',
+              type: 'text',
+              required: true,
+              unique: true,
+              index: true,
+              admin: {
+                position: 'sidebar',
+                description: 'Used for the public event URL.',
+              },
+              hooks: {
+                beforeValidate: [({ value, data }) => value || formatSlug(data?.title)],
+              },
+            },
+            {
+              name: 'subtitle',
+              type: 'text',
+            },
+            {
+              name: 'summary',
+              type: 'textarea',
+              admin: {
+                description: 'Short event summary for cards, SEO, and app previews.',
+              },
+            },
+            {
+              name: 'description',
+              type: 'richText',
+            },
+            {
+              name: 'eventStatus',
+              label: 'Event Status',
+              type: 'select',
+              required: true,
+              defaultValue: 'draft',
+              admin: {
+                position: 'sidebar',
+              },
+              options: [
+                { label: 'Draft', value: 'draft' },
+                { label: 'Published', value: 'published' },
+                { label: 'Open Registration', value: 'open-registration' },
+                { label: 'Sold Out', value: 'sold-out' },
+                { label: 'Postponed', value: 'postponed' },
+                { label: 'Cancelled', value: 'cancelled' },
+                { label: 'Completed', value: 'completed' },
+                { label: 'Archived', value: 'archived' },
               ],
             },
             {
-              type: 'row',
-              fields: [
-                {
-                  name: 'startDate',
-                  type: 'date',
-                  required: true,
-                  admin: { width: '50%', date: { pickerAppearance: 'dayAndTime' } },
-                },
-                {
-                  name: 'endDate',
-                  type: 'date',
-                  required: true,
-                  admin: { width: '50%', date: { pickerAppearance: 'dayAndTime' } },
-                },
-              ],
-            },
-            { name: 'timezone', type: 'text', required: true, defaultValue: 'America/Chicago' },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'heroImage',
-                  type: 'upload',
-                  relationTo: 'media',
-                  admin: { width: '50%', description: '16:9 Desktop Hero' },
-                },
-                {
-                  name: 'thumbnail',
-                  type: 'upload',
-                  relationTo: 'media',
-                  admin: { width: '50%', description: '1:1 or 4:5 Mobile Card' },
-                },
+              name: 'eventType',
+              label: 'Event Type',
+              type: 'select',
+              required: true,
+              defaultValue: 'in-person',
+              options: [
+                { label: 'In-Person', value: 'in-person' },
+                { label: 'Virtual', value: 'virtual' },
+                { label: 'Hybrid', value: 'hybrid' },
+                { label: 'Livestream', value: 'livestream' },
+                { label: 'Festival', value: 'festival' },
+                { label: 'Concert', value: 'concert' },
+                { label: 'Pop-Up', value: 'popup' },
+                { label: 'Town Hall', value: 'town-hall' },
+                { label: 'Creator Workshop', value: 'creator-workshop' },
+                { label: 'Awards', value: 'awards' },
+                { label: 'Conference', value: 'conference' },
+                { label: 'Community Event', value: 'community-event' },
               ],
             },
             {
-              name: 'agenda',
+              name: 'eventCategories',
+              label: 'Event Categories',
+              type: 'relationship',
+              relationTo: 'event-categories',
+              hasMany: true,
+            },
+            {
+              name: 'featured',
+              type: 'checkbox',
+              defaultValue: false,
+              admin: {
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'isActive',
+              label: 'Active',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                position: 'sidebar',
+              },
+            },
+            {
+              name: 'displayOrder',
+              type: 'number',
+              defaultValue: 100,
+              admin: {
+                position: 'sidebar',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Schedule',
+          fields: [
+            {
+              name: 'startDate',
+              type: 'date',
+              required: true,
+              index: true,
+              admin: {
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+            {
+              name: 'endDate',
+              type: 'date',
+              admin: {
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+            {
+              name: 'timezone',
+              type: 'text',
+              defaultValue: 'America/New_York',
+            },
+            {
+              name: 'doorsOpenAt',
+              type: 'date',
+              admin: {
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+            {
+              name: 'schedule',
               type: 'array',
-              label: 'Event Agenda',
+              labels: {
+                singular: 'Schedule Item',
+                plural: 'Schedule Items',
+              },
               fields: [
                 {
-                  type: 'row',
-                  fields: [
-                    { name: 'time', type: 'text', admin: { width: '30%' } },
-                    { name: 'title', type: 'text', required: true, admin: { width: '70%' } },
-                  ],
+                  name: 'title',
+                  type: 'text',
+                  required: true,
                 },
-                { name: 'description', type: 'textarea' },
-              ],
-            },
-            {
-              name: 'faq',
-              type: 'array',
-              label: 'FAQ',
-              fields: [
-                { name: 'question', type: 'text', required: true },
-                { name: 'answer', type: 'textarea', required: true },
+                {
+                  name: 'startTime',
+                  type: 'date',
+                  admin: {
+                    date: {
+                      pickerAppearance: 'dayAndTime',
+                    },
+                  },
+                },
+                {
+                  name: 'endTime',
+                  type: 'date',
+                  admin: {
+                    date: {
+                      pickerAppearance: 'dayAndTime',
+                    },
+                  },
+                },
+                {
+                  name: 'location',
+                  type: 'text',
+                },
+                {
+                  name: 'description',
+                  type: 'textarea',
+                },
               ],
             },
           ],
         },
-
-        /* =======================================
-           TAB 2: Location, Talent & Sponsors
-        ======================================= */
         {
-          label: 'Location & People',
+          label: 'Venue & Streaming',
           fields: [
             {
               name: 'venue',
               type: 'relationship',
               relationTo: 'venues',
+            },
+            {
+              name: 'locationOverride',
+              type: 'text',
               admin: {
-                description: 'Physical or primary studio location.',
-                condition: (_, data) => ['in-person', 'hybrid'].includes(data?.eventType),
+                description:
+                  'Use this only if the venue relationship does not fully describe the public location.',
               },
             },
             {
-              type: 'row',
+              name: 'virtualAccessType',
+              type: 'select',
+              defaultValue: 'none',
+              options: [
+                { label: 'None', value: 'none' },
+                { label: 'Free Stream', value: 'free-stream' },
+                { label: 'Ticketed Stream', value: 'ticketed-stream' },
+                { label: 'Private Link', value: 'private-link' },
+                { label: 'WaveNation+', value: 'wavenation-plus' },
+              ],
+            },
+            {
+              name: 'livestreamProvider',
+              type: 'select',
+              options: [
+                { label: 'Cloudflare Stream', value: 'cloudflare-stream' },
+                { label: 'YouTube Live', value: 'youtube-live' },
+                { label: 'Vimeo', value: 'vimeo' },
+                { label: 'Zoom', value: 'zoom' },
+                { label: 'Restream', value: 'restream' },
+                { label: 'Other', value: 'other' },
+              ],
+            },
+            {
+              name: 'livestreamUrl',
+              type: 'text',
+            },
+            {
+              name: 'replayUrl',
+              type: 'text',
+            },
+            {
+              name: 'entryDetails',
+              type: 'textarea',
+            },
+            {
+              name: 'parkingInfo',
+              type: 'textarea',
+            },
+            {
+              name: 'accessibilityInfo',
+              type: 'textarea',
+            },
+          ],
+        },
+        {
+          label: 'Tickets',
+          fields: [
+            {
+              name: 'ticketLinks',
+              type: 'relationship',
+              relationTo: 'ticket-links',
+              hasMany: true,
+            },
+            {
+              name: 'primaryCTA',
+              label: 'Primary CTA Label',
+              type: 'text',
+              defaultValue: 'Get Tickets',
+            },
+            {
+              name: 'registrationRequired',
+              type: 'checkbox',
+              defaultValue: false,
+            },
+            {
+              name: 'priceDisplay',
+              type: 'text',
+              admin: {
+                description: 'Example: Free, $25, $25–$75, RSVP Required.',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Lineup & Relations',
+          fields: [
+            {
+              name: 'lineup',
+              type: 'array',
+              labels: {
+                singular: 'Lineup Member',
+                plural: 'Lineup',
+              },
               fields: [
                 {
-                  name: 'hosts',
-                  type: 'relationship',
-                  relationTo: 'talent',
-                  hasMany: true,
-                  admin: { width: '50%' },
+                  name: 'name',
+                  type: 'text',
+                  required: true,
                 },
                 {
-                  name: 'guests',
+                  name: 'role',
+                  type: 'text',
+                  admin: {
+                    description: 'Example: Headliner, Host, DJ, Speaker, Vendor.',
+                  },
+                },
+                {
+                  name: 'creator',
                   type: 'relationship',
-                  relationTo: 'talent',
-                  hasMany: true,
-                  admin: { width: '50%' },
+                  relationTo: 'creators',
+                },
+                {
+                  name: 'image',
+                  type: 'upload',
+                  relationTo: 'media',
+                },
+                {
+                  name: 'performanceTime',
+                  type: 'date',
+                  admin: {
+                    date: {
+                      pickerAppearance: 'dayAndTime',
+                    },
+                  },
+                },
+                {
+                  name: 'bio',
+                  type: 'textarea',
+                },
+                {
+                  name: 'externalUrl',
+                  type: 'text',
                 },
               ],
             },
@@ -179,451 +419,87 @@ export const Events: CollectionConfig = {
               type: 'relationship',
               relationTo: 'sponsors',
               hasMany: true,
-              admin: { description: 'Brands officially sponsoring this event.' },
-            },
-          ],
-        },
-
-        /* =======================================
-           TAB 3: Live Stream & Replay
-        ======================================= */
-        {
-          label: 'Stream & Replay',
-          fields: [
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'watchPageEnabled',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: {
-                    width: '50%',
-                    description: 'Enable the dedicated WaveNation watch page.',
-                  },
-                },
-                {
-                  name: 'watchPagePath',
-                  type: 'text',
-                  admin: { width: '50%', description: 'Leave blank to use /events/[slug]/watch' },
-                },
-              ],
             },
             {
-              type: 'row',
-              fields: [
-                {
-                  name: 'livestreamPlatform',
-                  type: 'select',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'WaveNation Native', value: 'wavenation-native' },
-                    { label: 'Cloudflare Stream', value: 'cloudflare' },
-                    { label: 'Mux', value: 'mux' },
-                    { label: 'Streamlabs', value: 'streamlabs' },
-                    { label: 'YouTube', value: 'youtube' },
-                    { label: 'Other', value: 'other' },
-                  ],
-                },
-                {
-                  name: 'streamHealthStatus',
-                  type: 'select',
-                  defaultValue: 'unknown',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Unknown', value: 'unknown' },
-                    { label: 'Ready', value: 'ready' },
-                    { label: 'Live', value: 'live' },
-                    { label: 'Offline', value: 'offline' },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'cloudflarePlaybackId',
-                  type: 'text',
-                  admin: { width: '50%', description: 'Cloudflare/Mux Stream playback ID.' },
-                },
-                {
-                  name: 'streamEmbedUrl',
-                  type: 'text',
-                  admin: { width: '50%', description: 'Fallback iframe embed URL.' },
-                },
-              ],
-            },
-            {
-              name: 'messaging',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'preLiveMessage', type: 'text', admin: { width: '50%' } },
-                    { name: 'postEventMessage', type: 'text', admin: { width: '50%' } },
-                  ],
-                },
-                { name: 'livestreamAccessInstructions', type: 'textarea' },
-              ],
-            },
-            {
-              name: 'replay',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'replayEnabled',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      admin: { width: '50%' },
-                    },
-                    {
-                      name: 'replayAvailableImmediately',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      admin: { width: '50%' },
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'replayAvailableAt',
-                      type: 'date',
-                      admin: { width: '50%', date: { pickerAppearance: 'dayAndTime' } },
-                    },
-                    {
-                      name: 'replayExpiresAt',
-                      type: 'date',
-                      admin: { width: '50%', date: { pickerAppearance: 'dayAndTime' } },
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'cloudflareReplayPlaybackId', type: 'text', admin: { width: '50%' } },
-                    {
-                      name: 'replayUrl',
-                      type: 'text',
-                      admin: {
-                        width: '50%',
-                        description: 'External replay link (e.g. YouTube VOD)',
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-
-        /* =======================================
-           TAB 4: Ticketing & Entitlements
-        ======================================= */
-        {
-          label: 'Ticketing & Access',
-          fields: [
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'visibility',
-                  type: 'select',
-                  defaultValue: 'public',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Public', value: 'public' },
-                    { label: 'Private', value: 'private' },
-                    { label: 'Unlisted', value: 'unlisted' },
-                  ],
-                },
-                {
-                  name: 'accessType',
-                  type: 'select',
-                  defaultValue: 'open',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Open', value: 'open' },
-                    { label: 'Ticketed', value: 'ticketed' },
-                    { label: 'Invite Only', value: 'invite-only' },
-                    { label: 'Members Only', value: 'members-only' },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'registrationRequired',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: { width: '33%' },
-                },
-                {
-                  name: 'loginRequired',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: { width: '33%' },
-                },
-                {
-                  name: 'ticketVerificationRequired',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: { width: '34%' },
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                { name: 'capacity', type: 'number', min: 0, admin: { width: '50%' } },
-                {
-                  name: 'requiredSubscriptionTier',
-                  type: 'relationship',
-                  relationTo: 'subscriptions',
-                  admin: {
-                    width: '50%',
-                    description: 'Gate access to specific WaveNation+ tiers.',
-                  },
-                },
-              ],
-            },
-            { name: 'accessDeniedMessage', type: 'textarea' },
-            {
-              name: 'eventbrite',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'eventbriteEventId', type: 'text', admin: { width: '50%' } },
-                    { name: 'eventbriteUrl', type: 'text', admin: { width: '50%' } },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'eventbriteSyncEnabled',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      admin: { width: '50%' },
-                    },
-                    {
-                      name: 'eventbriteLastSyncedAt',
-                      type: 'date',
-                      admin: { width: '50%', readOnly: true },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                { name: 'ctaLabel', type: 'text', admin: { width: '50%' } },
-                { name: 'ctaUrl', type: 'text', admin: { width: '50%' } },
-              ],
-            },
-          ],
-        },
-
-        /* =======================================
-           TAB 5: Audience Engagement
-        ======================================= */
-        {
-          label: 'Audience & Chat',
-          fields: [
-            {
-              type: 'row',
-              fields: [
-                { name: 'chatEnabled', type: 'checkbox', defaultValue: true },
-                { name: 'qaEnabled', type: 'checkbox', defaultValue: true },
-                { name: 'reactionsEnabled', type: 'checkbox', defaultValue: false },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'chatMode',
-                  type: 'select',
-                  defaultValue: 'disabled',
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'Disabled', value: 'disabled' },
-                    { label: 'Native Chat', value: 'native' },
-                    { label: 'Moderated Q&A Only', value: 'qa-only' },
-                    { label: 'External Chat', value: 'external' },
-                  ],
-                },
-                {
-                  name: 'chatEmbedUrl',
-                  type: 'text',
-                  admin: { width: '50%', description: 'External chat embed URL (e.g. Arena.im).' },
-                },
-              ],
-            },
-            {
-              name: 'moderators',
+              name: 'relatedCreators',
               type: 'relationship',
-              relationTo: 'moderators',
+              relationTo: 'creators',
               hasMany: true,
-              admin: { description: 'Staff assigned to moderate the chat for this event.' },
             },
             {
-              name: 'qaPrompt',
-              type: 'text',
-              admin: { description: 'Optional prompt shown above the question form.' },
+              name: 'relatedArticles',
+              type: 'relationship',
+              relationTo: 'articles',
+              hasMany: true,
             },
-            {
-              name: 'viewerNotice',
-              type: 'text',
-              admin: {
-                description: 'Short notice shown in the live room (e.g. moderation rules).',
-              },
-            },
-            { name: 'audienceGuidelines', type: 'textarea' },
           ],
         },
-
-        /* =======================================
-           TAB 6: Production & SEO
-        ======================================= */
         {
-          label: 'Production & Meta',
+          label: 'Media',
           fields: [
             {
-              name: 'productionTeam',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'producerName', type: 'text', admin: { width: '50%' } },
-                    { name: 'technicalDirectorName', type: 'text', admin: { width: '50%' } },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'runOfShowUrl', type: 'text', admin: { width: '50%' } },
-                    { name: 'greenRoomUrl', type: 'text', admin: { width: '50%' } },
-                  ],
-                },
-                { name: 'productionNotes', type: 'textarea' },
-                { name: 'streamTestingNotes', type: 'textarea' },
-              ],
+              name: 'heroImage',
+              type: 'upload',
+              relationTo: 'media',
+              required: true,
             },
             {
-              name: 'relatedContent',
-              type: 'group',
-              fields: [
-                {
-                  name: 'relatedArticles',
-                  type: 'relationship',
-                  relationTo: 'articles',
-                  hasMany: true,
-                },
-                {
-                  name: 'relatedRadioShows',
-                  type: 'relationship',
-                  relationTo: 'radioShows',
-                  hasMany: true,
-                },
-                { name: 'relatedVOD', type: 'relationship', relationTo: 'vod', hasMany: true },
-                {
-                  name: 'relatedPlaylists',
-                  type: 'relationship',
-                  relationTo: 'playlists',
-                  hasMany: true,
-                },
-              ],
+              name: 'posterImage',
+              type: 'upload',
+              relationTo: 'media',
             },
             {
-              name: 'seo',
-              type: 'group',
-              fields: [
-                { name: 'seoTitle', type: 'text' },
-                { name: 'seoDescription', type: 'textarea', maxLength: 160 },
-                { name: 'seoImage', type: 'upload', relationTo: 'media' },
-              ],
+              name: 'socialCard',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'gallery',
+              type: 'upload',
+              relationTo: 'media',
+              hasMany: true,
+            },
+            {
+              name: 'promoVideoUrl',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          label: 'SEO',
+          fields: [
+            {
+              name: 'seoTitle',
+              type: 'text',
+              maxLength: 70,
+            },
+            {
+              name: 'seoDescription',
+              type: 'textarea',
+              maxLength: 160,
+            },
+            {
+              name: 'seoImage',
+              type: 'upload',
+              relationTo: 'media',
+            },
+          ],
+        },
+        {
+          label: 'Admin',
+          fields: [
+            {
+              name: 'internalOwner',
+              type: 'relationship',
+              relationTo: 'users',
+            },
+            {
+              name: 'internalNotes',
+              type: 'textarea',
             },
           ],
         },
       ],
     },
-
-    /* =======================================
-       SIDEBAR: Status & Promotion
-    ======================================= */
-    {
-      name: 'slug',
-      type: 'text',
-      unique: true,
-      index: true,
-      admin: { position: 'sidebar', description: 'Auto-generated from title if left blank.' },
-    },
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'draft',
-      index: true,
-      options: [
-        { label: 'Draft', value: 'draft' },
-        { label: 'Scheduled', value: 'scheduled' },
-        { label: 'Live', value: 'live' },
-        { label: 'Ended', value: 'ended' },
-      ],
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'promotionTier',
-      type: 'select',
-      required: true,
-      defaultValue: 'standard',
-      options: [
-        { label: 'Flagship', value: 'flagship' },
-        { label: 'Featured', value: 'featured' },
-        { label: 'Standard', value: 'standard' },
-      ],
-      admin: { position: 'sidebar' },
-      index: true,
-    },
-    {
-      name: 'isFeatured',
-      type: 'checkbox',
-      defaultValue: false,
-      index: true,
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'homepagePlacement',
-      type: 'select',
-      defaultValue: 'none',
-      options: [
-        { label: 'None', value: 'none' },
-        { label: 'Hero', value: 'hero' },
-        { label: 'Featured Row', value: 'featured-row' },
-        { label: 'Events Grid', value: 'events-grid' },
-      ],
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'homepagePriority',
-      type: 'number',
-      defaultValue: 0,
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    { name: 'onAirMention', type: 'checkbox', defaultValue: false, admin: { position: 'sidebar' } },
-    { name: 'internalNotes', type: 'textarea', admin: { position: 'sidebar' } },
   ],
 }

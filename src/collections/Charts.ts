@@ -1,493 +1,311 @@
-// src/collections/Charts.ts
-import type {
-  CollectionConfig,
-  CollectionBeforeChangeHook,
-  CollectionAfterChangeHook,
-} from 'payload'
+import type { CollectionConfig } from 'payload'
 
-/* ======================================================
-   Types
-====================================================== */
+const MUSIC_GROUP = 'Music & Playlists'
 
-type ChartEntry = {
-  rank?: number
-  previousRank?: number | null
-  peakRank?: number
-  weeksOnChart?: number
-  movement?: 'up' | 'down' | 'same' | 'new' | 're-entry'
-  accolade?: 'none' | 'hot-shot-debut' | 'greatest-gainer' | 'pacesetter'
-  manualTrack: {
-    title: string
-    artist: string
-    featuredArtists?: string
-    isrc?: string
-    label?: string
-    releaseDate?: string
-    artwork?: any // Media ID
-    previewUrl?: string
-  }
-  trackTitle?: string
-  artist?: string
-  score?: number
-  editorialNote?: string
-}
-
-/* ======================================================
-   Utilities
-====================================================== */
-
-function getISOWeek(date: Date): string {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-  const dayNum = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
-  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`
-}
-
-function generateTrackId(title: string, artist: string, isrc?: string) {
-  if (isrc) return isrc.trim().toLowerCase()
-  return `${title}-${artist}`.trim().toLowerCase().replace(/\s+/g, '')
-}
-
-/* ======================================================
-   Hooks
-====================================================== */
-
-const processChartMetrics: CollectionBeforeChangeHook = async ({ data, req, operation }) => {
-  if (!data) return data
-
-  // 1. Handle Week & Slug (Allowing manual override or duplication)
-  // If no week is provided manually, generate from publishDate
-  if (!data.week && data.publishDate) {
-    data.week = getISOWeek(new Date(data.publishDate))
-  }
-
-  // Re-generate slug to ensure it matches the current chartKey and week
-  // This allows duplication because changing the week will automatically fix the slug conflict
-  if (data.chartKey && data.week) {
-    data.slug = `${data.chartKey}-${data.week}`
-  }
-
-  // 2. Auto-calculate Billboard-style metrics
-  let previousEntries: ChartEntry[] = []
-
-  if (data.previousChart) {
-    try {
-      const prevChartDoc = await req.payload.findByID({
-        collection: 'charts',
-        id: data.previousChart,
-        depth: 0,
-      })
-      if (prevChartDoc && Array.isArray(prevChartDoc.entries)) {
-        previousEntries = prevChartDoc.entries as ChartEntry[]
-      }
-    } catch (err) {
-      req.payload.logger.warn('Could not fetch previous chart for metrics calculation.')
-    }
-  }
-
-  // 3. Process entries
-  if (Array.isArray(data.entries)) {
-    data.entries.forEach((entry: ChartEntry, index: number) => {
-      const currentRank = index + 1
-      entry.rank = currentRank
-
-      entry.trackTitle = entry.manualTrack?.title
-      entry.artist = entry.manualTrack?.artist
-
-      const trackId = generateTrackId(
-        entry.manualTrack?.title || '',
-        entry.manualTrack?.artist || '',
-        entry.manualTrack?.isrc,
-      )
-      const prevEntry = previousEntries.find(
-        (p) =>
-          generateTrackId(
-            p.manualTrack?.title || '',
-            p.manualTrack?.artist || '',
-            p.manualTrack?.isrc,
-          ) === trackId,
-      )
-
-      if (prevEntry) {
-        entry.previousRank = prevEntry.rank || null
-        entry.weeksOnChart = (prevEntry.weeksOnChart || 1) + 1
-        entry.peakRank = Math.min(currentRank, prevEntry.peakRank || currentRank)
-
-        if (entry.previousRank && currentRank < entry.previousRank) {
-          entry.movement = 'up'
-        } else if (entry.previousRank && currentRank > entry.previousRank) {
-          entry.movement = 'down'
-        } else {
-          entry.movement = 'same'
-        }
-      } else {
-        if (operation === 'create' || !entry.previousRank) {
-          entry.previousRank = null
-          entry.weeksOnChart = 1
-          entry.peakRank = currentRank
-          entry.movement = 'new'
-        }
-      }
-    })
-  }
-
-  return data
-}
-
-export const createChartSnapshotHook: CollectionAfterChangeHook = async ({
-  doc,
-  previousDoc,
-  req,
-}) => {
-  const isPublishing = doc.status === 'published' && previousDoc?.status !== 'published'
-
-  if (!isPublishing || !doc.week) {
-    return doc
-  }
-
-  try {
-    const existingSnapshot = await req.payload.find({
-      collection: 'chart-snapshots',
-      where: {
-        and: [{ chart: { equals: doc.id } }, { week: { equals: doc.week } }],
-      },
-      depth: 0,
-    })
-
-    if (existingSnapshot.totalDocs > 0) {
-      req.payload.logger.info(`Snapshot for ${doc.title} (${doc.week}) already exists. Skipping.`)
-      return doc
-    }
-
-    const snapshotEntries = (doc.entries || []).map((entry: any) => ({
-      rank: entry.rank,
-      previousRank: entry.previousRank || null,
-      movement: entry.movement || 'new',
-      trackId: generateTrackId(
-        entry.manualTrack?.title || '',
-        entry.manualTrack?.artist || '',
-        entry.manualTrack?.isrc,
-      ),
-      artist: entry.manualTrack?.artist || 'Unknown Artist',
-      finalScore: entry.score || 0,
-    }))
-
-    await req.payload.create({
-      collection: 'chart-snapshots',
-      data: {
-        chart: doc.id,
-        week: doc.week,
-        label: `${doc.title} — ${doc.week}`,
-        entries: snapshotEntries,
-      },
-    })
-
-    req.payload.logger.info(
-      `Successfully created immutable snapshot for ${doc.title} (${doc.week}).`,
-    )
-  } catch (error) {
-    req.payload.logger.error(`Failed to create Chart Snapshot for ${doc.id}: ${error}`)
-  }
-
-  return doc
-}
-
-/* ======================================================
-   Charts Collection
-====================================================== */
+const formatSlug = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 
 export const Charts: CollectionConfig = {
   slug: 'charts',
-
   labels: {
     singular: 'Chart',
     plural: 'Charts',
   },
-
   admin: {
+    group: MUSIC_GROUP,
     useAsTitle: 'title',
-    group: 'Music & Programming',
-    defaultColumns: ['title', 'chartKey', 'week', 'status', 'publishDate'],
-    description:
-      'Weekly ranked charts. Duplicate last week’s chart, link it in "Previous Chart", and reorder entries to auto-calculate metrics.',
+    defaultColumns: ['title', 'chartType', 'weekLabel', 'publishedAt', 'updatedAt'],
   },
-
   versions: {
     drafts: true,
-    maxPerDoc: 50,
+    maxPerDoc: 75,
   },
-
-  access: {
-    read: () => true,
-    create: ({ req }) =>
-      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
-    update: ({ req }) =>
-      Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
-    delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')),
-  },
-
   hooks: {
-    beforeChange: [processChartMetrics],
-    afterChange: [createChartSnapshotHook],
-  },
+    beforeValidate: [
+      ({ data }) => {
+        if (!data) return data
 
+        const base = [data.title, data.weekLabel].filter(Boolean).join(' ')
+        if (base && !data.slug) {
+          data.slug = formatSlug(base)
+        }
+
+        return data
+      },
+    ],
+  },
   fields: [
     {
       type: 'tabs',
       tabs: [
         {
-          label: 'Chart Config',
+          label: 'Chart Info',
           fields: [
             {
-              type: 'row',
-              fields: [
-                { name: 'title', type: 'text', required: true, admin: { width: '50%' } },
-                {
-                  name: 'chartKey',
-                  type: 'select',
-                  required: true,
-                  admin: { width: '50%' },
-                  options: [
-                    { label: 'The HitList', value: 'hitlist' },
-                    { label: 'R&B & Soul', value: 'rnb-soul' },
-                    { label: 'Hip-Hop', value: 'hip-hop' },
-                    { label: 'Southern Soul', value: 'southern-soul' },
-                    { label: 'Gospel', value: 'gospel' },
-                    { label: 'House / BPM', value: 'house' },
-                  ],
-                },
+              name: 'title',
+              type: 'text',
+              required: true,
+              index: true,
+              admin: {
+                description: 'Example: The Hitlist 20 — Week of June 12, 2026',
+              },
+            },
+            {
+              name: 'slug',
+              type: 'text',
+              unique: true,
+              index: true,
+            },
+            {
+              name: 'chartType',
+              type: 'select',
+              required: true,
+              defaultValue: 'hitlist',
+              index: true,
+              options: [
+                { label: 'The Hitlist', value: 'hitlist' },
+                { label: 'Gospel', value: 'gospel' },
+                { label: 'Southern Soul', value: 'southern-soul' },
+                { label: 'Hip-Hop', value: 'hip-hop' },
+                { label: 'R&B/Soul', value: 'rb-soul' },
+                { label: 'BPM', value: 'bpm' },
               ],
             },
             {
-              name: 'description',
+              name: 'publicDescription',
               type: 'textarea',
-              admin: { description: "Editorial summary of this week's chart." },
             },
             {
               type: 'row',
               fields: [
                 {
-                  name: 'coverImage',
-                  type: 'upload',
-                  relationTo: 'media',
-                  admin: { width: '50%' },
+                  name: 'weekLabel',
+                  type: 'text',
+                  admin: {
+                    width: '33.33%',
+                    description: 'Example: Week of June 12, 2026',
+                  },
                 },
                 {
-                  name: 'playlist',
-                  type: 'relationship',
-                  relationTo: 'playlists',
+                  name: 'weekStart',
+                  type: 'date',
+                  index: true,
                   admin: {
-                    width: '50%',
-                    description: 'Optional playlist associated with this chart',
+                    width: '33.33%',
+                  },
+                },
+                {
+                  name: 'weekEnd',
+                  type: 'date',
+                  admin: {
+                    width: '33.33%',
                   },
                 },
               ],
             },
             {
-              name: 'weekRange',
-              type: 'group',
-              admin: { description: 'Tracking week range for this chart' },
+              type: 'row',
               fields: [
                 {
-                  type: 'row',
-                  fields: [
-                    { name: 'startDate', type: 'date', required: true, admin: { width: '50%' } },
-                    { name: 'endDate', type: 'date', required: true, admin: { width: '50%' } },
-                  ],
+                  name: 'chartSize',
+                  type: 'number',
+                  defaultValue: 20,
+                  admin: {
+                    width: '33.33%',
+                  },
+                },
+                {
+                  name: 'publishedAt',
+                  type: 'date',
+                  index: true,
+                  admin: {
+                    width: '33.33%',
+                  },
+                },
+                {
+                  name: 'isCurrent',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  index: true,
+                  admin: {
+                    width: '33.33%',
+                    description: 'Use for the active/current chart of this type.',
+                  },
                 },
               ],
             },
           ],
         },
-
         {
-          label: 'Chart Entries (Rankings)',
+          label: 'Entries',
           fields: [
             {
               name: 'entries',
-              type: 'array',
-              required: true,
-              minRows: 1,
+              type: 'relationship',
+              relationTo: 'chart-entries',
+              hasMany: true,
               admin: {
+                isSortable: true,
                 description:
-                  'Drag to reorder. Rank, Last Week, Peak, and WOC will auto-calculate on save if a Previous Chart is linked.',
+                  'Create Chart Entry records first, then attach and drag them here into chart order.',
               },
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'rank', type: 'number', admin: { readOnly: true, width: '15%' } },
-                    {
-                      name: 'previousRank',
-                      type: 'number',
-                      label: 'Last Week',
-                      admin: { width: '15%' },
-                    },
-                    { name: 'peakRank', type: 'number', label: 'Peak', admin: { width: '15%' } },
-                    {
-                      name: 'weeksOnChart',
-                      type: 'number',
-                      label: 'WOC',
-                      admin: { width: '15%' },
-                    },
-                    {
-                      name: 'movement',
-                      type: 'select',
-                      admin: { width: '20%' },
-                      options: [
-                        { label: 'Up ↑', value: 'up' },
-                        { label: 'Down ↓', value: 'down' },
-                        { label: 'Same -', value: 'same' },
-                        { label: 'New *', value: 'new' },
-                        { label: 'Re-Entry ⟲', value: 're-entry' },
-                      ],
-                    },
-                    {
-                      name: 'accolade',
-                      type: 'select',
-                      defaultValue: 'none',
-                      admin: { width: '20%' },
-                      options: [
-                        { label: 'None', value: 'none' },
-                        { label: 'Hot Shot Debut', value: 'hot-shot-debut' },
-                        { label: 'Greatest Gainer', value: 'greatest-gainer' },
-                        { label: 'Pacesetter', value: 'pacesetter' },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: 'manualTrack',
-                  label: 'Track Identity',
-                  type: 'group',
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        { name: 'title', type: 'text', required: true, admin: { width: '50%' } },
-                        { name: 'artist', type: 'text', required: true, admin: { width: '50%' } },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        { name: 'featuredArtists', type: 'text', admin: { width: '33%' } },
-                        { name: 'label', type: 'text', admin: { width: '33%' } },
-                        {
-                          name: 'isrc',
-                          type: 'text',
-                          admin: {
-                            width: '34%',
-                            description: 'Highly recommended for accurate auto-tracking',
-                          },
-                        },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'artwork',
-                          type: 'upload',
-                          relationTo: 'media',
-                          admin: { width: '50%' },
-                        },
-                        {
-                          name: 'previewUrl',
-                          type: 'text',
-                          admin: {
-                            width: '50%',
-                            description: 'Direct URL to a 30s mp3 preview snippet.',
-                          },
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: 'editorialNote',
-                  type: 'textarea',
-                  admin: {
-                    description:
-                      'Public-facing note (e.g. "Jumping 15 spots after their viral TV performance...")',
-                  },
-                },
-                { name: 'trackTitle', type: 'text', admin: { hidden: true } },
-                { name: 'artist', type: 'text', admin: { hidden: true } },
-                { name: 'score', type: 'number', admin: { hidden: true } },
+            },
+          ],
+        },
+        {
+          label: 'Copy / History',
+          fields: [
+            {
+              name: 'sourceChart',
+              type: 'relationship',
+              relationTo: 'charts',
+              admin: {
+                description: 'Use this to track which previous chart this issue was copied from.',
+              },
+            },
+            {
+              name: 'copyNotes',
+              type: 'textarea',
+              admin: {
+                description: 'Notes for what changed after duplicating/copying last week’s chart.',
+              },
+            },
+            {
+              name: 'previousIssueUrl',
+              type: 'text',
+            },
+          ],
+        },
+        {
+          label: 'Visuals',
+          fields: [
+            {
+              name: 'coverArt',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'heroImage',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'socialCard',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'accentColor',
+              type: 'select',
+              defaultValue: 'electric-blue',
+              options: [
+                { label: 'Electric Blue', value: 'electric-blue' },
+                { label: 'Neon Green', value: 'neon-green' },
+                { label: 'Magenta Pulse', value: 'magenta-pulse' },
+                { label: 'Signal Teal', value: 'signal-teal' },
+                { label: 'Custom', value: 'custom' },
               ],
             },
           ],
         },
-      ],
-    },
-
-    /* ================= SIDEBAR ================= */
-
-    {
-      name: 'slug',
-      type: 'text',
-      unique: true,
-      admin: {
-        position: 'sidebar',
-        // Changed to readOnly: false to allow manual fixing during duplication
-        readOnly: false,
-        description: 'Auto-generated chart identifier',
-      },
-    },
-    {
-      name: 'status',
-      type: 'select',
-      defaultValue: 'draft',
-      admin: { position: 'sidebar' },
-      options: [
-        { label: 'Draft', value: 'draft' },
-        { label: 'Review', value: 'review' },
-        { label: 'Published', value: 'published' },
-        { label: 'Archived', value: 'archived' },
-      ],
-    },
-    {
-      name: 'publishDate',
-      type: 'date',
-      required: true,
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'week',
-      type: 'text',
-      admin: {
-        position: 'sidebar',
-        description: 'ISO week (e.g. 2026-W05)',
-        // Changed to readOnly: false for manual input
-        readOnly: false,
-      },
-    },
-    {
-      name: 'previousChart',
-      type: 'relationship',
-      relationTo: 'charts',
-      admin: {
-        position: 'sidebar',
-        description:
-          "LINK THIS to last week's chart so the system can auto-calculate Peak, Movement, and Weeks on Chart.",
-      },
-    },
-    {
-      name: 'chartMode',
-      type: 'select',
-      required: true,
-      defaultValue: 'manual',
-      admin: { position: 'sidebar' },
-      options: [
-        { label: 'Manual', value: 'manual' },
-        { label: 'Hybrid', value: 'hybrid' },
-        { label: 'Automated', value: 'automated' },
+        {
+          label: 'Methodology',
+          fields: [
+            {
+              name: 'rankingMode',
+              type: 'select',
+              defaultValue: 'manual-editorial',
+              options: [
+                { label: 'Manual Editorial', value: 'manual-editorial' },
+                { label: 'Votes + Editorial', value: 'votes-editorial' },
+                { label: 'Streams + Radio + Editorial', value: 'streams-radio-editorial' },
+                { label: 'Custom', value: 'custom' },
+              ],
+            },
+            {
+              name: 'methodologyNote',
+              type: 'textarea',
+              defaultValue:
+                'Rankings are curated manually by the WaveNation music team using listener response, cultural impact, editorial judgment, and platform activity.',
+            },
+            {
+              name: 'dataReviewed',
+              type: 'array',
+              labels: {
+                singular: 'Data Source',
+                plural: 'Data Sources',
+              },
+              fields: [
+                {
+                  name: 'sourceName',
+                  type: 'text',
+                },
+                {
+                  name: 'sourceNotes',
+                  type: 'textarea',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Publishing',
+          fields: [
+            {
+              name: 'editorialStatus',
+              type: 'select',
+              defaultValue: 'draft',
+              index: true,
+              options: [
+                { label: 'Draft', value: 'draft' },
+                { label: 'In Review', value: 'in-review' },
+                { label: 'Approved', value: 'approved' },
+                { label: 'Published', value: 'published' },
+                { label: 'Archived', value: 'archived' },
+              ],
+            },
+            {
+              name: 'featuredOnHomepage',
+              type: 'checkbox',
+              defaultValue: false,
+            },
+            {
+              name: 'featuredOnMusicPage',
+              type: 'checkbox',
+              defaultValue: false,
+            },
+            {
+              name: 'relatedArticleUrl',
+              type: 'text',
+              admin: {
+                description: 'Optional chart article or countdown write-up URL.',
+              },
+            },
+            {
+              name: 'internalNotes',
+              type: 'textarea',
+            },
+          ],
+        },
+        {
+          label: 'SEO',
+          fields: [
+            {
+              name: 'seoTitle',
+              type: 'text',
+            },
+            {
+              name: 'seoDescription',
+              type: 'textarea',
+            },
+          ],
+        },
       ],
     },
   ],
 }
-
-export default Charts

@@ -10,29 +10,48 @@ const slugify = (value: string): string =>
     .replace(/^-+|-+$/g, '')
 
 const autoSlug: FieldHook = ({ data, operation, value }) => {
-  if (typeof value === 'string' && value.trim()) return slugify(value)
-  if (data?.title && (operation === 'create' || !value)) return slugify(data.title)
+  if (typeof value === 'string' && value.trim()) {
+    return slugify(value)
+  }
+
+  if (data?.title && (operation === 'create' || !value)) {
+    return slugify(data.title)
+  }
+
   return value
 }
 
 export const Seasons: CollectionConfig = {
   slug: 'seasons',
-  labels: { singular: 'Season', plural: 'Seasons' },
+
+  labels: {
+    singular: 'Season',
+    plural: 'Seasons',
+  },
+
   admin: {
     useAsTitle: 'title',
-    group: 'Video & TV', // Or 'Programming' if you combine groups later
-    defaultColumns: ['title', 'parentProgram', 'seasonNumber', 'status'],
-    description: 'Manages individual seasons for both TV Shows and Podcasts.',
+    group: 'Video & TV',
+    defaultColumns: ['title', 'parentProgram', 'seasonNumber', 'seasonStatus'],
+    description: 'Manages individual seasons for both TV shows and podcasts.',
   },
-  versions: { drafts: true },
+
+  versions: {
+    drafts: true,
+  },
+
   access: {
     read: () => true,
+
     create: ({ req }) =>
       Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+
     update: ({ req }) =>
       Boolean(req.user?.roles?.includes('editor') || req.user?.roles?.includes('admin')),
+
     delete: ({ req }) => Boolean(req.user?.roles?.includes('admin')),
   },
+
   fields: [
     {
       type: 'tabs',
@@ -47,9 +66,20 @@ export const Seasons: CollectionConfig = {
                   name: 'title',
                   type: 'text',
                   required: true,
-                  admin: { width: '50%', description: 'e.g., "Season 1" or "The Tournament Arc"' },
+                  admin: {
+                    width: '50%',
+                    description: 'Example: “Season 1” or “The Tournament Arc”.',
+                  },
                 },
-                { name: 'seasonNumber', type: 'number', required: true, admin: { width: '50%' } },
+                {
+                  name: 'seasonNumber',
+                  type: 'number',
+                  required: true,
+                  admin: {
+                    width: '50%',
+                    description: 'The numeric season order, such as 1, 2, or 3.',
+                  },
+                },
               ],
             },
             {
@@ -57,12 +87,16 @@ export const Seasons: CollectionConfig = {
               type: 'relationship',
               relationTo: ['tvShows', 'podcasts'],
               required: true,
-              admin: { description: 'The Show or Podcast this season belongs to.' },
+              admin: {
+                description: 'The TV show or podcast this season belongs to.',
+              },
             },
             {
               name: 'description',
               type: 'textarea',
-              admin: { description: 'Season-specific synopsis.' },
+              admin: {
+                description: 'Season-specific synopsis.',
+              },
             },
           ],
         },
@@ -74,14 +108,17 @@ export const Seasons: CollectionConfig = {
               type: 'upload',
               relationTo: 'media',
               admin: {
-                description: 'Optional: Season-specific cover art (overrides the main show art).',
+                description:
+                  'Optional season-specific cover art. This can override the main show art.',
               },
             },
             {
               name: 'trailer',
               type: 'upload',
               relationTo: 'media',
-              admin: { description: 'Season trailer.' },
+              admin: {
+                description: 'Season trailer or promotional video.',
+              },
             },
           ],
         },
@@ -91,37 +128,59 @@ export const Seasons: CollectionConfig = {
             {
               name: 'releaseDate',
               type: 'date',
-              admin: { description: 'Premiere date for this specific season.' },
+              admin: {
+                description: 'Premiere date for this specific season.',
+              },
             },
             {
               name: 'newTalent',
               type: 'relationship',
               relationTo: 'talent',
               hasMany: true,
-              admin: { description: 'Optional: Talent introduced or specific to this season.' },
+              admin: {
+                description: 'Optional talent introduced or specific to this season.',
+              },
             },
           ],
         },
       ],
     },
-    /* Sidebar */
+
     {
       name: 'slug',
       type: 'text',
       unique: true,
-      hooks: { beforeValidate: [autoSlug] },
-      admin: { position: 'sidebar' },
+      hooks: {
+        beforeValidate: [autoSlug],
+      },
+      admin: {
+        position: 'sidebar',
+        description: 'Auto-generated from the season title.',
+      },
     },
     {
-      name: 'status',
+      name: 'seasonStatus',
       type: 'select',
-      defaultValue: 'active',
+      enumName: 'season_status',
+      label: 'Season Status',
+      defaultValue: 'production',
       options: [
-        { label: 'In Production', value: 'production' },
-        { label: 'Airing', value: 'airing' },
-        { label: 'Ended', value: 'ended' },
+        {
+          label: 'In Production',
+          value: 'production',
+        },
+        {
+          label: 'Airing',
+          value: 'airing',
+        },
+        {
+          label: 'Ended',
+          value: 'ended',
+        },
       ],
-      admin: { position: 'sidebar' },
+      admin: {
+        position: 'sidebar',
+      },
     },
   ],
 }
