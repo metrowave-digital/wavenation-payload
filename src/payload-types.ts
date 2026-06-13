@@ -4564,6 +4564,9 @@ export interface Comment {
   mentions?: (number | User)[] | null;
   status: 'published' | 'needs-review' | 'hidden' | 'removed' | 'deleted-placeholder' | 'spam';
   visibility?: ('public' | 'staff-only' | 'deleted-placeholder') | null;
+  /**
+   * Internal moderation flags. Staff only.
+   */
   moderationFlags?:
     | {
         flag:
@@ -4584,6 +4587,9 @@ export interface Comment {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Internal moderation notes. Staff only.
+   */
   moderationNotes?: string | null;
   isPinned?: boolean | null;
   isFeatured?: boolean | null;
@@ -4596,6 +4602,9 @@ export interface Comment {
   };
   editedAt?: string | null;
   deletedAt?: string | null;
+  /**
+   * Internal request metadata. Staff only.
+   */
   metadata?: {
     ipHash?: string | null;
     userAgent?: string | null;
@@ -5392,7 +5401,13 @@ export interface ChatMember {
   joinedAt?: string | null;
   lastReadAt?: string | null;
   mutedUntil?: string | null;
+  /**
+   * Internal staff-only reason for banning this member.
+   */
   bannedReason?: string | null;
+  /**
+   * Internal staff-only notes about this chat member.
+   */
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -5436,6 +5451,9 @@ export interface ChatMessage {
   mentions?: (number | User)[] | null;
   status: 'published' | 'needs-review' | 'hidden' | 'removed' | 'deleted-placeholder' | 'spam';
   visibility?: ('channel' | 'staff-only' | 'deleted-placeholder') | null;
+  /**
+   * Internal moderation flags. Staff only.
+   */
   moderationFlags?:
     | {
         flag:
@@ -5454,6 +5472,9 @@ export interface ChatMessage {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Internal moderation notes. Staff only.
+   */
   moderationNotes?: string | null;
   counts?: {
     reactionCount?: number | null;
@@ -5464,6 +5485,9 @@ export interface ChatMessage {
   pinnedUntil?: string | null;
   editedAt?: string | null;
   deletedAt?: string | null;
+  /**
+   * Internal request metadata. Staff only.
+   */
   metadata?: {
     ipHash?: string | null;
     userAgent?: string | null;
@@ -5512,6 +5536,9 @@ export interface ChatInvite {
   invitedBy: number | User;
   invitedUser?: (number | null) | User;
   inviteeEmail?: string | null;
+  /**
+   * Sensitive invite token. Only staff can view or update this field.
+   */
   token?: string | null;
   status: 'pending' | 'accepted' | 'declined' | 'expired' | 'revoked';
   expiresAt?: string | null;

@@ -1,5 +1,35 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, FieldAccess } from 'payload'
 import { authenticated, anyone, staffOnly } from '../access/communityAccess'
+
+type WaveNationUser = {
+  id?: string | number
+  role?: string | null
+  roles?: string[] | null
+  isAdmin?: boolean | null
+}
+
+const STAFF_ROLES = ['admin', 'staff', 'editor', 'moderator', 'super-admin']
+
+/**
+ * Field-level access must use FieldAccess.
+ * Do not reuse collection-level access functions like staffOnly inside field access.
+ */
+const staffFieldOnly: FieldAccess = ({ req }) => {
+  const user = req.user as WaveNationUser | null | undefined
+
+  if (!user) return false
+  if (user.isAdmin) return true
+
+  if (typeof user.role === 'string') {
+    return STAFF_ROLES.includes(user.role)
+  }
+
+  if (Array.isArray(user.roles)) {
+    return user.roles.some((role) => STAFF_ROLES.includes(role))
+  }
+
+  return false
+}
 
 export const Comments: CollectionConfig = {
   slug: 'comments',
@@ -116,8 +146,11 @@ export const Comments: CollectionConfig = {
       name: 'moderationFlags',
       type: 'array',
       access: {
-        read: staffOnly,
-        update: staffOnly,
+        read: staffFieldOnly,
+        update: staffFieldOnly,
+      },
+      admin: {
+        description: 'Internal moderation flags. Staff only.',
       },
       fields: [
         {
@@ -159,8 +192,11 @@ export const Comments: CollectionConfig = {
       name: 'moderationNotes',
       type: 'textarea',
       access: {
-        read: staffOnly,
-        update: staffOnly,
+        read: staffFieldOnly,
+        update: staffFieldOnly,
+      },
+      admin: {
+        description: 'Internal moderation notes. Staff only.',
       },
     },
     {
@@ -223,8 +259,11 @@ export const Comments: CollectionConfig = {
       name: 'metadata',
       type: 'group',
       access: {
-        read: staffOnly,
-        update: staffOnly,
+        read: staffFieldOnly,
+        update: staffFieldOnly,
+      },
+      admin: {
+        description: 'Internal request metadata. Staff only.',
       },
       fields: [
         {

@@ -1,5 +1,35 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig, FieldAccess } from 'payload'
 import { authenticated, staffOnly } from '../access/communityAccess'
+
+type WaveNationUser = {
+  id?: string | number
+  role?: string | null
+  roles?: string[] | null
+  isAdmin?: boolean | null
+}
+
+/**
+ * Field-level access must use FieldAccess, not collection-level Access.
+ * This protects sensitive fields like invite tokens from normal authenticated users.
+ */
+const staffFieldOnly: FieldAccess = ({ req }) => {
+  const user = req.user as WaveNationUser | null | undefined
+
+  if (!user) return false
+  if (user.isAdmin) return true
+
+  if (typeof user.role === 'string') {
+    return ['admin', 'staff', 'editor', 'moderator', 'super-admin'].includes(user.role)
+  }
+
+  if (Array.isArray(user.roles)) {
+    return user.roles.some((role) =>
+      ['admin', 'staff', 'editor', 'moderator', 'super-admin'].includes(role),
+    )
+  }
+
+  return false
+}
 
 export const ChatInvites: CollectionConfig = {
   slug: 'chat-invites',
@@ -51,8 +81,11 @@ export const ChatInvites: CollectionConfig = {
       unique: true,
       index: true,
       access: {
-        read: staffOnly,
-        update: staffOnly,
+        read: staffFieldOnly,
+        update: staffFieldOnly,
+      },
+      admin: {
+        description: 'Sensitive invite token. Only staff can view or update this field.',
       },
     },
     {
