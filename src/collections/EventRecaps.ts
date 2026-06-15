@@ -117,10 +117,10 @@ export const EventRecaps: CollectionConfig = {
               defaultValue: 'article',
               options: [
                 { label: 'Article Recap', value: 'article' },
-                { label: 'Photo Gallery', value: 'photo-gallery' },
-                { label: 'Video Recap', value: 'video-recap' },
-                { label: 'Press Release', value: 'press-release' },
-                { label: 'Social Recap', value: 'social-recap' },
+                { label: 'Photo Gallery', value: 'photo_gallery' },
+                { label: 'Video Recap', value: 'video_recap' },
+                { label: 'Press Release', value: 'press_release' },
+                { label: 'Social Recap', value: 'social_recap' },
               ],
             },
             {
@@ -132,7 +132,7 @@ export const EventRecaps: CollectionConfig = {
               },
               options: [
                 { label: 'Draft', value: 'draft' },
-                { label: 'In Review', value: 'in-review' },
+                { label: 'In Review', value: 'in_review' },
                 { label: 'Published', value: 'published' },
                 { label: 'Archived', value: 'archived' },
               ],

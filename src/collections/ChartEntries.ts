@@ -116,8 +116,8 @@ export const ChartEntries: CollectionConfig = {
                     { label: 'Up', value: 'up' },
                     { label: 'Down', value: 'down' },
                     { label: 'Same', value: 'same' },
-                    { label: 'Re-Entry', value: 're-entry' },
-                    { label: 'Drop-Off', value: 'drop-off' },
+                    { label: 'Re-Entry', value: 're_entry' },
+                    { label: 'Drop-Off', value: 'drop_off' },
                   ],
                   admin: {
                     width: '50%',

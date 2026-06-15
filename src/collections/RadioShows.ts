@@ -97,11 +97,11 @@ export const RadioShows: CollectionConfig = {
                     },
                     {
                       label: 'Specialty Block',
-                      value: 'specialty-block',
+                      value: 'specialty_block',
                     },
                     {
                       label: 'Community / Talk',
-                      value: 'community-talk',
+                      value: 'community_talk',
                     },
                   ],
                 },

@@ -19,7 +19,7 @@ export const EventSettings: GlobalConfig = {
       type: 'select',
       defaultValue: 'streamlabs',
       options: [
-        { label: 'WaveNation Native', value: 'wavenation-native' },
+        { label: 'WaveNation Native', value: 'wavenation_native' },
         { label: 'Streamlabs', value: 'streamlabs' },
         { label: 'YouTube', value: 'youtube' },
         { label: 'Vimeo', value: 'vimeo' },

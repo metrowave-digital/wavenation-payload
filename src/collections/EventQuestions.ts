@@ -86,9 +86,9 @@ export const EventQuestions: CollectionConfig = {
     {
       name: 'source',
       type: 'select',
-      defaultValue: 'watch-page',
+      defaultValue: 'watch_page',
       options: [
-        { label: 'Watch Page', value: 'watch-page' },
+        { label: 'Watch Page', value: 'watch_page' },
         { label: 'Moderator Entry', value: 'moderator' },
         { label: 'Imported', value: 'imported' },
       ],

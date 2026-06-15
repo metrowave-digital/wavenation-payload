@@ -139,10 +139,74 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 /* ======================================================
-   ENV
+   ENV HELPERS
 ====================================================== */
 
-const serverURL = process.env.PAYLOAD_PUBLIC_SERVER_URL || ''
+const isProduction = process.env.NODE_ENV === 'production'
+
+const stripTrailingSlash = (value?: string | null) => value?.replace(/\/$/, '') || undefined
+
+const serverURL =
+  stripTrailingSlash(process.env.PAYLOAD_PUBLIC_SERVER_URL) ||
+  stripTrailingSlash(process.env.PAYLOAD_SERVER_URL) ||
+  'http://localhost:3000'
+
+const frontendURL =
+  stripTrailingSlash(process.env.FRONTEND_URL) ||
+  stripTrailingSlash(process.env.NEXT_PUBLIC_WEB_URL) ||
+  'http://localhost:3000'
+
+const databaseURL = process.env.DATABASE_URL
+const payloadSecret = process.env.PAYLOAD_SECRET
+
+if (!databaseURL) {
+  throw new Error(
+    'DATABASE_URL is required. Add your Neon Postgres connection string in Render and your local .env file.',
+  )
+}
+
+if (!payloadSecret) {
+  throw new Error(
+    'PAYLOAD_SECRET is required. Add a long random secret in Render and your local .env file.',
+  )
+}
+
+const allowedOrigins = Array.from(
+  new Set(
+    [
+      serverURL,
+      frontendURL,
+      process.env.NEXT_PUBLIC_WEB_URL,
+      process.env.PAYLOAD_PUBLIC_SERVER_URL,
+      process.env.PAYLOAD_SERVER_URL,
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+    ]
+      .map(stripTrailingSlash)
+      .filter(Boolean) as string[],
+  ),
+)
+
+/* ======================================================
+   S3 / R2 ENV
+====================================================== */
+
+const s3Bucket = process.env.S3_BUCKET || process.env.R2_BUCKET || ''
+const s3Endpoint = process.env.S3_ENDPOINT || process.env.R2_ENDPOINT
+const s3Region = process.env.S3_REGION || process.env.R2_REGION || 'auto'
+const s3AccessKeyId = process.env.S3_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID || ''
+const s3SecretAccessKey = process.env.S3_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY || ''
+const s3PublicURL = stripTrailingSlash(process.env.S3_PUBLIC_URL || process.env.R2_PUBLIC_URL)
+
+const hasS3Storage =
+  Boolean(s3Bucket) && Boolean(s3Endpoint) && Boolean(s3AccessKeyId) && Boolean(s3SecretAccessKey)
+
+if (isProduction && !hasS3Storage) {
+  console.warn(
+    'S3/R2 storage is not fully configured. Media uploads will use local storage unless all S3/R2 env vars are set.',
+  )
+}
 
 /* ======================================================
    PAYLOAD CONFIG
@@ -157,6 +221,9 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
+
+  cors: allowedOrigins,
+  csrf: allowedOrigins,
 
   collections: [
     /* ===== SYSTEM & USERS ===== */
@@ -281,40 +348,59 @@ export default buildConfig({
 
   editor: lexicalEditor(),
 
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: payloadSecret,
 
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
 
+  graphQL: {
+    disable: false,
+    schemaOutputFile: path.resolve(dirname, 'schema.graphql'),
+    disablePlaygroundInProduction: true,
+    maxComplexity: 1000,
+  },
+
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
+      connectionString: databaseURL,
     },
   }),
 
   sharp,
 
-  /* ======================================================
-     R2 / S3 STORAGE (Cloudflare R2 Compatible)
-  ====================================================== */
-
   plugins: [
     s3Storage({
+      enabled: hasS3Storage,
+
       collections: {
-        media: {
+        [Media.slug]: {
           prefix: 'media',
+
+          ...(s3PublicURL
+            ? {
+                disablePayloadAccessControl: true,
+                generateFileURL: ({ filename, prefix }: { filename: string; prefix?: string }) => {
+                  const key = prefix ? `${prefix}/${filename}` : filename
+                  return `${s3PublicURL}/${key}`
+                },
+              }
+            : {}),
         },
       },
-      bucket: process.env.S3_BUCKET || '',
+
+      bucket: s3Bucket,
+
       config: {
-        endpoint: process.env.S3_ENDPOINT,
-        region: process.env.S3_REGION || 'auto',
+        endpoint: s3Endpoint,
+        region: s3Region,
         credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+          accessKeyId: s3AccessKeyId,
+          secretAccessKey: s3SecretAccessKey,
         },
-        forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true',
+        forcePathStyle: process.env.S3_FORCE_PATH_STYLE
+          ? process.env.S3_FORCE_PATH_STYLE === 'true'
+          : true,
       },
     }),
   ],

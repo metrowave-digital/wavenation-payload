@@ -134,7 +134,7 @@ export const Podcasts: CollectionConfig = {
               admin: { description: 'Apple Podcast Directory Categories' },
               options: [
                 { label: 'Music', value: 'Music' },
-                { label: 'Society & Culture', value: 'Society & Culture' },
+                { label: 'Society & Culture', value: 'society_culture' },
                 { label: 'Arts', value: 'Arts' },
                 { label: 'News', value: 'News' },
                 { label: 'Comedy', value: 'Comedy' },

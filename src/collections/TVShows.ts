@@ -102,7 +102,7 @@ export const TVShows: CollectionConfig = {
                     },
                     {
                       label: 'Music Video Block',
-                      value: 'music-video-block',
+                      value: 'music_video_block',
                     },
                     {
                       label: 'Special Presentation',
@@ -123,11 +123,11 @@ export const TVShows: CollectionConfig = {
                     },
                     {
                       label: 'WaveNation One',
-                      value: 'wavenation-one',
+                      value: 'wavenation_one',
                     },
                     {
                       label: 'WaveNation+',
-                      value: 'wavenation-plus',
+                      value: 'wavenation_plus',
                     },
                     {
                       label: 'Syndicated',
@@ -195,19 +195,19 @@ export const TVShows: CollectionConfig = {
               options: [
                 {
                   label: 'TV-G',
-                  value: 'TV-G',
+                  value: 'tv_g',
                 },
                 {
                   label: 'TV-PG',
-                  value: 'TV-PG',
+                  value: 'tv_pg',
                 },
                 {
                   label: 'TV-14',
-                  value: 'TV-14',
+                  value: 'tv_14',
                 },
                 {
                   label: 'TV-MA',
-                  value: 'TV-MA',
+                  value: 'tv_ma',
                 },
               ],
               admin: {
@@ -263,7 +263,7 @@ export const TVShows: CollectionConfig = {
         },
         {
           label: 'Coming Soon',
-          value: 'coming-soon',
+          value: 'coming_soon',
         },
         {
           label: 'Airing',

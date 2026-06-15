@@ -165,7 +165,7 @@ const NewsletterCTAButtonBlock: Block = {
         { label: 'Primary', value: 'primary' },
         { label: 'Secondary', value: 'secondary' },
         { label: 'Membership', value: 'membership' },
-        { label: 'Creator Hub', value: 'creator-hub' },
+        { label: 'Creator Hub', value: 'creator_hub' },
       ],
     },
   ],
@@ -263,6 +263,10 @@ export const NewsletterIssues: CollectionConfig = {
   labels: {
     singular: 'Newsletter Issue',
     plural: 'Newsletter Issues',
+  },
+  graphQL: {
+    singularName: 'NewsletterIssue',
+    pluralName: 'NewsletterIssues',
   },
   admin: {
     useAsTitle: 'issueTitle',
@@ -447,10 +451,10 @@ export const NewsletterIssues: CollectionConfig = {
             {
               name: 'subscriberSegment',
               type: 'select',
-              defaultValue: 'all-active',
+              defaultValue: 'all_active',
               options: [
-                { label: 'All Active Subscribers', value: 'all-active' },
-                { label: 'Music Fans', value: 'music-fans' },
+                { label: 'All Active Subscribers', value: 'all_active' },
+                { label: 'Music Fans', value: 'music_fans' },
                 { label: 'Creators', value: 'creators' },
                 { label: 'Faith Audience', value: 'faith' },
                 { label: 'WaveNation+ Members', value: 'members' },
@@ -596,18 +600,13 @@ export const NewsletterIssues: CollectionConfig = {
         },
       ],
     },
-
-    /* ===============================
-       Sidebar Fields
-    =============================== */
-
     {
       name: 'status',
       type: 'select',
       defaultValue: 'draft',
       options: [
         { label: 'Draft', value: 'draft' },
-        { label: 'Ready for Review', value: 'ready-review' },
+        { label: 'Ready for Review', value: 'ready_review' },
         { label: 'Approved', value: 'approved' },
         { label: 'Scheduled', value: 'scheduled' },
         { label: 'Sent', value: 'sent' },

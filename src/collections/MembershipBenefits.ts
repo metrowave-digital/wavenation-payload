@@ -50,8 +50,8 @@ export const MembershipBenefits: CollectionConfig = {
       required: true,
       options: [
         { label: 'Streaming', value: 'streaming' },
-        { label: 'Video / VOD', value: 'video-vod' },
-        { label: 'Creator Tools', value: 'creator-tools' },
+        { label: 'Video / VOD', value: 'video_vod' },
+        { label: 'Creator Tools', value: 'creator_tools' },
         { label: 'Events', value: 'events' },
         { label: 'Community', value: 'community' },
         { label: 'Commerce', value: 'commerce' },
@@ -85,8 +85,8 @@ export const MembershipBenefits: CollectionConfig = {
         { label: 'Included Feature', value: 'included' },
         { label: 'Limit / Allowance', value: 'limit' },
         { label: 'Discount', value: 'discount' },
-        { label: 'Early Access', value: 'early-access' },
-        { label: 'Exclusive Access', value: 'exclusive-access' },
+        { label: 'Early Access', value: 'early_access' },
+        { label: 'Exclusive Access', value: 'exclusive_access' },
       ],
     },
     {
@@ -115,8 +115,8 @@ export const MembershipBenefits: CollectionConfig = {
       defaultValue: 'public',
       options: [
         { label: 'Public', value: 'public' },
-        { label: 'Members Only', value: 'members-only' },
-        { label: 'Internal Only', value: 'internal-only' },
+        { label: 'Members Only', value: 'members_only' },
+        { label: 'Internal Only', value: 'internal_only' },
       ],
       admin: {
         position: 'sidebar',

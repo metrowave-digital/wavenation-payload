@@ -13,19 +13,22 @@ export const Sidebars: CollectionConfig = {
       type: 'blocks',
       blocks: [
         {
-          slug: 'newsletter',
+          slug: 'sidebarNewsletter',
           fields: [
             { name: 'headline', type: 'text' },
             { name: 'hubspotFormId', type: 'text' },
           ],
         },
-        { slug: 'trendingArticles', fields: [{ name: 'limit', type: 'number', defaultValue: 5 }] },
         {
-          slug: 'adPlacements',
+          slug: 'sidebarTrendingArticles',
+          fields: [{ name: 'limit', type: 'number', defaultValue: 5 }],
+        },
+        {
+          slug: 'sidebarAdPlacements',
           fields: [{ name: 'zone', type: 'relationship', relationTo: 'ad-placements' }],
         },
         {
-          slug: 'promoBanner',
+          slug: 'sidebarPromoBanner',
           fields: [{ name: 'banner', type: 'relationship', relationTo: 'promo-banners' }],
         },
       ],

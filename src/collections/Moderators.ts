@@ -12,13 +12,21 @@ export const Moderators: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'displayName', type: 'text', required: true, admin: { width: '50%' } },
+        {
+          name: 'displayName',
+          type: 'text',
+          required: true,
+          admin: { width: '50%' },
+        },
         {
           name: 'user',
           type: 'relationship',
           relationTo: 'users',
           required: true,
-          admin: { width: '50%', description: 'The internal user account tied to this moderator.' },
+          admin: {
+            width: '50%',
+            description: 'The internal user account tied to this moderator.',
+          },
         },
       ],
     },
@@ -28,11 +36,11 @@ export const Moderators: CollectionConfig = {
       hasMany: true,
       required: true,
       options: [
-        'Approve Q&A',
-        'Delete Chat Messages',
-        'Ban Users',
-        'Pin Messages',
-        'Stream Status Override',
+        { label: 'Approve Q&A', value: 'approve_q_and_a' },
+        { label: 'Delete Chat Messages', value: 'delete_chat_messages' },
+        { label: 'Ban Users', value: 'ban_users' },
+        { label: 'Pin Messages', value: 'pin_messages' },
+        { label: 'Stream Status Override', value: 'stream_status_override' },
       ],
     },
     {
@@ -40,13 +48,18 @@ export const Moderators: CollectionConfig = {
       type: 'relationship',
       relationTo: 'events',
       hasMany: true,
-      admin: { description: 'Specific upcoming events this moderator is scheduled for.' },
+      admin: {
+        description: 'Specific upcoming events this moderator is scheduled for.',
+      },
     },
     {
       name: 'status',
       type: 'select',
       defaultValue: 'active',
-      options: ['active', 'inactive'],
+      options: [
+        { label: 'Active', value: 'active' },
+        { label: 'Inactive', value: 'inactive' },
+      ],
       admin: { position: 'sidebar' },
     },
   ],

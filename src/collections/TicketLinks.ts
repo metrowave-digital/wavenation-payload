@@ -83,12 +83,12 @@ export const TicketLinks: CollectionConfig = {
               options: [
                 { label: 'External Ticket Link', value: 'external' },
                 { label: 'Internal Ticket / Product', value: 'internal' },
-                { label: 'Free RSVP', value: 'free-rsvp' },
+                { label: 'Free RSVP', value: 'free_rsvp' },
                 { label: 'Pay-Per-View', value: 'ppv' },
                 { label: 'Donation', value: 'donation' },
-                { label: 'Season Pass', value: 'season-pass' },
-                { label: 'Vendor Booth', value: 'vendor-booth' },
-                { label: 'VIP Package', value: 'vip-package' },
+                { label: 'Season Pass', value: 'season_pass' },
+                { label: 'Vendor Booth', value: 'vendor_booth' },
+                { label: 'VIP Package', value: 'vip_package' },
               ],
             },
             {
@@ -126,7 +126,7 @@ export const TicketLinks: CollectionConfig = {
               options: [
                 { label: 'Active', value: 'active' },
                 { label: 'Hidden', value: 'hidden' },
-                { label: 'Sold Out', value: 'sold-out' },
+                { label: 'Sold Out', value: 'sold_out' },
                 { label: 'Waitlist', value: 'waitlist' },
                 { label: 'Expired', value: 'expired' },
               ],

@@ -838,8 +838,8 @@ export interface TvShow {
    * A short synopsis or editorial description for this show.
    */
   description?: string | null;
-  format?: ('reality' | 'talk' | 'drama' | 'comedy' | 'event' | 'documentary' | 'music-video-block' | 'special') | null;
-  network?: ('wavenation' | 'wavenation-one' | 'wavenation-plus' | 'syndicated') | null;
+  format?: ('reality' | 'talk' | 'drama' | 'comedy' | 'event' | 'documentary' | 'music_video_block' | 'special') | null;
+  network?: ('wavenation' | 'wavenation_one' | 'wavenation_plus' | 'syndicated') | null;
   /**
    * Brands officially sponsoring or presenting this TV show.
    */
@@ -863,7 +863,7 @@ export interface TvShow {
   /**
    * Audience rating for this show.
    */
-  ageRating?: ('TV-G' | 'TV-PG' | 'TV-14' | 'TV-MA') | null;
+  ageRating?: ('tv_g' | 'tv_pg' | 'tv_14' | 'tv_ma') | null;
   /**
    * Hosts, cast members, guests, or recurring talent attached to this show.
    */
@@ -876,7 +876,7 @@ export interface TvShow {
    * Auto-generated from the title.
    */
   slug?: string | null;
-  showStatus?: ('production' | 'coming-soon' | 'airing' | 'ended' | 'archived') | null;
+  showStatus?: ('production' | 'coming_soon' | 'airing' | 'ended' | 'archived') | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -908,16 +908,16 @@ export interface Sponsor {
   sponsorType?:
     | (
         | 'brand'
-        | 'community-partner'
+        | 'community_partner'
         | 'foundation'
-        | 'media-partner'
-        | 'venue-partner'
+        | 'media_partner'
+        | 'venue_partner'
         | 'vendor'
-        | 'internal-partner'
-        | 'in-kind'
+        | 'internal_partner'
+        | 'in_kind'
       )
     | null;
-  sponsorTier?: ('presenting' | 'platinum' | 'gold' | 'silver' | 'bronze' | 'community' | 'in-kind' | 'custom') | null;
+  sponsorTier?: ('presenting' | 'platinum' | 'gold' | 'silver' | 'bronze' | 'community' | 'in_kind' | 'custom') | null;
   website?: string | null;
   publicDisplay?: boolean | null;
   isActive?: boolean | null;
@@ -930,7 +930,7 @@ export interface Sponsor {
   sponsoredRecaps?: (number | EventRecap)[] | null;
   sponsoredCreators?: (number | Creator)[] | null;
   relatedArticles?: (number | Article)[] | null;
-  contractStatus?: ('prospect' | 'proposal-sent' | 'active' | 'paused' | 'completed' | 'declined') | null;
+  contractStatus?: ('prospect' | 'proposal_sent' | 'active' | 'paused' | 'completed' | 'declined') | null;
   startDate?: string | null;
   endDate?: string | null;
   benefits?:
@@ -993,25 +993,25 @@ export interface Event {
   eventStatus:
     | 'draft'
     | 'published'
-    | 'open-registration'
-    | 'sold-out'
+    | 'open_registration'
+    | 'sold_out'
     | 'postponed'
     | 'cancelled'
     | 'completed'
     | 'archived';
   eventType:
-    | 'in-person'
+    | 'in_person'
     | 'virtual'
     | 'hybrid'
     | 'livestream'
     | 'festival'
     | 'concert'
     | 'popup'
-    | 'town-hall'
-    | 'creator-workshop'
+    | 'town_hall'
+    | 'creator_workshop'
     | 'awards'
     | 'conference'
-    | 'community-event';
+    | 'community_event';
   eventCategories?: (number | EventCategory)[] | null;
   featured?: boolean | null;
   isActive?: boolean | null;
@@ -1035,8 +1035,8 @@ export interface Event {
    * Use this only if the venue relationship does not fully describe the public location.
    */
   locationOverride?: string | null;
-  virtualAccessType?: ('none' | 'free-stream' | 'ticketed-stream' | 'private-link' | 'wavenation-plus') | null;
-  livestreamProvider?: ('cloudflare-stream' | 'youtube-live' | 'vimeo' | 'zoom' | 'restream' | 'other') | null;
+  virtualAccessType?: ('none' | 'free_stream' | 'ticketed_stream' | 'private_link' | 'wavenation_plus') | null;
+  livestreamProvider?: ('cloudflare_stream' | 'youtube_live' | 'vimeo' | 'zoom' | 'restream' | 'other') | null;
   livestreamUrl?: string | null;
   replayUrl?: string | null;
   entryDetails?: string | null;
@@ -1090,8 +1090,8 @@ export interface EventCategory {
   name: string;
   slug: string;
   description?: string | null;
-  categoryType?: ('general' | 'fm' | 'one' | 'plus' | 'creator-hub' | 'community' | 'sponsored') | null;
-  colorAccent?: ('electric-blue' | 'magenta-pulse' | 'neon-green' | 'charcoal') | null;
+  categoryType?: ('general' | 'fm' | 'one' | 'plus' | 'creator_hub' | 'community' | 'sponsored') | null;
+  colorAccent?: ('electric_blue' | 'magenta_pulse' | 'neon_green' | 'charcoal') | null;
   /**
    * Optional frontend icon key, such as calendar, mic, tv, music, community.
    */
@@ -1131,13 +1131,13 @@ export interface Venue {
   } | null;
   venueType?:
     | (
-        | 'event-space'
+        | 'event_space'
         | 'theater'
         | 'club'
         | 'arena'
-        | 'faith-venue'
+        | 'faith_venue'
         | 'outdoor'
-        | 'restaurant-lounge'
+        | 'restaurant_lounge'
         | 'studio'
         | 'virtual'
         | 'other'
@@ -1197,12 +1197,12 @@ export interface TicketLink {
   ticketType:
     | 'external'
     | 'internal'
-    | 'free-rsvp'
+    | 'free_rsvp'
     | 'ppv'
     | 'donation'
-    | 'season-pass'
-    | 'vendor-booth'
-    | 'vip-package';
+    | 'season_pass'
+    | 'vendor_booth'
+    | 'vip_package';
   provider?:
     | ('wavenation' | 'stripe' | 'eventbrite' | 'ticketmaster' | 'dice' | 'universe' | 'jotform' | 'custom')
     | null;
@@ -1211,7 +1211,7 @@ export interface TicketLink {
    */
   url?: string | null;
   ctaLabel?: string | null;
-  ticketStatus?: ('active' | 'hidden' | 'sold-out' | 'waitlist' | 'expired') | null;
+  ticketStatus?: ('active' | 'hidden' | 'sold_out' | 'waitlist' | 'expired') | null;
   isPrimary?: boolean | null;
   isActive?: boolean | null;
   price?: number | null;
@@ -1249,11 +1249,11 @@ export interface Creator {
     | 'influencer'
     | 'journalist'
     | 'producer'
-    | 'community-voice'
-    | 'host-personality'
+    | 'community_voice'
+    | 'host_personality'
     | 'other';
   creatorStatus: 'applicant' | 'onboarding' | 'active' | 'paused' | 'suspended' | 'rejected' | 'alumni';
-  verificationStatus?: ('unverified' | 'pending-review' | 'verified' | 'denied') | null;
+  verificationStatus?: ('unverified' | 'pending_review' | 'verified' | 'denied') | null;
   isActive?: boolean | null;
   /**
    * Optional public-facing creator profile record.
@@ -1281,7 +1281,7 @@ export interface Creator {
               | 'facebook'
               | 'x'
               | 'spotify'
-              | 'apple-music'
+              | 'apple_music'
               | 'soundcloud'
               | 'website'
               | 'other'
@@ -1297,7 +1297,7 @@ export interface Creator {
   logo?: (number | null) | Media;
   pressKit?: (number | null) | Media;
   monetizationEligible?: boolean | null;
-  monetizationStatus?: ('not-enabled' | 'pending' | 'enabled' | 'paused') | null;
+  monetizationStatus?: ('not_enabled' | 'pending' | 'enabled' | 'paused') | null;
   revenueSharePercentage?: number | null;
   payoutProvider?: ('stripe' | 'paypal' | 'manual' | 'other') | null;
   payoutEmail?: string | null;
@@ -1360,7 +1360,7 @@ export interface CreatorProfile {
               | 'facebook'
               | 'x'
               | 'spotify'
-              | 'apple-music'
+              | 'apple_music'
               | 'soundcloud'
               | 'website'
               | 'other'
@@ -1373,7 +1373,7 @@ export interface CreatorProfile {
   featuredContent?:
     | {
         title: string;
-        contentType: 'video' | 'podcast' | 'music' | 'article' | 'playlist' | 'external-link';
+        contentType: 'video' | 'podcast' | 'music' | 'article' | 'playlist' | 'external_link';
         url?: string | null;
         thumbnail?: (number | null) | Media;
         description?: string | null;
@@ -1408,18 +1408,18 @@ export interface CreatorAgreement {
    */
   user: number | User;
   agreementType:
-    | 'creator-terms'
-    | 'revenue-share'
-    | 'content-license'
-    | 'event-performance'
-    | 'sponsorship-collab'
+    | 'creator_terms'
+    | 'revenue_share'
+    | 'content_license'
+    | 'event_performance'
+    | 'sponsorship_collab'
     | 'nda'
-    | 'release-form'
-    | 'third-party-signing';
+    | 'release_form'
+    | 'third_party_signing';
   agreementStatus: 'draft' | 'sent' | 'viewed' | 'signed' | 'declined' | 'expired' | 'voided';
   version?: string | null;
   summary?: string | null;
-  externalSigningProvider?: ('docusign' | 'dropbox-sign' | 'adobe-sign' | 'jotform-sign' | 'pandadoc' | 'other') | null;
+  externalSigningProvider?: ('docusign' | 'dropbox_sign' | 'adobe_sign' | 'jotform_sign' | 'pandadoc' | 'other') | null;
   signingUrl?: string | null;
   externalEnvelopeId?: string | null;
   signerName?: string | null;
@@ -1437,7 +1437,7 @@ export interface CreatorAgreement {
   usageScope?:
     | {
         scope?:
-          | ('website' | 'mobile-app' | 'tv-ott' | 'radio' | 'social-media' | 'events' | 'advertising' | 'sponsorship')
+          | ('website' | 'mobile_app' | 'tv_ott' | 'radio' | 'social_media' | 'events' | 'advertising' | 'sponsorship')
           | null;
         id?: string | null;
       }[]
@@ -1472,8 +1472,8 @@ export interface EventRecap {
     };
     [k: string]: unknown;
   } | null;
-  recapType?: ('article' | 'photo-gallery' | 'video-recap' | 'press-release' | 'social-recap') | null;
-  recapStatus?: ('draft' | 'in-review' | 'published' | 'archived') | null;
+  recapType?: ('article' | 'photo_gallery' | 'video_recap' | 'press_release' | 'social_recap') | null;
+  recapStatus?: ('draft' | 'in_review' | 'published' | 'archived') | null;
   publishedAt?: string | null;
   featured?: boolean | null;
   isActive?: boolean | null;
@@ -1618,7 +1618,7 @@ export interface Podcast {
   /**
    * Apple Podcast Directory Categories
    */
-  categories?: ('Music' | 'Society & Culture' | 'Arts' | 'News' | 'Comedy')[] | null;
+  categories?: ('Music' | 'society_culture' | 'Arts' | 'News' | 'Comedy')[] | null;
   distribution?: {
     applePodcasts?: boolean | null;
     spotify?: boolean | null;
@@ -1747,7 +1747,7 @@ export interface RadioShow {
    * The public title of the radio show.
    */
   title: string;
-  showType: 'live' | 'recorded' | 'syndicated' | 'chart' | 'specialty-block' | 'community-talk';
+  showType: 'live' | 'recorded' | 'syndicated' | 'chart' | 'specialty_block' | 'community_talk';
   /**
    * Brands officially sponsoring this radio show.
    */
@@ -1828,7 +1828,7 @@ export interface Chart {
    */
   title: string;
   slug?: string | null;
-  chartType: 'hitlist' | 'gospel' | 'southern-soul' | 'hip-hop' | 'rb-soul' | 'bpm';
+  chartType: 'hitlist' | 'gospel' | 'southern_soul' | 'hip_hop' | 'rb_soul' | 'bpm';
   publicDescription?: string | null;
   /**
    * Example: Week of June 12, 2026
@@ -1858,8 +1858,8 @@ export interface Chart {
   coverArt?: (number | null) | Media;
   heroImage?: (number | null) | Media;
   socialCard?: (number | null) | Media;
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'custom') | null;
-  rankingMode?: ('manual-editorial' | 'votes-editorial' | 'streams-radio-editorial' | 'custom') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'custom') | null;
+  rankingMode?: ('manual_editorial' | 'votes_editorial' | 'streams_radio_editorial' | 'custom') | null;
   methodologyNote?: string | null;
   dataReviewed?:
     | {
@@ -1868,7 +1868,7 @@ export interface Chart {
         id?: string | null;
       }[]
     | null;
-  editorialStatus?: ('draft' | 'in-review' | 'approved' | 'published' | 'archived') | null;
+  editorialStatus?: ('draft' | 'in_review' | 'approved' | 'published' | 'archived') | null;
   featuredOnHomepage?: boolean | null;
   featuredOnMusicPage?: boolean | null;
   /**
@@ -1901,7 +1901,7 @@ export interface ChartEntry {
   lastWeekPosition?: number | null;
   peakPosition?: number | null;
   weeksOnChart?: number | null;
-  movementDirection?: ('new' | 'up' | 'down' | 'same' | 're-entry' | 'drop-off') | null;
+  movementDirection?: ('new' | 'up' | 'down' | 'same' | 're_entry' | 'drop_off') | null;
   /**
    * Optional number of positions moved.
    */
@@ -1962,7 +1962,7 @@ export interface Track {
       }[]
     | null;
   albumOrProject?: string | null;
-  trackType?: ('single' | 'album-track' | 'ep-track' | 'remix' | 'live-version' | 'freestyle' | 'other') | null;
+  trackType?: ('single' | 'album_track' | 'ep_track' | 'remix' | 'live_version' | 'freestyle' | 'other') | null;
   releaseDate?: string | null;
   releaseYear?: number | null;
   explicit?: boolean | null;
@@ -2014,7 +2014,7 @@ export interface Track {
   rightsNotes?: string | null;
   independentRelease?: boolean | null;
   source?:
-    | ('internal' | 'creator-hub' | 'label-submission' | 'artist-direct' | 'publicist' | 'social-trend' | 'other')
+    | ('internal' | 'creator_hub' | 'label_submission' | 'artist_direct' | 'publicist' | 'social_trend' | 'other')
     | null;
   /**
    * Optional user/creator relationship. Change relationTo if your creator profile slug is different.
@@ -2022,7 +2022,7 @@ export interface Track {
   submittedBy?: (number | null) | User;
   creatorHubChannelId?: string | null;
   submissionEmail?: string | null;
-  reviewStatus?: ('pending' | 'metadata-needed' | 'rights-review' | 'approved' | 'rejected' | 'removed-hold') | null;
+  reviewStatus?: ('pending' | 'metadata_needed' | 'rights_review' | 'approved' | 'rejected' | 'removed_hold') | null;
   /**
    * Optional internal 1-10 quality score.
    */
@@ -2031,7 +2031,7 @@ export interface Track {
   reviewNotes?: string | null;
   publishedAt?: string | null;
   isFeatured?: boolean | null;
-  editorialPriority?: ('low' | 'normal' | 'high' | 'major-priority') | null;
+  editorialPriority?: ('low' | 'normal' | 'high' | 'major_priority') | null;
   /**
    * Optional tracking for playlists this track is cleared for.
    */
@@ -2076,7 +2076,7 @@ export interface Genre {
    * Optional wide hero image for the genre landing page.
    */
   heroImage?: (number | null) | Media;
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'charcoal' | 'custom') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'charcoal' | 'custom') | null;
   /**
    * Optional hex value, for example #00B3FF.
    */
@@ -2125,14 +2125,14 @@ export interface Playlist {
   slug?: string | null;
   playlistType?:
     | (
-        | 'core-editorial'
+        | 'core_editorial'
         | 'category'
         | 'mood'
         | 'seasonal'
         | 'event'
-        | 'creator-curated'
+        | 'creator_curated'
         | 'sponsored'
-        | 'show-companion'
+        | 'show_companion'
         | 'archive'
       )
     | null;
@@ -2160,7 +2160,7 @@ export interface Playlist {
    * Optional 16:9 or wide hero image.
    */
   heroImage?: (number | null) | Media;
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'southern-heat' | 'custom') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'southern_heat' | 'custom') | null;
   /**
    * Optional hex value.
    */
@@ -2174,7 +2174,7 @@ export interface Playlist {
       }[]
     | null;
   targetAudience?:
-    | ('all' | 'culture-consumer' | 'multigenerational' | 'creator-audience' | 'community-audience')
+    | ('all' | 'culture_consumer' | 'multigenerational' | 'creator_audience' | 'community_audience')
     | null;
   /**
    * Manual order is controlled by the order of these rows. Drag rows to reorder.
@@ -2204,8 +2204,8 @@ export interface Playlist {
   primaryPlatform?:
     | (
         | 'spotify'
-        | 'apple-music'
-        | 'youtube-music'
+        | 'apple_music'
+        | 'youtube_music'
         | 'youtube'
         | 'audiomack'
         | 'tidal'
@@ -2236,12 +2236,12 @@ export interface Playlist {
    * Confirms sponsor suggestions did not override editorial selection.
    */
   editorialIndependenceConfirmed?: boolean | null;
-  sponsorApprovalStatus?: ('not-needed' | 'pending' | 'approved' | 'needs-revision') | null;
+  sponsorApprovalStatus?: ('not_needed' | 'pending' | 'approved' | 'needs_revision') | null;
   publishedAt?: string | null;
-  updateCadence?: ('weekly' | 'biweekly' | 'monthly' | 'seasonal' | 'as-needed' | 'archived') | null;
+  updateCadence?: ('weekly' | 'biweekly' | 'monthly' | 'seasonal' | 'as_needed' | 'archived') | null;
   lastUpdated?: string | null;
   nextUpdateDue?: string | null;
-  rotationTurnoverTarget?: ('none' | '10-20' | '20-40' | '40-plus') | null;
+  rotationTurnoverTarget?: ('none' | 'value_10_20' | 'value_20_40' | 'value_40_plus') | null;
   isFeatured?: boolean | null;
   homepagePlacement?: boolean | null;
   displayOrder?: number | null;
@@ -2607,16 +2607,16 @@ export interface Topic {
   description?: string | null;
   topicType:
     | 'general'
-    | 'music-genre'
-    | 'culture-trend'
-    | 'community-issue'
+    | 'music_genre'
+    | 'culture_trend'
+    | 'community_issue'
     | 'location'
     | 'event'
     | 'person'
-    | 'show-franchise'
-    | 'playlist-theme'
-    | 'faith-inspiration'
-    | 'creator-economy'
+    | 'show_franchise'
+    | 'playlist_theme'
+    | 'faith_inspiration'
+    | 'creator_economy'
     | 'technology';
   /**
    * Optional alternate names, search terms, or older labels for this topic.
@@ -2645,7 +2645,7 @@ export interface Topic {
   /**
    * Used by the frontend for topic badges, archive accents, and editorial modules.
    */
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'charcoal' | 'deep-indigo') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'charcoal' | 'deep_indigo') | null;
   displayStyle?: ('standard' | 'editorial' | 'music' | 'cinematic' | 'news') | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -2889,21 +2889,21 @@ export interface Newsletter {
    */
   description: string;
   newsletterType:
-    | 'editorial-digest'
-    | 'breaking-alerts'
-    | 'music-radio'
-    | 'creator-hub'
-    | 'faith-inspiration'
-    | 'culture-report'
-    | 'events-promotions'
+    | 'editorial_digest'
+    | 'breaking_alerts'
+    | 'music_radio'
+    | 'creator_hub'
+    | 'faith_inspiration'
+    | 'culture_report'
+    | 'events_promotions'
     | 'membership'
-    | 'sponsor-partner';
-  frequency: 'daily' | 'weekdays' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'as-needed';
+    | 'sponsor_partner';
+  frequency: 'daily' | 'weekdays' | 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'as_needed';
   /**
    * Human-readable schedule. Example: Fridays at 9 a.m. ET.
    */
   sendCadenceNote?: string | null;
-  audience?: ('general' | 'music-fans' | 'creators' | 'faith' | 'members' | 'partners' | 'local-community') | null;
+  audience?: ('general' | 'music_fans' | 'creators' | 'faith' | 'members' | 'partners' | 'local_community') | null;
   signupHeadline: string;
   signupDescription?: string | null;
   signupButtonLabel?: string | null;
@@ -2931,8 +2931,8 @@ export interface Newsletter {
     caption?: string | null;
     credit?: string | null;
   };
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'deep-indigo' | 'charcoal') | null;
-  displayStyle?: ('cinematic' | 'editorial' | 'music' | 'creator-hub' | 'faith' | 'minimal') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'deep_indigo' | 'charcoal') | null;
+  displayStyle?: ('cinematic' | 'editorial' | 'music' | 'creator_hub' | 'faith' | 'minimal') | null;
   provider?: ('manual' | 'resend' | 'mailchimp' | 'beehiiv' | 'convertkit' | 'buttondown') | null;
   /**
    * External audience/list ID from your email provider.
@@ -3035,7 +3035,7 @@ export interface NewsletterIssue {
             body?: string | null;
             buttonLabel: string;
             buttonUrl: string;
-            style?: ('primary' | 'secondary' | 'membership' | 'creator-hub') | null;
+            style?: ('primary' | 'secondary' | 'membership' | 'creator_hub') | null;
             id?: string | null;
             blockName?: string | null;
             blockType: 'newsletterCTA';
@@ -3067,7 +3067,7 @@ export interface NewsletterIssue {
   targetCategories?: (number | Category)[] | null;
   targetTopics?: (number | Topic)[] | null;
   targetTags?: (number | Tag)[] | null;
-  subscriberSegment?: ('all-active' | 'music-fans' | 'creators' | 'faith' | 'members' | 'partners' | 'custom') | null;
+  subscriberSegment?: ('all_active' | 'music_fans' | 'creators' | 'faith' | 'members' | 'partners' | 'custom') | null;
   /**
    * External segment ID from your email provider.
    */
@@ -3103,7 +3103,7 @@ export interface NewsletterIssue {
     bounceCount?: number | null;
     complaintCount?: number | null;
   };
-  status?: ('draft' | 'ready-review' | 'approved' | 'scheduled' | 'sent' | 'cancelled' | 'archived') | null;
+  status?: ('draft' | 'ready_review' | 'approved' | 'scheduled' | 'sent' | 'cancelled' | 'archived') | null;
   /**
    * If true, this sent issue can appear on public newsletter archive pages.
    */
@@ -3130,7 +3130,7 @@ export interface NewsletterSubscriber {
    */
   subscribedNewsletters: (number | Newsletter)[];
   preferences?: {
-    preferredFrequency?: ('normal' | 'weekly-only' | 'breaking-alerts-only' | 'monthly-only') | null;
+    preferredFrequency?: ('normal' | 'weekly_only' | 'breaking_alerts_only' | 'monthly_only') | null;
     interests?: (number | Topic)[] | null;
     favoriteCategories?: (number | Category)[] | null;
   };
@@ -3162,14 +3162,14 @@ export interface NewsletterSubscriber {
   source?:
     | (
         | 'website'
-        | 'article-signup'
-        | 'footer-signup'
-        | 'newsletter-page'
-        | 'creator-hub'
+        | 'article_signup'
+        | 'footer_signup'
+        | 'newsletter_page'
+        | 'creator_hub'
         | 'event'
-        | 'manual-import'
-        | 'partner-campaign'
-        | 'membership-signup'
+        | 'manual_import'
+        | 'partner_campaign'
+        | 'membership_signup'
       )
     | null;
   /**
@@ -3191,7 +3191,7 @@ export interface NewsletterSubscriber {
   providerStatus?: string | null;
   lastSyncedAt?: string | null;
   syncNotes?: string | null;
-  status?: ('active' | 'pending-confirmation' | 'unsubscribed' | 'bounced' | 'complained' | 'suppressed') | null;
+  status?: ('active' | 'pending_confirmation' | 'unsubscribed' | 'bounced' | 'complained' | 'suppressed') | null;
   isTestSubscriber?: boolean | null;
   internalNotes?: string | null;
   updatedAt: string;
@@ -3207,16 +3207,16 @@ export interface PlaylistSection {
   slug?: string | null;
   description?: string | null;
   placement?:
-    | ('homepage' | 'music-page' | 'playlist-index' | 'genre-hub' | 'app-home' | 'tv-app' | 'creator-hub')
+    | ('homepage' | 'music_page' | 'playlist_index' | 'genre_hub' | 'app_home' | 'tv_app' | 'creator_hub')
     | null;
   sectionType?:
-    | ('playlist-row' | 'track-row' | 'chart-row' | 'genre-row' | 'release-highlight-row' | 'mixed-feature')
+    | ('playlist_row' | 'track_row' | 'chart_row' | 'genre_row' | 'release_highlight_row' | 'mixed_feature')
     | null;
   displayOrder?: number | null;
   isActive?: boolean | null;
   publishedAt?: string | null;
-  layoutStyle?: ('carousel' | 'grid' | 'hero-rail' | 'editorial-stack' | 'compact-list') | null;
-  accentColor?: ('electric-blue' | 'neon-green' | 'magenta-pulse' | 'signal-teal' | 'custom') | null;
+  layoutStyle?: ('carousel' | 'grid' | 'hero_rail' | 'editorial_stack' | 'compact_list') | null;
+  accentColor?: ('electric_blue' | 'neon_green' | 'magenta_pulse' | 'signal_teal' | 'custom') | null;
   customAccentColor?: string | null;
   backgroundImage?: (number | null) | Media;
   /**
@@ -3232,7 +3232,7 @@ export interface PlaylistSection {
   releaseHighlights?: (number | ReleaseHighlight)[] | null;
   ctaLabel?: string | null;
   ctaUrl?: string | null;
-  ctaStyle?: ('primary' | 'secondary' | 'text-link') | null;
+  ctaStyle?: ('primary' | 'secondary' | 'text_link') | null;
   internalNotes?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -3251,11 +3251,11 @@ export interface ReleaseHighlight {
         | 'track'
         | 'album'
         | 'ep'
-        | 'music-video'
-        | 'artist-announcement'
-        | 'playlist-drop'
-        | 'chart-moment'
-        | 'creator-hub-release'
+        | 'music_video'
+        | 'artist_announcement'
+        | 'playlist_drop'
+        | 'chart_moment'
+        | 'creator_hub_release'
       )
     | null;
   artistName?: string | null;
@@ -3296,18 +3296,18 @@ export interface ReleaseHighlight {
   editorialSummary?: string | null;
   editorialAngle?:
     | (
-        | 'new-release'
-        | 'indie-spotlight'
-        | 'staff-pick'
-        | 'southern-soul-pick'
-        | 'gospel-pick'
-        | 'rb-soul-pick'
-        | 'hip-hop-pick'
-        | 'video-premiere'
-        | 'chart-breakout'
+        | 'new_release'
+        | 'indie_spotlight'
+        | 'staff_pick'
+        | 'southern_soul_pick'
+        | 'gospel_pick'
+        | 'rb_soul_pick'
+        | 'hip_hop_pick'
+        | 'video_premiere'
+        | 'chart_breakout'
       )
     | null;
-  reviewStatus?: ('pending' | 'approved' | 'needs-edits' | 'hold' | 'archived') | null;
+  reviewStatus?: ('pending' | 'approved' | 'needs_edits' | 'hold' | 'archived') | null;
   coverArt?: (number | null) | Media;
   heroImage?: (number | null) | Media;
   socialCard?: (number | null) | Media;
@@ -3326,7 +3326,7 @@ export interface ReleaseHighlight {
   publishedAt?: string | null;
   isFeatured?: boolean | null;
   featurePlacement?:
-    | ('homepage' | 'music-page' | 'genre-hub' | 'mobile-app' | 'creator-hub' | 'radio-show-page')
+    | ('homepage' | 'music_page' | 'genre_hub' | 'mobile_app' | 'creator_hub' | 'radio_show_page')
     | null;
   displayOrder?: number | null;
   ctaLabel?: string | null;
@@ -3477,7 +3477,7 @@ export interface Moderator {
    * The internal user account tied to this moderator.
    */
   user: number | User;
-  permissions: ('Approve Q&A' | 'Delete Chat Messages' | 'Ban Users' | 'Pin Messages' | 'Stream Status Override')[];
+  permissions: ('approve_q_and_a' | 'delete_chat_messages' | 'ban_users' | 'pin_messages' | 'stream_status_override')[];
   /**
    * Specific upcoming events this moderator is scheduled for.
    */
@@ -3505,7 +3505,7 @@ export interface EventQuestion {
    * Mark for producer/host priority.
    */
   isHighlighted?: boolean | null;
-  source?: ('watch-page' | 'moderator' | 'imported') | null;
+  source?: ('watch_page' | 'moderator' | 'imported') | null;
   viewerSessionId?: string | null;
   ipAddress?: string | null;
   moderatorNotes?: string | null;
@@ -3529,7 +3529,7 @@ export interface EventChatMessage {
   message: string;
   isPinned?: boolean | null;
   isAnnouncement?: boolean | null;
-  source?: ('watch-page' | 'moderator' | 'system') | null;
+  source?: ('watch_page' | 'moderator' | 'system') | null;
   viewerSessionId?: string | null;
   ipAddress?: string | null;
   moderatorNotes?: string | null;
@@ -3579,7 +3579,7 @@ export interface SubscriptionPlan {
   id: number;
   name: string;
   slug: string;
-  tier: 'free' | 'plus' | 'creator' | 'creator-pro' | 'enterprise';
+  tier: 'free' | 'plus' | 'creator' | 'creator_pro' | 'enterprise';
   description: string;
   isFeatured?: boolean | null;
   billingProvider?: ('stripe' | 'manual') | null;
@@ -3636,7 +3636,7 @@ export interface SubscriptionPlan {
    */
   legalDocuments?: (number | LegalDocument)[] | null;
   requiresAcceptance?: boolean | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -3657,7 +3657,7 @@ export interface MembershipBenefit {
    * Machine-readable key, for example: ad_free_audio, vod_access, creator_analytics.
    */
   benefitKey: string;
-  category: 'streaming' | 'video-vod' | 'creator-tools' | 'events' | 'community' | 'commerce' | 'support';
+  category: 'streaming' | 'video_vod' | 'creator_tools' | 'events' | 'community' | 'commerce' | 'support';
   summary: string;
   description?: {
     root: {
@@ -3678,7 +3678,7 @@ export interface MembershipBenefit {
    * Frontend icon key, for example: radio, tv, ticket, shield, analytics.
    */
   iconKey?: string | null;
-  benefitType?: ('included' | 'limit' | 'discount' | 'early-access' | 'exclusive-access') | null;
+  benefitType?: ('included' | 'limit' | 'discount' | 'early_access' | 'exclusive_access') | null;
   /**
    * Human-facing value, for example: Unlimited, 10GB, 20% off.
    */
@@ -3688,9 +3688,9 @@ export interface MembershipBenefit {
    */
   numericValue?: number | null;
   includedInPlans?: (number | SubscriptionPlan)[] | null;
-  visibility?: ('public' | 'members-only' | 'internal-only') | null;
+  visibility?: ('public' | 'members_only' | 'internal_only') | null;
   sortOrder?: number | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -3708,22 +3708,22 @@ export interface LegalDocument {
   title: string;
   slug: string;
   documentType:
-    | 'terms-of-service'
-    | 'privacy-policy'
-    | 'community-guidelines'
-    | 'dmca-policy'
-    | 'accessibility-statement'
-    | 'creator-terms'
-    | 'subscriber-terms'
-    | 'advertising-terms'
-    | 'sponsorship-terms'
-    | 'release-form-template'
-    | 'contest-rules'
-    | 'cookie-policy';
+    | 'terms_of_service'
+    | 'privacy_policy'
+    | 'community_guidelines'
+    | 'dmca_policy'
+    | 'accessibility_statement'
+    | 'creator_terms'
+    | 'subscriber_terms'
+    | 'advertising_terms'
+    | 'sponsorship_terms'
+    | 'release_form_template'
+    | 'contest_rules'
+    | 'cookie_policy';
   versionNumber: string;
   effectiveDate: string;
   supersedes?: (number | null) | LegalDocument;
-  visibility?: ('public' | 'members-only' | 'creators-only' | 'internal-only') | null;
+  visibility?: ('public' | 'members_only' | 'creators_only' | 'internal_only') | null;
   requiresUserAcceptance?: boolean | null;
   requiresCreatorAcceptance?: boolean | null;
   summary?: string | null;
@@ -3757,12 +3757,12 @@ export interface LegalDocument {
     acceptanceLabel?: string | null;
     acceptanceRequiredFor?:
       | (
-          | 'account-signup'
-          | 'plus-subscription'
-          | 'creator-hub-access'
-          | 'music-submission'
-          | 'event-registration'
-          | 'sponsor-advertiser-portal'
+          | 'account_signout'
+          | 'plus_subscription'
+          | 'creator_hub_access'
+          | 'music_submission'
+          | 'event_registration'
+          | 'sponsor_advertiser_portal'
         )[]
       | null;
   };
@@ -3773,7 +3773,7 @@ export interface LegalDocument {
     approvedAt?: string | null;
     legalNotes?: string | null;
   };
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -3793,50 +3793,50 @@ export interface SponsorCampaign {
   slug: string;
   sponsor: number | Sponsor;
   campaignType:
-    | 'radio-sponsorship'
-    | 'tv-video-sponsorship'
-    | 'digital-display'
-    | 'sponsored-playlist'
-    | 'sponsored-show-segment'
-    | 'sponsored-article'
-    | 'social-campaign'
-    | 'event-sponsorship'
-    | 'creator-partnership'
-    | 'integrated-package';
+    | 'radio_sponsorship'
+    | 'tv_video_sponsorship'
+    | 'digital_display'
+    | 'sponsored_playlist'
+    | 'sponsored_show_segment'
+    | 'sponsored_article'
+    | 'social_campaign'
+    | 'event_sponsorship'
+    | 'creator_partnership'
+    | 'integrated_package';
   packageLevel?: ('starter' | 'standard' | 'premium' | 'presenting' | 'custom') | null;
   campaignDates: {
     startsAt: string;
     endsAt: string;
   };
-  platforms: ('web' | 'mobile' | 'tv-app' | 'radio' | 'tv' | 'plus' | 'newsletter' | 'podcast' | 'social' | 'events')[];
+  platforms: ('web' | 'mobile' | 'tv_app' | 'radio' | 'tv' | 'plus' | 'newsletter' | 'podcast' | 'social' | 'events')[];
   budget?: {
     currency?: ('usd' | 'eur') | null;
     grossBudgetCents?: number | null;
     netBudgetCents?: number | null;
     productionFeeCents?: number | null;
   };
-  billingStatus?: ('not-invoiced' | 'invoice-sent' | 'partially-paid' | 'paid' | 'overdue' | 'comped') | null;
+  billingStatus?: ('not_invoiced' | 'invoice_sent' | 'partially_paid' | 'paid' | 'overdue' | 'comped') | null;
   invoiceId?: string | null;
   stripeInvoiceId?: string | null;
   adPlacements?: (number | AdPlacement)[] | null;
   deliverables?:
     | {
         deliverableType:
-          | 'audio-spot'
-          | 'video-spot'
-          | 'banner-ad'
-          | 'native-card'
-          | 'newsletter-placement'
-          | 'social-post'
-          | 'sponsored-article'
-          | 'lower-third'
-          | 'event-signage'
-          | 'playlist-branding';
+          | 'audio_spot'
+          | 'video_spot'
+          | 'banner_ad'
+          | 'native_card'
+          | 'newsletter_placement'
+          | 'social_post'
+          | 'sponsored_article'
+          | 'lower_third'
+          | 'event_signage'
+          | 'playlist_branding';
         description: string;
         quantity?: number | null;
         dueDate?: string | null;
         deliveryStatus?:
-          | ('pending' | 'in-production' | 'ready-for-review' | 'approved' | 'delivered' | 'cancelled')
+          | ('pending' | 'in_production' | 'ready_for_review' | 'approved' | 'delivered' | 'cancelled')
           | null;
         id?: string | null;
       }[]
@@ -3851,14 +3851,14 @@ export interface SponsorCampaign {
   targeting?: {
     audienceSegments?:
       | (
-          | 'culture-consumers-25-45'
-          | 'multigenerational-45-plus'
+          | 'culture_consumers_25_45'
+          | 'multigenerational_45_plus'
           | 'creators'
-          | 'southern-soul'
+          | 'southern_soul'
           | 'gospel'
-          | 'hip-hop'
+          | 'hip_hop'
           | 'rnb'
-          | 'local-regional'
+          | 'local_regional'
         )[]
       | null;
     regions?:
@@ -3867,7 +3867,7 @@ export interface SponsorCampaign {
           id?: string | null;
         }[]
       | null;
-    devices?: ('desktop' | 'mobile' | 'tablet' | 'tv' | 'car-auto')[] | null;
+    devices?: ('desktop' | 'mobile' | 'tablet' | 'tv' | 'car_auto')[] | null;
   };
   performance?: {
     impressionsGoal?: number | null;
@@ -3884,8 +3884,8 @@ export interface SponsorCampaign {
     sponsorApprovedAt?: string | null;
     internalApprovedAt?: string | null;
   };
-  disclosureLabel?: ('sponsored' | 'partner-content' | 'paid-editorial' | 'presented-by') | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  disclosureLabel?: ('sponsored' | 'partner_content' | 'paid_editorial' | 'presented_by') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -3906,21 +3906,21 @@ export interface AdPlacement {
    */
   placementKey: string;
   slug: string;
-  platform: 'web' | 'mobile' | 'tv-app' | 'radio' | 'tv' | 'plus' | 'newsletter' | 'podcast' | 'social' | 'events';
+  platform: 'web' | 'mobile' | 'tv_app' | 'radio' | 'tv' | 'plus' | 'newsletter' | 'podcast' | 'social' | 'events';
   inventoryType:
-    | 'display-banner'
-    | 'native-card'
-    | 'article-sidebar'
-    | 'homepage-hero'
-    | 'audio-preroll'
-    | 'audio-midroll'
-    | 'video-preroll'
-    | 'video-midroll'
-    | 'tv-lower-third'
-    | 'player-banner'
-    | 'newsletter-slot'
-    | 'sponsored-playlist-slot'
-    | 'event-signage';
+    | 'display_banner'
+    | 'native_card'
+    | 'article_sidebar'
+    | 'homepage_hero'
+    | 'audio_preroll'
+    | 'audio_midroll'
+    | 'video_preroll'
+    | 'video_midroll'
+    | 'tv_lower_third'
+    | 'player_banner'
+    | 'newsletter_slot'
+    | 'sponsored_playlist_slot'
+    | 'event_signage';
   /**
    * Frontend zone name, for example: news-detail-sidebar, homepage-top, player-bar.
    */
@@ -3928,7 +3928,9 @@ export interface AdPlacement {
   dimensions?: {
     width?: number | null;
     height?: number | null;
-    aspectRatio?: ('1:1' | '4:5' | '9:16' | '16:9' | '300x250' | '728x90' | '160x600' | 'custom') | null;
+    aspectRatio?:
+      | ('ratio_1_1' | 'ratio_4_5' | 'ratio_9_16' | 'ratio_16_9' | '300x250' | '728x90' | '160x600' | 'custom')
+      | null;
     /**
      * For audio/video placements.
      */
@@ -3938,13 +3940,13 @@ export interface AdPlacement {
     | (
         | 'image'
         | 'gif'
-        | 'html-native'
-        | 'audio-15'
-        | 'audio-30'
-        | 'video-6'
-        | 'video-15'
-        | 'video-30'
-        | 'text-sponsorship'
+        | 'html_native'
+        | 'audio_15'
+        | 'audio_30'
+        | 'video_6'
+        | 'video_15'
+        | 'video_30'
+        | 'text_sponsorship'
       )[]
     | null;
   pricing?: {
@@ -3954,8 +3956,8 @@ export interface AdPlacement {
   };
   targeting?: {
     categories?: (number | Category)[] | null;
-    allowedPlanTiers?: ('free' | 'plus' | 'creator' | 'creator-pro' | 'enterprise')[] | null;
-    devices?: ('desktop' | 'mobile' | 'tablet' | 'tv' | 'car-auto')[] | null;
+    allowedPlanTiers?: ('free' | 'plus' | 'creator' | 'creator_pro' | 'enterprise')[] | null;
+    devices?: ('desktop' | 'mobile' | 'tablet' | 'tv' | 'car_auto')[] | null;
     regions?:
       | {
           region?: string | null;
@@ -3970,7 +3972,7 @@ export interface AdPlacement {
   activeCampaigns?: (number | SponsorCampaign)[] | null;
   isSponsorshipEligible?: boolean | null;
   sortOrder?: number | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -3988,26 +3990,26 @@ export interface PromoBanner {
   title: string;
   slug: string;
   bannerType:
-    | 'general-promo'
-    | 'subscription-upsell'
-    | 'offer-discount'
-    | 'event-promo'
-    | 'creator-spotlight'
-    | 'sponsored-campaign'
-    | 'breaking-alert'
-    | 'newsletter-signup';
+    | 'general_promo'
+    | 'subscription_upsell'
+    | 'offer_discount'
+    | 'event_promo'
+    | 'creator_spotlight'
+    | 'sponsored_campaign'
+    | 'breaking_alert'
+    | 'newsletter_signup';
   placement:
-    | 'homepage-top'
-    | 'homepage-mid'
-    | 'article-top'
-    | 'article-inline'
-    | 'article-sidebar'
-    | 'player-bar'
-    | 'mobile-home'
-    | 'tv-home'
-    | 'creator-hub'
+    | 'homepage_top'
+    | 'homepage_mid'
+    | 'article_top'
+    | 'article_inline'
+    | 'article_sidebar'
+    | 'player_bar'
+    | 'mobile_home'
+    | 'tv_home'
+    | 'creator_hub'
     | 'plus'
-    | 'global-sitewide';
+    | 'global_sitewide';
   /**
    * Lower numbers appear first.
    */
@@ -4020,7 +4022,7 @@ export interface PromoBanner {
   cta?: {
     label?: string | null;
     url?: string | null;
-    style?: ('primary' | 'secondary' | 'outline' | 'text-link') | null;
+    style?: ('primary' | 'secondary' | 'outline' | 'text_link') | null;
     openInNewTab?: boolean | null;
   };
   schedule?: {
@@ -4028,20 +4030,20 @@ export interface PromoBanner {
     endsAt?: string | null;
   };
   audience?: {
-    planTiers?: ('free' | 'plus' | 'creator' | 'creator-pro' | 'enterprise')[] | null;
-    platforms?: ('web' | 'mobile' | 'tv' | 'radio-player')[] | null;
+    planTiers?: ('free' | 'plus' | 'creator' | 'creator_pro' | 'enterprise')[] | null;
+    platforms?: ('web' | 'mobile' | 'tv' | 'radio_player')[] | null;
     dismissible?: boolean | null;
   };
   linkedOffer?: (number | null) | OfferCampaign;
   linkedSponsorCampaign?: (number | null) | SponsorCampaign;
-  theme?: ('night-drive' | 'electric-surge' | 'pulse-wave' | 'southern-heat' | 'news-mode' | 'minimal-dark') | null;
+  theme?: ('night_drive' | 'electric_surge' | 'pulse_wave' | 'southern_heat' | 'news_mode' | 'minimal_dark') | null;
   tracking?: {
     campaignName?: string | null;
     utmSource?: string | null;
     utmMedium?: string | null;
     utmCampaign?: string | null;
   };
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -4063,12 +4065,12 @@ export interface OfferCampaign {
    */
   code: string;
   offerType:
-    | 'percent-off'
-    | 'fixed-amount-off'
-    | 'free-trial-extension'
-    | 'free-month'
-    | 'creator-promo'
-    | 'partner-sponsor-promo';
+    | 'percent_off'
+    | 'fixed_amount_off'
+    | 'free_trial_extension'
+    | 'free_month'
+    | 'creator_promo'
+    | 'partner_sponsor_promo';
   description?: string | null;
   eligiblePlans?: (number | SubscriptionPlan)[] | null;
   stripe?: {
@@ -4103,7 +4105,7 @@ export interface OfferCampaign {
   };
   source?: ('internal' | 'sponsor' | 'creator' | 'event' | 'newsletter' | 'social') | null;
   relatedSponsorCampaign?: (number | null) | SponsorCampaign;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -4151,19 +4153,19 @@ export interface CreatorSubmission {
     | 'video'
     | 'podcast'
     | 'article'
-    | 'show-pitch'
-    | 'playlist-placement'
-    | 'event-performance'
-    | 'sponsor-collab'
-    | 'general-upload';
+    | 'show_pitch'
+    | 'playlist_placement'
+    | 'event_performance'
+    | 'sponsor_collab'
+    | 'general_upload';
   description?: string | null;
   submittedBy: number | User;
   creator: number | Creator;
   submittedAt?: string | null;
   submissionStatus:
     | 'submitted'
-    | 'under-review'
-    | 'changes-requested'
+    | 'under_review'
+    | 'changes_requested'
     | 'approved'
     | 'rejected'
     | 'published'
@@ -4182,7 +4184,7 @@ export interface CreatorSubmission {
   explicit?: boolean | null;
   streamingLinks?:
     | {
-        platform?: ('spotify' | 'apple-music' | 'youtube' | 'soundcloud' | 'audiomack' | 'tidal' | 'other') | null;
+        platform?: ('spotify' | 'apple_music' | 'youtube' | 'soundcloud' | 'audiomack' | 'tidal' | 'other') | null;
         url: string;
         id?: string | null;
       }[]
@@ -4216,7 +4218,7 @@ export interface CreatorSubmission {
   creatorAssets?: (number | CreatorAsset)[] | null;
   rightsOwnershipConfirmed: boolean;
   copyrightOwner?: string | null;
-  contentRating?: ('general' | 'clean' | 'explicit' | 'mature-themes') | null;
+  contentRating?: ('general' | 'clean' | 'explicit' | 'mature_themes') | null;
   contentWarnings?:
     | {
         warning?: string | null;
@@ -4246,19 +4248,19 @@ export interface CreatorAsset {
   uploadedBy: number | User;
   submission?: (number | null) | CreatorSubmission;
   assetType:
-    | 'master-audio'
+    | 'master_audio'
     | 'stem'
     | 'video'
     | 'thumbnail'
     | 'image'
     | 'pdf'
     | 'contract'
-    | 'brand-kit'
-    | 'press-kit'
+    | 'brand_kit'
+    | 'press_kit'
     | 'transcript'
-    | 'caption-file'
+    | 'caption_file'
     | 'other';
-  assetStatus?: ('uploaded' | 'processing' | 'under-review' | 'approved' | 'rejected' | 'archived') | null;
+  assetStatus?: ('uploaded' | 'processing' | 'under_review' | 'approved' | 'rejected' | 'archived') | null;
   publicUsable?: boolean | null;
   file: number | Media;
   /**
@@ -4273,12 +4275,12 @@ export interface CreatorAsset {
   rightsOwner?: string | null;
   licenseType?:
     | (
-        | 'creator-owned'
-        | 'wavenation-licensed'
-        | 'third-party-licensed'
-        | 'royalty-free'
-        | 'creative-commons'
-        | 'needs-review'
+        | 'creator_owned'
+        | 'wavenation_licensed'
+        | 'third_party_licensed'
+        | 'royalty_free'
+        | 'creative_commons'
+        | 'needs_review'
       )
     | null;
   usagePermissions?:
@@ -4286,13 +4288,13 @@ export interface CreatorAsset {
         permission?:
           | (
               | 'website'
-              | 'mobile-app'
-              | 'tv-ott'
-              | 'social-media'
+              | 'mobile_app'
+              | 'tv_ott'
+              | 'social_media'
               | 'advertising'
               | 'editorial'
-              | 'sponsor-use'
-              | 'internal-only'
+              | 'sponsor_use'
+              | 'internal_only'
             )
           | null;
         id?: string | null;
@@ -4321,15 +4323,15 @@ export interface CreatorApproval {
   id: number;
   title: string;
   approvalType:
-    | 'content-review'
-    | 'brand-review'
-    | 'legal-rights-review'
-    | 'playlist-placement'
-    | 'event-booking'
-    | 'sponsor-collab'
-    | 'profile-verification'
-    | 'monetization-approval';
-  approvalStatus: 'pending' | 'in-review' | 'approved' | 'rejected' | 'changes-requested' | 'escalated' | 'closed';
+    | 'content_review'
+    | 'brand_review'
+    | 'legal_rights_review'
+    | 'playlist_placement'
+    | 'event_booking'
+    | 'sponsor_collab'
+    | 'profile_verification'
+    | 'monetization_approval';
+  approvalStatus: 'pending' | 'in_review' | 'approved' | 'rejected' | 'changes_requested' | 'escalated' | 'closed';
   priority?: ('low' | 'normal' | 'high' | 'urgent') | null;
   requestedBy: number | User;
   assignedTo?: (number | null) | User;
@@ -4460,22 +4462,22 @@ export interface RightsRecord {
     | null;
   primaryAsset?: (number | null) | Media;
   clearanceStatus:
-    | 'pending-review'
+    | 'pending_review'
     | 'cleared'
-    | 'partially-cleared'
-    | 'needs-license'
+    | 'partially_cleared'
+    | 'needs_license'
     | 'expired'
     | 'rejected'
-    | 'takedown-required';
+    | 'takedown_required';
   licenseType:
     | 'owned'
     | 'licensed'
-    | 'creator-owned-platform-license'
-    | 'work-made-for-hire'
-    | 'fair-use-review'
-    | 'public-domain'
-    | 'creative-commons'
-    | 'third-party-permission';
+    | 'creator_owned_platform_license'
+    | 'work_made_for_hire'
+    | 'fair_use_review'
+    | 'public_domain'
+    | 'creative_commons'
+    | 'third_party_permission';
   rightsHolder: {
     name: string;
     email?: string | null;
@@ -4488,7 +4490,7 @@ export interface RightsRecord {
       | (
           | 'web'
           | 'mobile'
-          | 'tv-app'
+          | 'tv_app'
           | 'radio'
           | 'tv'
           | 'plus'
@@ -4499,7 +4501,7 @@ export interface RightsRecord {
           | 'advertising'
         )[]
       | null;
-    territories?: ('worldwide' | 'us' | 'north-america' | 'europe' | 'digital-only' | 'custom')[] | null;
+    territories?: ('worldwide' | 'us' | 'north_america' | 'europe' | 'digital_only' | 'custom')[] | null;
     exclusive?: boolean | null;
     commercialUseAllowed?: boolean | null;
     sublicensingAllowed?: boolean | null;
@@ -4524,7 +4526,7 @@ export interface RightsRecord {
     reviewedAt?: string | null;
     riskNotes?: string | null;
   };
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -4562,8 +4564,8 @@ export interface Comment {
       }[]
     | null;
   mentions?: (number | User)[] | null;
-  status: 'published' | 'needs-review' | 'hidden' | 'removed' | 'deleted-placeholder' | 'spam';
-  visibility?: ('public' | 'staff-only' | 'deleted-placeholder') | null;
+  status: 'published' | 'needs_review' | 'hidden' | 'removed' | 'deleted_placeholder' | 'spam';
+  visibility?: ('public' | 'staff_only' | 'deleted_placeholder') | null;
   /**
    * Internal moderation flags. Staff only.
    */
@@ -4573,16 +4575,16 @@ export interface Comment {
           | 'spam'
           | 'harassment'
           | 'threat'
-          | 'hate-speech'
+          | 'hate_speech'
           | 'misinformation'
           | 'trolling'
-          | 'off-topic-flooding'
-          | 'graphic-content'
-          | 'private-information'
-          | 'solicitation-scam'
-          | 'copyright-concern'
-          | 'brand-safety';
-        source?: ('automated' | 'user-report' | 'moderator') | null;
+          | 'off_topic_flooding'
+          | 'graphic_content'
+          | 'private_information'
+          | 'solicitation_scam'
+          | 'copyright_concern'
+          | 'brand_safety';
+        source?: ('automated' | 'user_report' | 'moderator') | null;
         note?: string | null;
         id?: string | null;
       }[]
@@ -4623,14 +4625,14 @@ export interface CommentThread {
   targetCollection:
     | 'articles'
     | 'news'
-    | 'artist-spotlights'
+    | 'artist_spotlights'
     | 'events'
     | 'shows'
     | 'episodes'
     | 'videos'
     | 'playlists'
     | 'creators'
-    | 'creator-profiles'
+    | 'creator_profiles'
     | 'custom';
   /**
    * The ID of the article, event, episode, playlist, creator, or custom target.
@@ -4640,9 +4642,9 @@ export interface CommentThread {
   targetTitle?: string | null;
   canonicalUrl?: string | null;
   status: 'open' | 'closed' | 'locked' | 'hidden' | 'archived';
-  visibility: 'public' | 'authenticated' | 'subscribers' | 'plus' | 'staff-only';
-  moderationMode: 'post-moderation' | 'pre-moderation' | 'staff-only' | 'locked';
-  sortMode?: ('newest' | 'oldest' | 'top' | 'editorial-picks') | null;
+  visibility: 'public' | 'authenticated' | 'subscribers' | 'plus' | 'staff_only';
+  moderationMode: 'post_moderation' | 'pre_moderation' | 'staff_only' | 'locked';
+  sortMode?: ('newest' | 'oldest' | 'top' | 'editorial_picks') | null;
   allowReplies?: boolean | null;
   allowReactions?: boolean | null;
   allowMedia?: boolean | null;
@@ -4668,17 +4670,17 @@ export interface ReleaseForm {
   title: string;
   slug: string;
   releaseType:
-    | 'talent-release'
-    | 'creator-agreement'
-    | 'photo-release'
-    | 'video-release'
-    | 'audio-podcast-release'
-    | 'music-release'
-    | 'venue-release'
-    | 'event-release'
-    | 'minor-release'
-    | 'sponsor-brand-release'
-    | 'general-liability-release';
+    | 'talent_release'
+    | 'creator_agreement'
+    | 'photo_release'
+    | 'video_release'
+    | 'audio_podcast_release'
+    | 'music_release'
+    | 'venue_release'
+    | 'event_release'
+    | 'minor_release'
+    | 'sponsor_brand_release'
+    | 'general_liability_release';
   relatedContent?:
     | (
         | {
@@ -4787,12 +4789,12 @@ export interface ReleaseForm {
     guardianEmail?: string | null;
   };
   signing: {
-    signingProvider?: ('third-party' | 'docusign' | 'dropbox-sign' | 'adobe-sign' | 'manual-upload') | null;
+    signingProvider?: ('third_party' | 'docusign' | 'dropbox_sign' | 'adobe_sign' | 'manual_upload') | null;
     providerEnvelopeId?: string | null;
     providerTemplateId?: string | null;
     signingUrl?: string | null;
     signedDocumentUrl?: string | null;
-    signingStatus: 'draft' | 'sent' | 'viewed' | 'signed' | 'declined' | 'expired' | 'voided' | 'manual-complete';
+    signingStatus: 'draft' | 'sent' | 'viewed' | 'signed' | 'declined' | 'expired' | 'voided' | 'manual_complete';
     sentAt?: string | null;
     signedAt?: string | null;
     expiresAt?: string | null;
@@ -4807,14 +4809,14 @@ export interface ReleaseForm {
     promotionalUseAllowed?: boolean | null;
     editorialUseAllowed?: boolean | null;
     perpetualUse?: boolean | null;
-    territories?: ('worldwide' | 'us' | 'north-america' | 'europe' | 'digital-only' | 'custom')[] | null;
+    territories?: ('worldwide' | 'us' | 'north_america' | 'europe' | 'digital_only' | 'custom')[] | null;
   };
   review?: {
     reviewedBy?: (number | null) | User;
     reviewedAt?: string | null;
     reviewNotes?: string | null;
   };
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -4916,28 +4918,28 @@ export interface ContentFlag {
       };
   flagCategory:
     | 'copyright'
-    | 'hate-speech'
+    | 'hate_speech'
     | 'harassment'
-    | 'violence-threats'
-    | 'explicit-sexual-content'
-    | 'graphic-content'
+    | 'violence_threats'
+    | 'explicit_sexual_content'
+    | 'graphic_content'
     | 'misinformation'
-    | 'spam-scam'
-    | 'privacy-doxxing'
-    | 'defamation-legal-risk'
-    | 'brand-safety'
+    | 'spam_scam'
+    | 'privacy_doxxing'
+    | 'defamation_legalRisk'
+    | 'brand_safety'
     | 'accessibility'
     | 'other';
   severity: 'low' | 'medium' | 'high' | 'critical';
   reason: string;
   reporter: {
-    reporterType: 'user' | 'creator' | 'staff' | 'automated-system' | 'rights-holder' | 'anonymous';
+    reporterType: 'user' | 'creator' | 'staff' | 'automated_system' | 'rights_holder' | 'anonymous';
     user?: (number | null) | User;
     creatorProfile?: (number | null) | CreatorProfile;
     name?: string | null;
     email?: string | null;
   };
-  reviewStatus: 'new' | 'triaged' | 'under-review' | 'escalated' | 'resolved' | 'dismissed';
+  reviewStatus: 'new' | 'triaged' | 'under_review' | 'escalated' | 'resolved' | 'dismissed';
   assignedTo?: (number | null) | User;
   evidence?:
     | {
@@ -4963,7 +4965,7 @@ export interface ContentFlag {
       | null;
   };
   relatedModerationActions?: (number | ModerationAction)[] | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -5069,19 +5071,19 @@ export interface ModerationAction {
       )[]
     | null;
   actionType:
-    | 'approve-content'
-    | 'reject-content'
-    | 'hide-content'
-    | 'remove-content'
-    | 'restore-content'
-    | 'add-warning-label'
-    | 'age-restrict'
+    | 'approve_content'
+    | 'reject_content'
+    | 'hide_content'
+    | 'remove_content'
+    | 'restore_content'
+    | 'add_warning_label'
+    | 'age_restrict'
     | 'demonetize'
-    | 'suspend-creator'
-    | 'terminate-creator'
-    | 'escalate-to-legal'
-    | 'escalate-to-editorial'
-    | 'no-violation-found';
+    | 'suspend_creator'
+    | 'terminate_creator'
+    | 'escalate_to_legal'
+    | 'escalate_to_editorial'
+    | 'no_violation_found';
   decisionStatus: 'pending' | 'executed' | 'reversed' | 'appealed' | 'final';
   moderator: number | User;
   subjectUser?: (number | null) | User;
@@ -5089,12 +5091,12 @@ export interface ModerationAction {
   reason: string;
   policyCategory?:
     | (
-        | 'community-guidelines'
-        | 'creator-terms'
-        | 'copyright-dmca'
-        | 'brand-safety'
-        | 'legal-risk'
-        | 'editorial-standards'
+        | 'community_guidelines'
+        | 'creator_terms'
+        | 'copyright_dmca'
+        | 'brand_safety'
+        | 'legal_risk'
+        | 'editorial_standards'
         | 'accessibility'
       )
     | null;
@@ -5106,7 +5108,7 @@ export interface ModerationAction {
   };
   appeal?: {
     appealAllowed?: boolean | null;
-    appealStatus?: ('not-submitted' | 'submitted' | 'under-review' | 'granted' | 'denied' | 'final') | null;
+    appealStatus?: ('not_submitted' | 'submitted' | 'under_review' | 'granted' | 'denied' | 'final') | null;
     appealSubmittedAt?: string | null;
     appealReason?: string | null;
     appealReviewedBy?: (number | null) | User;
@@ -5118,7 +5120,7 @@ export interface ModerationAction {
     legalReviewedAt?: string | null;
     legalNotes?: string | null;
   };
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -5142,15 +5144,15 @@ export interface AuditEntry {
     | 'delete'
     | 'publish'
     | 'archive'
-    | 'status-change'
-    | 'role-change'
-    | 'permission-change'
-    | 'legal-approval'
-    | 'moderation-decision'
-    | 'billing-change'
-    | 'stripe-webhook'
-    | 'rights-clearance'
-    | 'system-event';
+    | 'status_change'
+    | 'role_change'
+    | 'permission_change'
+    | 'legal_approval'
+    | 'moderation_decision'
+    | 'billing_change'
+    | 'stripe_webhook'
+    | 'rights_clearance'
+    | 'system_event';
   actor?: (number | null) | User;
   target?:
     | ({
@@ -5285,10 +5287,10 @@ export interface AuditEntry {
     ipAddress?: string | null;
     userAgent?: string | null;
     requestId?: string | null;
-    source?: ('admin-ui' | 'frontend-app' | 'api' | 'webhook' | 'system-job' | 'import-script') | null;
+    source?: ('admin_ui' | 'frontend_app' | 'api' | 'webhook' | 'system_job' | 'import_script') | null;
   };
   severity?: ('info' | 'warning' | 'critical') | null;
-  status?: ('draft' | 'in-review' | 'active' | 'published' | 'paused' | 'archived') | null;
+  status?: ('draft' | 'in_review' | 'active' | 'published' | 'paused' | 'archived') | null;
   publishedAt?: string | null;
   archivedAt?: string | null;
   internalNotes?: string | null;
@@ -5311,17 +5313,17 @@ export interface ChatChannel {
   description?: string | null;
   channelType:
     | 'public'
-    | 'live-show'
-    | 'live-stream'
+    | 'live_show'
+    | 'live_stream'
     | 'creator'
     | 'event'
     | 'article'
-    | 'private-group'
+    | 'private_group'
     | 'direct'
     | 'support'
     | 'staff';
   status: 'active' | 'locked' | 'archived' | 'hidden' | 'deleted';
-  visibility: 'public' | 'authenticated' | 'subscribers' | 'plus' | 'creator-members' | 'invite-only' | 'staff-only';
+  visibility: 'public' | 'authenticated' | 'subscribers' | 'plus' | 'creator_members' | 'invite_only' | 'staff_only';
   coverImage?: (number | null) | Media;
   /**
    * Primary owner or staff/admin owner of this channel.
@@ -5340,8 +5342,8 @@ export interface ChatChannel {
           | 'episodes'
           | 'playlists'
           | 'creators'
-          | 'creator-profiles'
-          | 'live-streams'
+          | 'creator_profiles'
+          | 'live_streams'
           | 'custom'
         )
       | null;
@@ -5364,7 +5366,7 @@ export interface ChatChannel {
     maxMessageLength?: number | null;
   };
   moderation?: {
-    moderationMode?: ('post-moderation' | 'pre-moderation' | 'staff-only' | 'locked') | null;
+    moderationMode?: ('post_moderation' | 'pre_moderation' | 'staff_only' | 'locked') | null;
     profanityFilterLevel?: ('off' | 'standard' | 'strict') | null;
     lockedReason?: string | null;
   };
@@ -5428,7 +5430,7 @@ export interface ChatMessage {
    * Used for threaded replies.
    */
   parentMessage?: (number | null) | ChatMessage;
-  messageType: 'text' | 'image' | 'audio' | 'video' | 'link' | 'system' | 'moderation-notice';
+  messageType: 'text' | 'image' | 'audio' | 'video' | 'link' | 'system' | 'moderation_notice';
   body: string;
   attachments?:
     | {
@@ -5449,8 +5451,8 @@ export interface ChatMessage {
     provider?: string | null;
   };
   mentions?: (number | User)[] | null;
-  status: 'published' | 'needs-review' | 'hidden' | 'removed' | 'deleted-placeholder' | 'spam';
-  visibility?: ('channel' | 'staff-only' | 'deleted-placeholder') | null;
+  status: 'published' | 'needs_review' | 'hidden' | 'removed' | 'deleted_placeholder' | 'spam';
+  visibility?: ('channel' | 'staff_only' | 'deleted_placeholder') | null;
   /**
    * Internal moderation flags. Staff only.
    */
@@ -5460,14 +5462,14 @@ export interface ChatMessage {
           | 'spam'
           | 'harassment'
           | 'threat'
-          | 'hate-speech'
+          | 'hate_speech'
           | 'misinformation'
-          | 'off-topic-flooding'
-          | 'private-information'
-          | 'solicitation-scam'
-          | 'copyright-concern'
-          | 'brand-safety';
-        source?: ('automated' | 'user-report' | 'moderator') | null;
+          | 'off_topic_flooding'
+          | 'private_information'
+          | 'solicitation_scam'
+          | 'copyright_concern'
+          | 'brand_safety';
+        source?: ('automated' | 'user_report' | 'moderator') | null;
         note?: string | null;
         id?: string | null;
       }[]
@@ -5601,7 +5603,7 @@ export interface CommentSubscription {
  */
 export interface CommunityReport {
   id: number;
-  reportType: 'comment' | 'chat-message' | 'chat-channel' | 'user-profile' | 'creator-content' | 'other';
+  reportType: 'comment' | 'chat_message' | 'chat_channel' | 'user_profile' | 'creator_content' | 'other';
   reporter: number | User;
   reportedUser?: (number | null) | User;
   comment?: (number | null) | Comment;
@@ -5615,34 +5617,34 @@ export interface CommunityReport {
   reason:
     | 'spam'
     | 'harassment'
-    | 'threat-violence'
-    | 'hate-speech'
+    | 'threat_violence'
+    | 'hate_speech'
     | 'misinformation'
-    | 'private-information'
-    | 'graphic-explicit'
-    | 'solicitation-scam'
-    | 'copyright-plagiarism'
+    | 'private_information'
+    | 'graphic_explicit'
+    | 'solicitation_scam'
+    | 'copyright_plagiarism'
     | 'impersonation'
-    | 'off-topic-flooding'
-    | 'brand-safety'
+    | 'off_topic_flooding'
+    | 'brand_safety'
     | 'other';
   details: string;
-  status: 'open' | 'in-review' | 'action-taken' | 'dismissed' | 'escalated' | 'closed';
-  priority: 'low' | 'normal' | 'high' | 'urgent' | 'legal-safety-risk';
+  status: 'open' | 'in_review' | 'action_taken' | 'dismissed' | 'escalated' | 'closed';
+  priority: 'low' | 'normal' | 'high' | 'urgent' | 'legal_safety_risk';
   assignedTo?: (number | null) | User;
   reviewedBy?: (number | null) | User;
   reviewedAt?: string | null;
   actionTaken?:
     | (
         | 'none'
-        | 'content-hidden'
-        | 'content-removed'
-        | 'user-warned'
-        | 'user-muted'
-        | 'user-banned'
-        | 'thread-locked'
-        | 'escalated-editorial'
-        | 'escalated-legal'
+        | 'content_hidden'
+        | 'content_removed'
+        | 'user_warned'
+        | 'user_muted'
+        | 'user_banned'
+        | 'thread_locked'
+        | 'escalated_editorial'
+        | 'escalated_legal'
         | 'dismissed'
       )
     | null;
@@ -5657,25 +5659,25 @@ export interface CommunityReport {
 export interface CommunityModerationAction {
   id: number;
   actionType:
-    | 'hide-comment'
-    | 'remove-comment'
-    | 'restore-comment'
-    | 'hide-chat-message'
-    | 'remove-chat-message'
-    | 'restore-chat-message'
-    | 'mute-user'
-    | 'ban-user'
-    | 'unban-user'
-    | 'lock-comment-thread'
-    | 'unlock-comment-thread'
-    | 'lock-chat-channel'
-    | 'unlock-chat-channel'
-    | 'enable-slow-mode'
-    | 'disable-slow-mode'
-    | 'warn-user'
-    | 'escalate-editorial'
-    | 'escalate-legal';
-  targetType: 'comment' | 'comment-thread' | 'chat-message' | 'chat-channel' | 'user' | 'creator-content' | 'other';
+    | 'hide_comment'
+    | 'remove_comment'
+    | 'restore_comment'
+    | 'hide_chat_message'
+    | 'remove_chat_message'
+    | 'restore_chat_message'
+    | 'mute_user'
+    | 'ban_user'
+    | 'unban_user'
+    | 'lock_comment_thread'
+    | 'unlock_comment_thread'
+    | 'lock_chat_channel'
+    | 'unlock_chat_channel'
+    | 'enable_slow_mode'
+    | 'disable_slow_mode'
+    | 'warn_user'
+    | 'escalate_editorial'
+    | 'escalate_legal';
+  targetType: 'comment' | 'comment_thread' | 'chat_message' | 'chat_channel' | 'user' | 'creator_content' | 'other';
   /**
    * Staff/moderator who performed the action.
    */
@@ -5697,15 +5699,15 @@ export interface CommunityModerationAction {
         area:
           | 'spam'
           | 'harassment'
-          | 'threats-violence'
-          | 'hate-speech'
+          | 'threats_violence'
+          | 'hate_speech'
           | 'misinformation'
-          | 'private-information'
-          | 'sexual-exploitation'
-          | 'self-harm'
-          | 'illegal-activity'
-          | 'copyright-plagiarism'
-          | 'brand-safety'
+          | 'private_information'
+          | 'sexual_exploitation'
+          | 'self_harm'
+          | 'illegal_activity'
+          | 'copyright_plagiarism'
+          | 'brand_safety'
           | 'other';
         id?: string | null;
       }[]
@@ -5740,25 +5742,25 @@ export interface Sidebar {
             hubspotFormId?: string | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'newsletter';
+            blockType: 'sidebarNewsletter';
           }
         | {
             limit?: number | null;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'trendingArticles';
+            blockType: 'sidebarTrendingArticles';
           }
         | {
             zone?: (number | null) | AdPlacement;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'adPlacements';
+            blockType: 'sidebarAdPlacements';
           }
         | {
             banner?: (number | null) | PromoBanner;
             id?: string | null;
             blockName?: string | null;
-            blockType: 'promoBanner';
+            blockType: 'sidebarPromoBanner';
           }
       )[]
     | null;
@@ -9492,7 +9494,7 @@ export interface SidebarsSelect<T extends boolean = true> {
   widgets?:
     | T
     | {
-        newsletter?:
+        sidebarNewsletter?:
           | T
           | {
               headline?: T;
@@ -9500,21 +9502,21 @@ export interface SidebarsSelect<T extends boolean = true> {
               id?: T;
               blockName?: T;
             };
-        trendingArticles?:
+        sidebarTrendingArticles?:
           | T
           | {
               limit?: T;
               id?: T;
               blockName?: T;
             };
-        adPlacements?:
+        sidebarAdPlacements?:
           | T
           | {
               zone?: T;
               id?: T;
               blockName?: T;
             };
-        promoBanner?:
+        sidebarPromoBanner?:
           | T
           | {
               banner?: T;
@@ -9635,7 +9637,7 @@ export interface NavConfig {
                 | {
                     label: string;
                     href: string;
-                    badge?: ('none' | 'new' | 'live' | 'trending' | 'editor-pick') | null;
+                    badge?: ('none' | 'new' | 'live' | 'trending' | 'editor_pick') | null;
                     id?: string | null;
                   }[]
                 | null;
@@ -9795,7 +9797,7 @@ export interface EventSetting {
   id: number;
   defaultTimezone?: string | null;
   defaultVirtualPlatform?:
-    | ('wavenation-native' | 'streamlabs' | 'youtube' | 'vimeo' | 'zoom' | 'eventbrite' | 'other')
+    | ('wavenation_native' | 'streamlabs' | 'youtube' | 'vimeo' | 'zoom' | 'eventbrite' | 'other')
     | null;
   defaultCTAName?: string | null;
   homepageFeaturedEventLimit?: number | null;

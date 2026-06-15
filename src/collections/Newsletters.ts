@@ -36,6 +36,10 @@ export const Newsletters: CollectionConfig = {
     singular: 'Newsletter',
     plural: 'Newsletters',
   },
+  graphQL: {
+    singularName: 'Newsletter',
+    pluralName: 'Newsletters',
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'newsletterType', 'frequency', 'status', 'featured'],
@@ -113,17 +117,17 @@ export const Newsletters: CollectionConfig = {
               name: 'newsletterType',
               type: 'select',
               required: true,
-              defaultValue: 'editorial-digest',
+              defaultValue: 'editorial_digest',
               options: [
-                { label: 'Editorial Digest', value: 'editorial-digest' },
-                { label: 'Breaking Alerts', value: 'breaking-alerts' },
-                { label: 'Music & Radio', value: 'music-radio' },
-                { label: 'Creator Hub', value: 'creator-hub' },
-                { label: 'Faith & Inspiration', value: 'faith-inspiration' },
-                { label: 'Culture Report', value: 'culture-report' },
-                { label: 'Events & Promotions', value: 'events-promotions' },
+                { label: 'Editorial Digest', value: 'editorial_digest' },
+                { label: 'Breaking Alerts', value: 'breaking_alerts' },
+                { label: 'Music & Radio', value: 'music_radio' },
+                { label: 'Creator Hub', value: 'creator_hub' },
+                { label: 'Faith & Inspiration', value: 'faith_inspiration' },
+                { label: 'Culture Report', value: 'culture_report' },
+                { label: 'Events & Promotions', value: 'events_promotions' },
                 { label: 'Member / WaveNation+', value: 'membership' },
-                { label: 'Sponsor / Partner', value: 'sponsor-partner' },
+                { label: 'Sponsor / Partner', value: 'sponsor_partner' },
               ],
             },
             {
@@ -138,7 +142,7 @@ export const Newsletters: CollectionConfig = {
                 { label: 'Biweekly', value: 'biweekly' },
                 { label: 'Monthly', value: 'monthly' },
                 { label: 'Quarterly', value: 'quarterly' },
-                { label: 'As Needed', value: 'as-needed' },
+                { label: 'As Needed', value: 'as_needed' },
               ],
             },
             {
@@ -154,12 +158,12 @@ export const Newsletters: CollectionConfig = {
               defaultValue: 'general',
               options: [
                 { label: 'General Audience', value: 'general' },
-                { label: 'Music Fans', value: 'music-fans' },
+                { label: 'Music Fans', value: 'music_fans' },
                 { label: 'Creators', value: 'creators' },
                 { label: 'Faith Audience', value: 'faith' },
                 { label: 'WaveNation+ Members', value: 'members' },
                 { label: 'Advertisers / Partners', value: 'partners' },
-                { label: 'Local Community', value: 'local-community' },
+                { label: 'Local Community', value: 'local_community' },
               ],
             },
           ],
@@ -293,13 +297,13 @@ export const Newsletters: CollectionConfig = {
             {
               name: 'accentColor',
               type: 'select',
-              defaultValue: 'electric-blue',
+              defaultValue: 'electric_blue',
               options: [
-                { label: 'Electric Blue', value: 'electric-blue' },
-                { label: 'Neon Green', value: 'neon-green' },
-                { label: 'Magenta Pulse', value: 'magenta-pulse' },
-                { label: 'Signal Teal', value: 'signal-teal' },
-                { label: 'Deep Indigo', value: 'deep-indigo' },
+                { label: 'Electric Blue', value: 'electric_blue' },
+                { label: 'Neon Green', value: 'neon_green' },
+                { label: 'Magenta Pulse', value: 'magenta_pulse' },
+                { label: 'Signal Teal', value: 'signal_teal' },
+                { label: 'Deep Indigo', value: 'deep_indigo' },
                 { label: 'Charcoal', value: 'charcoal' },
               ],
             },
@@ -311,7 +315,7 @@ export const Newsletters: CollectionConfig = {
                 { label: 'Cinematic', value: 'cinematic' },
                 { label: 'Editorial', value: 'editorial' },
                 { label: 'Music / FM', value: 'music' },
-                { label: 'Creator Hub', value: 'creator-hub' },
+                { label: 'Creator Hub', value: 'creator_hub' },
                 { label: 'Faith', value: 'faith' },
                 { label: 'Minimal', value: 'minimal' },
               ],
@@ -385,11 +389,6 @@ export const Newsletters: CollectionConfig = {
         },
       ],
     },
-
-    /* ===============================
-       Sidebar Fields
-    =============================== */
-
     {
       name: 'status',
       type: 'select',

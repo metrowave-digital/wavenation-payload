@@ -87,7 +87,7 @@ export const standardSystemFields: Field[] = [
     defaultValue: 'draft',
     options: [
       { label: 'Draft', value: 'draft' },
-      { label: 'In Review', value: 'in-review' },
+      { label: 'In Review', value: 'in_review' },
       { label: 'Active', value: 'active' },
       { label: 'Published', value: 'published' },
       { label: 'Paused', value: 'paused' },

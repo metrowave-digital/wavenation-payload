@@ -43,7 +43,7 @@ export const SubscriptionPlans: CollectionConfig = {
         { label: 'Free', value: 'free' },
         { label: 'WaveNation+', value: 'plus' },
         { label: 'Creator', value: 'creator' },
-        { label: 'Creator Pro', value: 'creator-pro' },
+        { label: 'Creator Pro', value: 'creator_pro' },
         { label: 'Enterprise / Partner', value: 'enterprise' },
       ],
     },

@@ -38,6 +38,10 @@ export const NewsletterSubscribers: CollectionConfig = {
     singular: 'Newsletter Subscriber',
     plural: 'Newsletter Subscribers',
   },
+  graphQL: {
+    singularName: 'NewsletterSubscriber',
+    pluralName: 'NewsletterSubscribers',
+  },
   hooks: {
     beforeChange: [setConsentTimestamp],
   },
@@ -99,9 +103,9 @@ export const NewsletterSubscribers: CollectionConfig = {
                   defaultValue: 'normal',
                   options: [
                     { label: 'Normal', value: 'normal' },
-                    { label: 'Weekly Only', value: 'weekly-only' },
-                    { label: 'Breaking Alerts Only', value: 'breaking-alerts-only' },
-                    { label: 'Monthly Digest Only', value: 'monthly-only' },
+                    { label: 'Weekly Only', value: 'weekly_only' },
+                    { label: 'Breaking Alerts Only', value: 'breaking_alerts_only' },
+                    { label: 'Monthly Digest Only', value: 'monthly_only' },
                   ],
                 },
                 {
@@ -212,14 +216,14 @@ export const NewsletterSubscribers: CollectionConfig = {
               defaultValue: 'website',
               options: [
                 { label: 'Website', value: 'website' },
-                { label: 'Article Signup', value: 'article-signup' },
-                { label: 'Footer Signup', value: 'footer-signup' },
-                { label: 'Newsletter Page', value: 'newsletter-page' },
-                { label: 'Creator Hub', value: 'creator-hub' },
+                { label: 'Article Signup', value: 'article_signup' },
+                { label: 'Footer Signup', value: 'footer_signup' },
+                { label: 'Newsletter Page', value: 'newsletter_page' },
+                { label: 'Creator Hub', value: 'creator_hub' },
                 { label: 'Event', value: 'event' },
-                { label: 'Manual Import', value: 'manual-import' },
-                { label: 'Partner Campaign', value: 'partner-campaign' },
-                { label: 'WaveNation+ Signup', value: 'membership-signup' },
+                { label: 'Manual Import', value: 'manual_import' },
+                { label: 'Partner Campaign', value: 'partner_campaign' },
+                { label: 'WaveNation+ Signup', value: 'membership_signup' },
               ],
             },
             {
@@ -309,18 +313,13 @@ export const NewsletterSubscribers: CollectionConfig = {
         },
       ],
     },
-
-    /* ===============================
-       Sidebar Fields
-    =============================== */
-
     {
       name: 'status',
       type: 'select',
       defaultValue: 'active',
       options: [
         { label: 'Active', value: 'active' },
-        { label: 'Pending Confirmation', value: 'pending-confirmation' },
+        { label: 'Pending Confirmation', value: 'pending_confirmation' },
         { label: 'Unsubscribed', value: 'unsubscribed' },
         { label: 'Bounced', value: 'bounced' },
         { label: 'Complained', value: 'complained' },

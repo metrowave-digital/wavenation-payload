@@ -84,7 +84,7 @@ export const NavConfig: GlobalConfig = {
                     { label: 'New', value: 'new' },
                     { label: 'Live', value: 'live' },
                     { label: 'Trending', value: 'trending' },
-                    { label: 'Editor Pick', value: 'editor-pick' },
+                    { label: 'Editor Pick', value: 'editor_pick' },
                   ],
                 },
               ],

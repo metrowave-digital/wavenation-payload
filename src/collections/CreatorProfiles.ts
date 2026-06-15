@@ -189,7 +189,7 @@ export const CreatorProfiles: CollectionConfig = {
                     { label: 'Facebook', value: 'facebook' },
                     { label: 'X', value: 'x' },
                     { label: 'Spotify', value: 'spotify' },
-                    { label: 'Apple Music', value: 'apple-music' },
+                    { label: 'Apple Music', value: 'apple_music' },
                     { label: 'SoundCloud', value: 'soundcloud' },
                     { label: 'Website', value: 'website' },
                     { label: 'Other', value: 'other' },
@@ -226,7 +226,7 @@ export const CreatorProfiles: CollectionConfig = {
                     { label: 'Music', value: 'music' },
                     { label: 'Article', value: 'article' },
                     { label: 'Playlist', value: 'playlist' },
-                    { label: 'External Link', value: 'external-link' },
+                    { label: 'External Link', value: 'external_link' },
                   ],
                 },
                 {
