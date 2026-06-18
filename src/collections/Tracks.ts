@@ -1,4 +1,4 @@
-import type { CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, Where } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
 
@@ -9,6 +9,31 @@ const formatSlug = (value: string) =>
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+
+const authenticated: Access = ({ req }) => {
+  return Boolean(req.user)
+}
+
+const publicChartsWhere: Where = {
+  and: [
+    {
+      _status: {
+        equals: 'published',
+      },
+    },
+    {
+      editorialStatus: {
+        equals: 'published',
+      },
+    },
+  ],
+}
+
+const readCharts: Access = ({ req }) => {
+  if (req.user) return true
+
+  return publicChartsWhere
+}
 
 export const Charts: CollectionConfig = {
   slug: 'charts',
@@ -23,37 +48,30 @@ export const Charts: CollectionConfig = {
   },
 
   access: {
-    read: ({ req }) => {
-      if (req.user) return true
-
-      return {
-        and: [
-          {
-            _status: {
-              equals: 'published',
-            },
-          },
-          {
-            editorialStatus: {
-              equals: 'published',
-            },
-          },
-        ],
-      }
-    },
+    read: readCharts,
+    create: authenticated,
+    update: authenticated,
+    delete: authenticated,
+    readVersions: authenticated,
   },
 
   versions: {
     drafts: true,
     maxPerDoc: 75,
   },
+
   hooks: {
     beforeValidate: [
       ({ data }) => {
         if (!data) return data
 
-        const base = [data.title, data.weekLabel].filter(Boolean).join(' ')
-        if (base && !data.slug) {
+        const title = typeof data.title === 'string' ? data.title : ''
+        const weekLabel = typeof data.weekLabel === 'string' ? data.weekLabel : ''
+        const existingSlug = typeof data.slug === 'string' ? data.slug : ''
+
+        const base = [title, weekLabel].filter(Boolean).join(' ')
+
+        if (base && !existingSlug) {
           data.slug = formatSlug(base)
         }
 
@@ -61,6 +79,7 @@ export const Charts: CollectionConfig = {
       },
     ],
   },
+
   fields: [
     {
       type: 'tabs',
