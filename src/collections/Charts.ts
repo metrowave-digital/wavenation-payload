@@ -1,12 +1,6 @@
-import type { CollectionConfig } from 'payload'
+import type { Access, CollectionConfig, Where } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
-
-type AccessArgs = {
-  req: {
-    user?: unknown
-  }
-}
 
 type HookArgs = {
   data?: Record<string, unknown>
@@ -20,25 +14,29 @@ const formatSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const authenticated = ({ req }: AccessArgs) => Boolean(req.user)
+const authenticated: Access = ({ req }) => {
+  return Boolean(req.user)
+}
 
-const readCharts = ({ req }: AccessArgs) => {
+const publicChartsWhere: Where = {
+  and: [
+    {
+      _status: {
+        equals: 'published',
+      },
+    },
+    {
+      editorialStatus: {
+        equals: 'published',
+      },
+    },
+  ],
+}
+
+const readCharts: Access = ({ req }) => {
   if (req.user) return true
 
-  return {
-    and: [
-      {
-        _status: {
-          equals: 'published',
-        },
-      },
-      {
-        editorialStatus: {
-          equals: 'published',
-        },
-      },
-    ],
-  }
+  return publicChartsWhere
 }
 
 export const Charts: CollectionConfig = {
@@ -269,7 +267,10 @@ export const Charts: CollectionConfig = {
               options: [
                 { label: 'Manual Editorial', value: 'manual_editorial' },
                 { label: 'Votes + Editorial', value: 'votes_editorial' },
-                { label: 'Streams + Radio + Editorial', value: 'streams_radio_editorial' },
+                {
+                  label: 'Streams + Radio + Editorial',
+                  value: 'streams_radio_editorial',
+                },
                 { label: 'Custom', value: 'custom' },
               ],
             },
