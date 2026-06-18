@@ -2,6 +2,8 @@ import type { Access, CollectionConfig, Where } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
 
+type PayloadAccessArgs = Parameters<Access>[0]
+
 type HookArgs = {
   data?: Record<string, unknown>
 }
@@ -14,8 +16,8 @@ const formatSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const authenticated: Access = ({ req }) => {
-  return Boolean(req.user)
+const authenticated: Access = (args: PayloadAccessArgs) => {
+  return Boolean(args.req.user)
 }
 
 const publicChartsWhere: Where = {
@@ -33,8 +35,8 @@ const publicChartsWhere: Where = {
   ],
 }
 
-const readCharts: Access = ({ req }) => {
-  if (req.user) return true
+const readCharts: Access = (args: PayloadAccessArgs) => {
+  if (args.req.user) return true
 
   return publicChartsWhere
 }
