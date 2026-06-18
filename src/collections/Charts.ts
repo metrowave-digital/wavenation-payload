@@ -2,6 +2,16 @@ import type { CollectionConfig } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
 
+type AccessArgs = {
+  req: {
+    user?: unknown
+  }
+}
+
+type HookArgs = {
+  data?: Record<string, unknown>
+}
+
 const formatSlug = (value: string) =>
   value
     .toLowerCase()
@@ -9,6 +19,27 @@ const formatSlug = (value: string) =>
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+
+const authenticated = ({ req }: AccessArgs) => Boolean(req.user)
+
+const readCharts = ({ req }: AccessArgs) => {
+  if (req.user) return true
+
+  return {
+    and: [
+      {
+        _status: {
+          equals: 'published',
+        },
+      },
+      {
+        editorialStatus: {
+          equals: 'published',
+        },
+      },
+    ],
+  }
+}
 
 export const Charts: CollectionConfig = {
   slug: 'charts',
@@ -21,17 +52,31 @@ export const Charts: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'chartType', 'weekLabel', 'publishedAt', 'updatedAt'],
   },
+
+  access: {
+    read: readCharts,
+    create: authenticated,
+    update: authenticated,
+    delete: authenticated,
+  },
+
   versions: {
     drafts: true,
     maxPerDoc: 75,
   },
+
   hooks: {
     beforeValidate: [
-      ({ data }) => {
+      ({ data }: HookArgs) => {
         if (!data) return data
 
-        const base = [data.title, data.weekLabel].filter(Boolean).join(' ')
-        if (base && !data.slug) {
+        const title = typeof data.title === 'string' ? data.title : ''
+        const weekLabel = typeof data.weekLabel === 'string' ? data.weekLabel : ''
+        const existingSlug = typeof data.slug === 'string' ? data.slug : ''
+
+        const base = [title, weekLabel].filter(Boolean).join(' ')
+
+        if (base && !existingSlug) {
           data.slug = formatSlug(base)
         }
 
@@ -39,6 +84,7 @@ export const Charts: CollectionConfig = {
       },
     ],
   },
+
   fields: [
     {
       type: 'tabs',
