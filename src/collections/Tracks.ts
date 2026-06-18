@@ -1,16 +1,8 @@
-import type { CollectionConfig } from 'payload'
+import type { Access, CollectionBeforeValidateHook, CollectionConfig, Where } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
 
-type AccessArgs = {
-  req: {
-    user?: unknown
-  }
-}
-
-type HookArgs = {
-  data?: Record<string, unknown>
-}
+type PayloadAccessArgs = Parameters<Access>[0]
 
 const formatSlug = (value: string) =>
   value
@@ -20,25 +12,47 @@ const formatSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const authenticated = ({ req }: AccessArgs) => Boolean(req.user)
+const authenticated: Access = (args: PayloadAccessArgs) => {
+  return Boolean(args.req.user)
+}
 
-const readTracks = ({ req }: AccessArgs) => {
-  if (req.user) return true
+const publicTracksWhere: Where = {
+  and: [
+    {
+      _status: {
+        equals: 'published',
+      },
+    },
+    {
+      trackStatus: {
+        equals: 'published',
+      },
+    },
+  ],
+}
 
-  return {
-    and: [
-      {
-        _status: {
-          equals: 'published',
-        },
-      },
-      {
-        trackStatus: {
-          equals: 'published',
-        },
-      },
-    ],
+const readTracks: Access = (args: PayloadAccessArgs) => {
+  if (args.req.user) return true
+
+  return publicTracksWhere
+}
+
+const populateTrackSlug: CollectionBeforeValidateHook = (args) => {
+  const data = args.data as Record<string, unknown> | undefined
+
+  if (!data) return data
+
+  const title = typeof data.title === 'string' ? data.title : ''
+  const artistName = typeof data.artistName === 'string' ? data.artistName : ''
+  const existingSlug = typeof data.slug === 'string' ? data.slug : ''
+
+  const base = [artistName, title].filter(Boolean).join(' ')
+
+  if (base && !existingSlug) {
+    data.slug = formatSlug(base)
   }
+
+  return data
 }
 
 export const Tracks: CollectionConfig = {
@@ -50,7 +64,14 @@ export const Tracks: CollectionConfig = {
   admin: {
     group: MUSIC_GROUP,
     useAsTitle: 'title',
-    defaultColumns: ['title', 'artistName', 'genre', 'trackStatus', 'publishedAt', 'updatedAt'],
+    defaultColumns: [
+      'title',
+      'artistName',
+      'genre',
+      'trackStatus',
+      'publishedAt',
+      'updatedAt',
+    ],
   },
 
   access: {
@@ -66,23 +87,7 @@ export const Tracks: CollectionConfig = {
   },
 
   hooks: {
-    beforeValidate: [
-      ({ data }: HookArgs) => {
-        if (!data) return data
-
-        const title = typeof data.title === 'string' ? data.title : ''
-        const artistName = typeof data.artistName === 'string' ? data.artistName : ''
-        const existingSlug = typeof data.slug === 'string' ? data.slug : ''
-
-        const base = [artistName, title].filter(Boolean).join(' ')
-
-        if (base && !existingSlug) {
-          data.slug = formatSlug(base)
-        }
-
-        return data
-      },
-    ],
+    beforeValidate: [populateTrackSlug],
   },
 
   fields: [
@@ -103,6 +108,9 @@ export const Tracks: CollectionConfig = {
               type: 'text',
               unique: true,
               index: true,
+              admin: {
+                description: 'Auto-generated from artist name and title if left blank.',
+              },
             },
             {
               name: 'artistName',
@@ -118,8 +126,11 @@ export const Tracks: CollectionConfig = {
               },
             },
             {
-              name: 'albumTitle',
+              name: 'albumOrProject',
               type: 'text',
+              admin: {
+                description: 'Album, EP, mixtape, or project title.',
+              },
             },
             {
               type: 'row',
@@ -139,6 +150,7 @@ export const Tracks: CollectionConfig = {
                     { label: 'Jazz', value: 'jazz' },
                     { label: 'House', value: 'house' },
                     { label: 'Afrobeats', value: 'afrobeats' },
+                    { label: 'Pop', value: 'pop' },
                     { label: 'Other', value: 'other' },
                   ],
                 },
@@ -151,11 +163,12 @@ export const Tracks: CollectionConfig = {
                   },
                 },
                 {
-                  name: 'isExplicit',
+                  name: 'explicit',
                   type: 'checkbox',
                   defaultValue: false,
                   admin: {
                     width: '33.33%',
+                    description: 'Check if the track contains explicit content.',
                   },
                 },
               ],
@@ -163,6 +176,9 @@ export const Tracks: CollectionConfig = {
             {
               name: 'description',
               type: 'textarea',
+              admin: {
+                description: 'Short public-facing track description or editorial note.',
+              },
             },
           ],
         },
@@ -174,32 +190,54 @@ export const Tracks: CollectionConfig = {
               type: 'upload',
               relationTo: 'media',
               admin: {
-                description: 'Upload the audio file if WaveNation will host the track preview or full audio.',
+                description:
+                  'Upload an audio file if WaveNation will host a preview or full track.',
               },
             },
             {
               name: 'artwork',
               type: 'upload',
               relationTo: 'media',
+              admin: {
+                description: 'Track cover art. Square artwork is recommended.',
+              },
             },
             {
               name: 'externalAudioUrl',
               type: 'text',
               admin: {
-                description: 'Optional external stream, preview, or platform URL.',
+                description: 'Optional external preview, stream, or audio URL.',
               },
             },
             {
-              name: 'spotifyUrl',
-              type: 'text',
-            },
-            {
-              name: 'appleMusicUrl',
-              type: 'text',
-            },
-            {
-              name: 'youtubeUrl',
-              type: 'text',
+              name: 'platformLinks',
+              type: 'array',
+              labels: {
+                singular: 'Platform Link',
+                plural: 'Platform Links',
+              },
+              fields: [
+                {
+                  name: 'platform',
+                  type: 'select',
+                  required: true,
+                  options: [
+                    { label: 'Spotify', value: 'spotify' },
+                    { label: 'Apple Music', value: 'apple_music' },
+                    { label: 'YouTube', value: 'youtube' },
+                    { label: 'SoundCloud', value: 'soundcloud' },
+                    { label: 'Audiomack', value: 'audiomack' },
+                    { label: 'Bandcamp', value: 'bandcamp' },
+                    { label: 'Website', value: 'website' },
+                    { label: 'Other', value: 'other' },
+                  ],
+                },
+                {
+                  name: 'url',
+                  type: 'text',
+                  required: true,
+                },
+              ],
             },
           ],
         },
@@ -275,7 +313,8 @@ export const Tracks: CollectionConfig = {
               name: 'playlistNotes',
               type: 'textarea',
               admin: {
-                description: 'Internal notes for playlist placement, countdowns, or radio rotation.',
+                description:
+                  'Internal notes for playlist placement, countdowns, or radio rotation.',
               },
             },
             {
@@ -286,6 +325,12 @@ export const Tracks: CollectionConfig = {
             },
             {
               name: 'isIndieSpotlight',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true,
+            },
+            {
+              name: 'isStaffPick',
               type: 'checkbox',
               defaultValue: false,
               index: true,
@@ -303,6 +348,7 @@ export const Tracks: CollectionConfig = {
               options: [
                 { label: 'Draft', value: 'draft' },
                 { label: 'In Review', value: 'in_review' },
+                { label: 'Approved', value: 'approved' },
                 { label: 'Published', value: 'published' },
                 { label: 'Archived', value: 'archived' },
               ],
