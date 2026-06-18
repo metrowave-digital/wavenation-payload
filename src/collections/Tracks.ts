@@ -10,27 +10,49 @@ const formatSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-export const Tracks: CollectionConfig = {
-  slug: 'tracks',
+export const Charts: CollectionConfig = {
+  slug: 'charts',
   labels: {
-    singular: 'Track',
-    plural: 'Tracks',
+    singular: 'Chart',
+    plural: 'Charts',
   },
   admin: {
     group: MUSIC_GROUP,
     useAsTitle: 'title',
-    defaultColumns: ['title', 'artistName', 'releaseDate', 'explicit', 'reviewStatus', 'updatedAt'],
+    defaultColumns: ['title', 'chartType', 'weekLabel', 'publishedAt', 'updatedAt'],
   },
+
+  access: {
+    read: ({ req }) => {
+      if (req.user) return true
+
+      return {
+        and: [
+          {
+            _status: {
+              equals: 'published',
+            },
+          },
+          {
+            editorialStatus: {
+              equals: 'published',
+            },
+          },
+        ],
+      }
+    },
+  },
+
   versions: {
     drafts: true,
-    maxPerDoc: 50,
+    maxPerDoc: 75,
   },
   hooks: {
     beforeValidate: [
       ({ data }) => {
         if (!data) return data
 
-        const base = [data.artistName, data.title].filter(Boolean).join(' ')
+        const base = [data.title, data.weekLabel].filter(Boolean).join(' ')
         if (base && !data.slug) {
           data.slug = formatSlug(base)
         }
@@ -44,364 +66,212 @@ export const Tracks: CollectionConfig = {
       type: 'tabs',
       tabs: [
         {
-          label: 'Track Info',
+          label: 'Chart Info',
           fields: [
             {
-              type: 'row',
-              fields: [
-                {
-                  name: 'title',
-                  type: 'text',
-                  required: true,
-                  index: true,
-                  admin: {
-                    width: '50%',
-                  },
-                },
-                {
-                  name: 'artistName',
-                  type: 'text',
-                  index: true,
-                  admin: {
-                    width: '50%',
-                  },
-                },
-              ],
+              name: 'title',
+              type: 'text',
+              required: true,
+              index: true,
+              admin: {
+                description: 'Example: The Hitlist 20 — Week of June 12, 2026',
+              },
             },
             {
               name: 'slug',
               type: 'text',
               unique: true,
               index: true,
-              admin: {
-                description: 'Auto-generated from artist name and title if left blank.',
-              },
             },
             {
-              name: 'featuredArtists',
-              type: 'array',
-              labels: {
-                singular: 'Featured Artist',
-                plural: 'Featured Artists',
-              },
-              fields: [
-                {
-                  name: 'name',
-                  type: 'text',
-                },
+              name: 'chartType',
+              type: 'select',
+              required: true,
+              defaultValue: 'hitlist',
+              index: true,
+              options: [
+                { label: 'The Hitlist', value: 'hitlist' },
+                { label: 'Gospel', value: 'gospel' },
+                { label: 'Southern Soul', value: 'southern_soul' },
+                { label: 'Hip-Hop', value: 'hip_hop' },
+                { label: 'R&B/Soul', value: 'rb_soul' },
+                { label: 'BPM', value: 'bpm' },
               ],
+            },
+            {
+              name: 'publicDescription',
+              type: 'textarea',
             },
             {
               type: 'row',
               fields: [
                 {
-                  name: 'albumOrProject',
+                  name: 'weekLabel',
                   type: 'text',
                   admin: {
-                    width: '50%',
+                    width: '33.33%',
+                    description: 'Example: Week of June 12, 2026',
                   },
                 },
                 {
-                  name: 'trackType',
-                  type: 'select',
-                  defaultValue: 'single',
-                  options: [
-                    { label: 'Single', value: 'single' },
-                    { label: 'Album Track', value: 'album_track' },
-                    { label: 'EP Track', value: 'ep_track' },
-                    { label: 'Remix', value: 'remix' },
-                    { label: 'Live Version', value: 'live_version' },
-                    { label: 'Freestyle', value: 'freestyle' },
-                    { label: 'Other', value: 'other' },
-                  ],
-                  admin: {
-                    width: '50%',
-                  },
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'releaseDate',
+                  name: 'weekStart',
                   type: 'date',
                   index: true,
                   admin: {
-                    width: '50%',
+                    width: '33.33%',
                   },
                 },
                 {
-                  name: 'releaseYear',
-                  type: 'number',
+                  name: 'weekEnd',
+                  type: 'date',
                   admin: {
-                    width: '25%',
-                  },
-                },
-                {
-                  name: 'explicit',
-                  type: 'checkbox',
-                  defaultValue: false,
-                  admin: {
-                    width: '25%',
+                    width: '33.33%',
                   },
                 },
               ],
-            },
-            {
-              name: 'genres',
-              type: 'relationship',
-              relationTo: 'genres',
-              hasMany: true,
-            },
-            {
-              name: 'moods',
-              type: 'relationship',
-              relationTo: 'moods',
-              hasMany: true,
-            },
-          ],
-        },
-        {
-          label: 'Audio & Artwork',
-          fields: [
-            {
-              name: 'artwork',
-              type: 'upload',
-              relationTo: 'media',
-              admin: {
-                description: 'Album/single artwork. Square preferred.',
-              },
-            },
-            {
-              name: 'audioFile',
-              type: 'upload',
-              relationTo: 'media',
-              admin: {
-                description:
-                  'Hosted WAV/MP3 file. Make sure your media collection allows audio MIME types.',
-              },
             },
             {
               type: 'row',
               fields: [
                 {
-                  name: 'duration',
-                  type: 'text',
-                  admin: {
-                    width: '33.33%',
-                    description: 'Example: 3:42',
-                  },
-                },
-                {
-                  name: 'bpm',
+                  name: 'chartSize',
                   type: 'number',
+                  defaultValue: 20,
                   admin: {
                     width: '33.33%',
                   },
                 },
                 {
-                  name: 'musicalKey',
-                  type: 'text',
-                  admin: {
-                    width: '33.33%',
-                    description: 'Example: A minor',
-                  },
-                },
-              ],
-            },
-            {
-              name: 'previewStartSeconds',
-              type: 'number',
-              admin: {
-                description: 'Optional start time for preview clips.',
-              },
-            },
-          ],
-        },
-        {
-          label: 'Platform Links',
-          fields: [
-            {
-              name: 'platformLinks',
-              type: 'group',
-              fields: [
-                {
-                  name: 'spotify',
-                  type: 'text',
-                },
-                {
-                  name: 'appleMusic',
-                  type: 'text',
-                },
-                {
-                  name: 'youtubeMusic',
-                  type: 'text',
-                },
-                {
-                  name: 'youtube',
-                  type: 'text',
-                },
-                {
-                  name: 'audiomack',
-                  type: 'text',
-                },
-                {
-                  name: 'tidal',
-                  type: 'text',
-                },
-                {
-                  name: 'pandora',
-                  type: 'text',
-                },
-                {
-                  name: 'soundCloud',
-                  type: 'text',
-                },
-                {
-                  name: 'bandcamp',
-                  type: 'text',
-                },
-                {
-                  name: 'officialWebsite',
-                  type: 'text',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          label: 'Rights & Metadata',
-          fields: [
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'isrc',
-                  type: 'text',
+                  name: 'publishedAt',
+                  type: 'date',
                   index: true,
                   admin: {
-                    width: '50%',
+                    width: '33.33%',
                   },
                 },
                 {
-                  name: 'upc',
-                  type: 'text',
+                  name: 'isCurrent',
+                  type: 'checkbox',
+                  defaultValue: false,
+                  index: true,
                   admin: {
-                    width: '50%',
+                    width: '33.33%',
+                    description: 'Use for the active/current chart of this type.',
                   },
                 },
               ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'labelName',
-                  type: 'text',
-                  admin: {
-                    width: '50%',
-                  },
-                },
-                {
-                  name: 'copyrightOwner',
-                  type: 'text',
-                  admin: {
-                    width: '50%',
-                  },
-                },
-              ],
-            },
-            {
-              name: 'publisher',
-              type: 'text',
-            },
-            {
-              name: 'copyrightStatement',
-              type: 'textarea',
-            },
-            {
-              name: 'rightsConfirmed',
-              type: 'checkbox',
-              defaultValue: false,
-              admin: {
-                description:
-                  'Editorial/legal checkbox confirming rights were reviewed before placement.',
-              },
-            },
-            {
-              name: 'rightsNotes',
-              type: 'textarea',
-            },
-            {
-              name: 'independentRelease',
-              type: 'checkbox',
-              defaultValue: false,
             },
           ],
         },
         {
-          label: 'Creator Hub & Review',
+          label: 'Entries',
           fields: [
             {
-              name: 'source',
-              type: 'select',
-              defaultValue: 'internal',
-              options: [
-                { label: 'Internal Pick', value: 'internal' },
-                { label: 'Creator Hub Submission', value: 'creator_hub' },
-                { label: 'Label Submission', value: 'label_submission' },
-                { label: 'Artist Direct', value: 'artist_direct' },
-                { label: 'Publicist', value: 'publicist' },
-                { label: 'Social/Culture Trend', value: 'social_trend' },
-                { label: 'Other', value: 'other' },
-              ],
-            },
-            {
-              name: 'submittedBy',
+              name: 'entries',
               type: 'relationship',
-              relationTo: 'users',
+              relationTo: 'chart-entries',
+              hasMany: true,
               admin: {
+                isSortable: true,
                 description:
-                  'Optional user/creator relationship. Change relationTo if your creator profile slug is different.',
+                  'Create Chart Entry records first, then attach and drag them here into chart order.',
+              },
+            },
+          ],
+        },
+        {
+          label: 'Copy / History',
+          fields: [
+            {
+              name: 'sourceChart',
+              type: 'relationship',
+              relationTo: 'charts',
+              admin: {
+                description: 'Use this to track which previous chart this issue was copied from.',
               },
             },
             {
-              name: 'creatorHubChannelId',
+              name: 'copyNotes',
+              type: 'textarea',
+              admin: {
+                description: 'Notes for what changed after duplicating/copying last week’s chart.',
+              },
+            },
+            {
+              name: 'previousIssueUrl',
               type: 'text',
             },
+          ],
+        },
+        {
+          label: 'Visuals',
+          fields: [
             {
-              name: 'submissionEmail',
-              type: 'email',
+              name: 'coverArt',
+              type: 'upload',
+              relationTo: 'media',
             },
             {
-              name: 'reviewStatus',
+              name: 'heroImage',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'socialCard',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'accentColor',
               type: 'select',
-              defaultValue: 'pending',
-              index: true,
+              defaultValue: 'electric_blue',
               options: [
-                { label: 'Pending Review', value: 'pending' },
-                { label: 'Metadata Needed', value: 'metadata_needed' },
-                { label: 'Rights Review', value: 'rights_review' },
-                { label: 'Approved', value: 'approved' },
-                { label: 'Rejected', value: 'rejected' },
-                { label: 'Removed / Hold', value: 'removed_hold' },
+                { label: 'Electric Blue', value: 'electric_blue' },
+                { label: 'Neon Green', value: 'neon_green' },
+                { label: 'Magenta Pulse', value: 'magenta_pulse' },
+                { label: 'Signal Teal', value: 'signal_teal' },
+                { label: 'Custom', value: 'custom' },
+              ],
+            },
+          ],
+        },
+        {
+          label: 'Methodology',
+          fields: [
+            {
+              name: 'rankingMode',
+              type: 'select',
+              defaultValue: 'manual_editorial',
+              options: [
+                { label: 'Manual Editorial', value: 'manual_editorial' },
+                { label: 'Votes + Editorial', value: 'votes_editorial' },
+                { label: 'Streams + Radio + Editorial', value: 'streams_radio_editorial' },
+                { label: 'Custom', value: 'custom' },
               ],
             },
             {
-              name: 'qualityScore',
-              type: 'number',
-              admin: {
-                description: 'Optional internal 1-10 quality score.',
+              name: 'methodologyNote',
+              type: 'textarea',
+              defaultValue:
+                'Rankings are curated manually by the WaveNation music team using listener response, cultural impact, editorial judgment, and platform activity.',
+            },
+            {
+              name: 'dataReviewed',
+              type: 'array',
+              labels: {
+                singular: 'Data Source',
+                plural: 'Data Sources',
               },
-            },
-            {
-              name: 'brandSafetyNotes',
-              type: 'textarea',
-            },
-            {
-              name: 'reviewNotes',
-              type: 'textarea',
+              fields: [
+                {
+                  name: 'sourceName',
+                  type: 'text',
+                },
+                {
+                  name: 'sourceNotes',
+                  type: 'textarea',
+                },
+              ],
             },
           ],
         },
@@ -409,33 +279,33 @@ export const Tracks: CollectionConfig = {
           label: 'Publishing',
           fields: [
             {
-              name: 'publishedAt',
-              type: 'date',
+              name: 'editorialStatus',
+              type: 'select',
+              defaultValue: 'draft',
               index: true,
+              options: [
+                { label: 'Draft', value: 'draft' },
+                { label: 'In Review', value: 'in_review' },
+                { label: 'Approved', value: 'approved' },
+                { label: 'Published', value: 'published' },
+                { label: 'Archived', value: 'archived' },
+              ],
             },
             {
-              name: 'isFeatured',
+              name: 'featuredOnHomepage',
               type: 'checkbox',
               defaultValue: false,
             },
             {
-              name: 'editorialPriority',
-              type: 'select',
-              defaultValue: 'normal',
-              options: [
-                { label: 'Low', value: 'low' },
-                { label: 'Normal', value: 'normal' },
-                { label: 'High', value: 'high' },
-                { label: 'Major Priority', value: 'major_priority' },
-              ],
+              name: 'featuredOnMusicPage',
+              type: 'checkbox',
+              defaultValue: false,
             },
             {
-              name: 'approvedForPlaylists',
-              type: 'relationship',
-              relationTo: 'playlists',
-              hasMany: true,
+              name: 'relatedArticleUrl',
+              type: 'text',
               admin: {
-                description: 'Optional tracking for playlists this track is cleared for.',
+                description: 'Optional chart article or countdown write-up URL.',
               },
             },
             {
@@ -454,11 +324,6 @@ export const Tracks: CollectionConfig = {
             {
               name: 'seoDescription',
               type: 'textarea',
-            },
-            {
-              name: 'socialCard',
-              type: 'upload',
-              relationTo: 'media',
             },
           ],
         },
