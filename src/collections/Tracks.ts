@@ -1,6 +1,16 @@
-import type { Access, CollectionConfig, Where } from 'payload'
+import type { CollectionConfig } from 'payload'
 
 const MUSIC_GROUP = 'Music & Playlists'
+
+type AccessArgs = {
+  req: {
+    user?: unknown
+  }
+}
+
+type HookArgs = {
+  data?: Record<string, unknown>
+}
 
 const formatSlug = (value: string) =>
   value
@@ -10,49 +20,44 @@ const formatSlug = (value: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 
-const authenticated: Access = ({ req }) => {
-  return Boolean(req.user)
-}
+const authenticated = ({ req }: AccessArgs) => Boolean(req.user)
 
-const publicChartsWhere: Where = {
-  and: [
-    {
-      _status: {
-        equals: 'published',
-      },
-    },
-    {
-      editorialStatus: {
-        equals: 'published',
-      },
-    },
-  ],
-}
-
-const readCharts: Access = ({ req }) => {
+const readTracks = ({ req }: AccessArgs) => {
   if (req.user) return true
 
-  return publicChartsWhere
+  return {
+    and: [
+      {
+        _status: {
+          equals: 'published',
+        },
+      },
+      {
+        trackStatus: {
+          equals: 'published',
+        },
+      },
+    ],
+  }
 }
 
-export const Charts: CollectionConfig = {
-  slug: 'charts',
+export const Tracks: CollectionConfig = {
+  slug: 'tracks',
   labels: {
-    singular: 'Chart',
-    plural: 'Charts',
+    singular: 'Track',
+    plural: 'Tracks',
   },
   admin: {
     group: MUSIC_GROUP,
     useAsTitle: 'title',
-    defaultColumns: ['title', 'chartType', 'weekLabel', 'publishedAt', 'updatedAt'],
+    defaultColumns: ['title', 'artistName', 'genre', 'trackStatus', 'publishedAt', 'updatedAt'],
   },
 
   access: {
-    read: readCharts,
+    read: readTracks,
     create: authenticated,
     update: authenticated,
     delete: authenticated,
-    readVersions: authenticated,
   },
 
   versions: {
@@ -62,14 +67,14 @@ export const Charts: CollectionConfig = {
 
   hooks: {
     beforeValidate: [
-      ({ data }) => {
+      ({ data }: HookArgs) => {
         if (!data) return data
 
         const title = typeof data.title === 'string' ? data.title : ''
-        const weekLabel = typeof data.weekLabel === 'string' ? data.weekLabel : ''
+        const artistName = typeof data.artistName === 'string' ? data.artistName : ''
         const existingSlug = typeof data.slug === 'string' ? data.slug : ''
 
-        const base = [title, weekLabel].filter(Boolean).join(' ')
+        const base = [artistName, title].filter(Boolean).join(' ')
 
         if (base && !existingSlug) {
           data.slug = formatSlug(base)
@@ -85,16 +90,13 @@ export const Charts: CollectionConfig = {
       type: 'tabs',
       tabs: [
         {
-          label: 'Chart Info',
+          label: 'Track Info',
           fields: [
             {
               name: 'title',
               type: 'text',
               required: true,
               index: true,
-              admin: {
-                description: 'Example: The Hitlist 20 — Week of June 12, 2026',
-              },
             },
             {
               name: 'slug',
@@ -103,194 +105,190 @@ export const Charts: CollectionConfig = {
               index: true,
             },
             {
-              name: 'chartType',
-              type: 'select',
+              name: 'artistName',
+              type: 'text',
               required: true,
-              defaultValue: 'hitlist',
               index: true,
-              options: [
-                { label: 'The Hitlist', value: 'hitlist' },
-                { label: 'Gospel', value: 'gospel' },
-                { label: 'Southern Soul', value: 'southern_soul' },
-                { label: 'Hip-Hop', value: 'hip_hop' },
-                { label: 'R&B/Soul', value: 'rb_soul' },
-                { label: 'BPM', value: 'bpm' },
-              ],
             },
             {
-              name: 'publicDescription',
-              type: 'textarea',
+              name: 'featuredArtists',
+              type: 'text',
+              admin: {
+                description: 'Optional. Example: feat. Artist Name',
+              },
+            },
+            {
+              name: 'albumTitle',
+              type: 'text',
             },
             {
               type: 'row',
               fields: [
                 {
-                  name: 'weekLabel',
+                  name: 'genre',
+                  type: 'select',
+                  index: true,
+                  admin: {
+                    width: '33.33%',
+                  },
+                  options: [
+                    { label: 'R&B/Soul', value: 'rb_soul' },
+                    { label: 'Hip-Hop', value: 'hip_hop' },
+                    { label: 'Gospel', value: 'gospel' },
+                    { label: 'Southern Soul', value: 'southern_soul' },
+                    { label: 'Jazz', value: 'jazz' },
+                    { label: 'House', value: 'house' },
+                    { label: 'Afrobeats', value: 'afrobeats' },
+                    { label: 'Other', value: 'other' },
+                  ],
+                },
+                {
+                  name: 'duration',
                   type: 'text',
                   admin: {
                     width: '33.33%',
-                    description: 'Example: Week of June 12, 2026',
+                    description: 'Example: 3:45',
                   },
                 },
                 {
-                  name: 'weekStart',
-                  type: 'date',
-                  index: true,
-                  admin: {
-                    width: '33.33%',
-                  },
-                },
-                {
-                  name: 'weekEnd',
-                  type: 'date',
-                  admin: {
-                    width: '33.33%',
-                  },
-                },
-              ],
-            },
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'chartSize',
-                  type: 'number',
-                  defaultValue: 20,
-                  admin: {
-                    width: '33.33%',
-                  },
-                },
-                {
-                  name: 'publishedAt',
-                  type: 'date',
-                  index: true,
-                  admin: {
-                    width: '33.33%',
-                  },
-                },
-                {
-                  name: 'isCurrent',
+                  name: 'isExplicit',
                   type: 'checkbox',
                   defaultValue: false,
-                  index: true,
                   admin: {
                     width: '33.33%',
-                    description: 'Use for the active/current chart of this type.',
                   },
                 },
               ],
             },
-          ],
-        },
-        {
-          label: 'Entries',
-          fields: [
             {
-              name: 'entries',
-              type: 'relationship',
-              relationTo: 'chart-entries',
-              hasMany: true,
-              admin: {
-                isSortable: true,
-                description:
-                  'Create Chart Entry records first, then attach and drag them here into chart order.',
-              },
-            },
-          ],
-        },
-        {
-          label: 'Copy / History',
-          fields: [
-            {
-              name: 'sourceChart',
-              type: 'relationship',
-              relationTo: 'charts',
-              admin: {
-                description: 'Use this to track which previous chart this issue was copied from.',
-              },
-            },
-            {
-              name: 'copyNotes',
+              name: 'description',
               type: 'textarea',
+            },
+          ],
+        },
+        {
+          label: 'Media',
+          fields: [
+            {
+              name: 'audioFile',
+              type: 'upload',
+              relationTo: 'media',
               admin: {
-                description: 'Notes for what changed after duplicating/copying last week’s chart.',
+                description: 'Upload the audio file if WaveNation will host the track preview or full audio.',
               },
             },
             {
-              name: 'previousIssueUrl',
+              name: 'artwork',
+              type: 'upload',
+              relationTo: 'media',
+            },
+            {
+              name: 'externalAudioUrl',
+              type: 'text',
+              admin: {
+                description: 'Optional external stream, preview, or platform URL.',
+              },
+            },
+            {
+              name: 'spotifyUrl',
+              type: 'text',
+            },
+            {
+              name: 'appleMusicUrl',
+              type: 'text',
+            },
+            {
+              name: 'youtubeUrl',
               type: 'text',
             },
           ],
         },
         {
-          label: 'Visuals',
+          label: 'Credits',
           fields: [
             {
-              name: 'coverArt',
-              type: 'upload',
-              relationTo: 'media',
+              name: 'labelName',
+              type: 'text',
             },
             {
-              name: 'heroImage',
-              type: 'upload',
-              relationTo: 'media',
+              name: 'producerName',
+              type: 'text',
             },
             {
-              name: 'socialCard',
-              type: 'upload',
-              relationTo: 'media',
+              name: 'songwriters',
+              type: 'array',
+              labels: {
+                singular: 'Songwriter',
+                plural: 'Songwriters',
+              },
+              fields: [
+                {
+                  name: 'name',
+                  type: 'text',
+                  required: true,
+                },
+              ],
             },
             {
-              name: 'accentColor',
-              type: 'select',
-              defaultValue: 'electric_blue',
-              options: [
-                { label: 'Electric Blue', value: 'electric_blue' },
-                { label: 'Neon Green', value: 'neon_green' },
-                { label: 'Magenta Pulse', value: 'magenta_pulse' },
-                { label: 'Signal Teal', value: 'signal_teal' },
-                { label: 'Custom', value: 'custom' },
+              name: 'performers',
+              type: 'array',
+              labels: {
+                singular: 'Performer',
+                plural: 'Performers',
+              },
+              fields: [
+                {
+                  name: 'name',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  name: 'role',
+                  type: 'text',
+                  admin: {
+                    description: 'Example: Lead vocal, background vocal, guitar, keys.',
+                  },
+                },
               ],
             },
           ],
         },
         {
-          label: 'Methodology',
+          label: 'Chart / Playlist Use',
           fields: [
             {
-              name: 'rankingMode',
-              type: 'select',
-              defaultValue: 'manual_editorial',
-              options: [
-                { label: 'Manual Editorial', value: 'manual_editorial' },
-                { label: 'Votes + Editorial', value: 'votes_editorial' },
-                { label: 'Streams + Radio + Editorial', value: 'streams_radio_editorial' },
-                { label: 'Custom', value: 'custom' },
-              ],
-            },
-            {
-              name: 'methodologyNote',
-              type: 'textarea',
-              defaultValue:
-                'Rankings are curated manually by the WaveNation music team using listener response, cultural impact, editorial judgment, and platform activity.',
-            },
-            {
-              name: 'dataReviewed',
+              name: 'moodTags',
               type: 'array',
               labels: {
-                singular: 'Data Source',
-                plural: 'Data Sources',
+                singular: 'Mood Tag',
+                plural: 'Mood Tags',
               },
               fields: [
                 {
-                  name: 'sourceName',
+                  name: 'tag',
                   type: 'text',
-                },
-                {
-                  name: 'sourceNotes',
-                  type: 'textarea',
+                  required: true,
                 },
               ],
+            },
+            {
+              name: 'playlistNotes',
+              type: 'textarea',
+              admin: {
+                description: 'Internal notes for playlist placement, countdowns, or radio rotation.',
+              },
+            },
+            {
+              name: 'isFeatured',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true,
+            },
+            {
+              name: 'isIndieSpotlight',
+              type: 'checkbox',
+              defaultValue: false,
+              index: true,
             },
           ],
         },
@@ -298,34 +296,26 @@ export const Charts: CollectionConfig = {
           label: 'Publishing',
           fields: [
             {
-              name: 'editorialStatus',
+              name: 'trackStatus',
               type: 'select',
               defaultValue: 'draft',
               index: true,
               options: [
                 { label: 'Draft', value: 'draft' },
                 { label: 'In Review', value: 'in_review' },
-                { label: 'Approved', value: 'approved' },
                 { label: 'Published', value: 'published' },
                 { label: 'Archived', value: 'archived' },
               ],
             },
             {
-              name: 'featuredOnHomepage',
-              type: 'checkbox',
-              defaultValue: false,
+              name: 'publishedAt',
+              type: 'date',
+              index: true,
             },
             {
-              name: 'featuredOnMusicPage',
-              type: 'checkbox',
-              defaultValue: false,
-            },
-            {
-              name: 'relatedArticleUrl',
-              type: 'text',
-              admin: {
-                description: 'Optional chart article or countdown write-up URL.',
-              },
+              name: 'releaseDate',
+              type: 'date',
+              index: true,
             },
             {
               name: 'internalNotes',
