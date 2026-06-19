@@ -44,7 +44,7 @@ const publicOrStaff: Access = ({ req: { user } }) => {
       equals: true,
     },
     eventStatus: {
-      in: ['published', 'open-registration', 'sold-out'],
+      in: ['published', 'open_registration', 'sold_out'],
     },
   }
 }
@@ -141,7 +141,7 @@ export const Events: CollectionConfig = {
               label: 'Event Type',
               type: 'select',
               required: true,
-              defaultValue: 'in-person',
+              defaultValue: 'in_person',
               options: [
                 { label: 'In-Person', value: 'in_person' },
                 { label: 'Virtual', value: 'virtual' },
@@ -503,3 +503,5 @@ export const Events: CollectionConfig = {
     },
   ],
 }
+
+export default Events
