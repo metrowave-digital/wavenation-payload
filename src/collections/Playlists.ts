@@ -12,6 +12,15 @@ const formatSlug = (value: string) =>
 
 export const Playlists: CollectionConfig = {
   slug: 'playlists',
+  access: {
+    read: ({ req: { user } }) => {
+      if (user) return true
+
+      return {
+        _status: { equals: 'published' },
+      }
+    },
+  },
   labels: {
     singular: 'Playlist',
     plural: 'Playlists',
@@ -143,7 +152,7 @@ export const Playlists: CollectionConfig = {
             {
               name: 'accentColor',
               type: 'select',
-              defaultValue: 'electric-blue',
+              defaultValue: 'electric_blue',
               options: [
                 { label: 'Electric Blue', value: 'electric_blue' },
                 { label: 'Neon Green', value: 'neon_green' },
@@ -375,7 +384,7 @@ export const Playlists: CollectionConfig = {
             {
               name: 'sponsorApprovalStatus',
               type: 'select',
-              defaultValue: 'not-needed',
+              defaultValue: 'not_needed',
               options: [
                 { label: 'Not Needed', value: 'not_needed' },
                 { label: 'Pending', value: 'pending' },
@@ -431,7 +440,7 @@ export const Playlists: CollectionConfig = {
             {
               name: 'rotationTurnoverTarget',
               type: 'select',
-              defaultValue: '20-40',
+              defaultValue: 'value_20_40',
               options: [
                 { label: 'No Set Target', value: 'none' },
                 { label: '10-20%', value: 'value_10_20' },
@@ -466,6 +475,9 @@ export const Playlists: CollectionConfig = {
             {
               name: 'internalNotes',
               type: 'textarea',
+              access: {
+                read: ({ req: { user } }) => Boolean(user),
+              },
             },
           ],
         },
